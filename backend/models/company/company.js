@@ -1,4 +1,3 @@
-import { connect } from 'node:http2'
 import { pool } from '../../config/database.js'
 
 import { randomUUID } from 'node:crypto'
@@ -25,48 +24,7 @@ export class CompanyModel {
           companyData.survey_link,
         ]
       )
-
-      // Se insertan los sectores
-      if (companyData.sectors && companyData.sectors.length > 0) {
-        for (const sector of companyData.sectors) {
-          await connection.query(
-            `
-            INSERT INTO SECTOR (company_id, name)
-            VALUES (UUID_TO_BIN(?), ?)
-          `,
-            [myUUID, sector.name]
-          )
-        }
-      }
-
-      // Se insertan los centros de costo
-      if (companyData.costCenters && companyData.costCenters.length > 0) {
-        for (const cc of companyData.costCenters) {
-          await connection.query(
-            `
-            INSERT INTO COST_CENTER (company_id, name)
-            VALUES (UUID_TO_BIN(?), ?)
-          `,
-            [myUUID, cc.name]
-          )
-        }
-      }
-
-      // Se insertan los contactos
-      if (companyData.contacts && companyData.contacts.length > 0) {
-        for (const contact of companyData.contacts) {
-          await connection.query(
-            `
-            INSERT INTO COMPANY_CONTACT (company_id, name, email, notes)
-            VALUES (UUID_TO_BIN(?), ?, ?, ?)
-          `,
-            [myUUID, contact.name, contact.email, contact.notes]
-          )
-        }
-      }
-
       await connection.commit()
-
       return {
         id: myUUID,
         ...companyData,
@@ -83,9 +41,6 @@ export class CompanyModel {
   static async getAll() {
     const connection = await pool.getConnection()
     try {
-      await connection.beginTransaction()
-
-      // Obtener todas las empresas
       const [companies] = await connection.query(`
         SELECT 
           BIN_TO_UUID(id) AS id,
@@ -96,100 +51,8 @@ export class CompanyModel {
           survey_link
         FROM company
       `)
-
-      // Trae los sectores
-      const [sectors] = await connection.query(`
-        SELECT
-          s.id AS sector_id,
-          BIN_TO_UUID(s.company_id) AS company_id,
-          s.name AS sector_name
-        FROM sector s
-      `)
-
-      // Trae los centros de costos
-      const [costCenters] = await connection.query(`
-        SELECT
-          cc.id AS cc_id,
-          BIN_TO_UUID(cc.company_id) AS company_id,
-          cc.name AS cc_name
-        FROM cost_center cc
-      `)
-
-      // Trae los contactos
-      const [contacts] = await connection.query(`
-        SELECT
-          c.id AS contact_id,
-          BIN_TO_UUID(c.company_id) AS company_id,
-          c.name AS contact_name,
-          c.email AS contact_email,
-          c.notes AS contact_notes
-        FROM company_contact c
-      `)
-
-      const mapCompanies = {}
-
-      for (const comp of companies) {
-        mapCompanies[comp.id] = {
-          id: comp.id,
-          name: comp.name,
-          CUIT: comp.CUIT,
-          business_name: comp.business_name,
-          SID: comp.SID,
-          survey_link: comp.survey_link,
-          sectors: [],
-          costCenters: [],
-          contacts: [],
-        }
-      }
-
-      // Se agrupan los sectores y se agregan a el map
-      for (const sec of sectors) {
-        const { company_id, sector_id, sector_name } = sec
-        if (mapCompanies[company_id]) {
-          mapCompanies[company_id].sectors.push({
-            id: sector_id,
-            name: sector_name,
-          })
-        }
-      }
-
-      // Se agrupan los centros de costo y se agregan a el map
-      for (const cc of costCenters) {
-        const { company_id, cc_id, cc_name } = cc
-        if (mapCompanies[company_id]) {
-          mapCompanies[company_id].costCenters.push({
-            id: cc_id,
-            name: cc_name,
-          })
-        }
-      }
-
-      // Se agrupan los contactos y se agregan a el map
-      for (const ct of contacts) {
-        const {
-          company_id,
-          contact_id,
-          contact_name,
-          contact_email,
-          contact_notes,
-        } = ct
-        if (mapCompanies[company_id]) {
-          mapCompanies[company_id].contacts.push({
-            id: contact_id,
-            name: contact_name,
-            email: contact_email,
-            notes: contact_notes,
-          })
-        }
-      }
-
-      await connection.commit()
-
-      // Se convierte el map en un array y se devuelve
-      const result = Object.values(mapCompanies)
-      return result
+      return companies
     } catch (error) {
-      await connection.rollback()
       throw new Error(`Hubo un error al buscar las empresas`)
     } finally {
       connection.release()
@@ -199,8 +62,7 @@ export class CompanyModel {
   static async getById(companyId) {
     const connection = await pool.getConnection()
     try {
-      // 1. Obtener la empresa principal
-      const [companyRows] = await connection.query(
+      const [company] = await connection.query(
         `
         SELECT 
           BIN_TO_UUID(c.id) AS id,
@@ -214,63 +76,13 @@ export class CompanyModel {
       `,
         [companyId]
       )
-
       // Si no existe, retornamos null o podríamos lanzar un error
-      if (companyRows.length === 0) {
+      if (company.length === 0) {
         return null
       }
-
-      const company = companyRows[0]
-
-      // 2. Obtener los cost centers de la empresa
-      const [costCentersRows] = await connection.query(
-        `
-        SELECT 
-          cc.id,
-          cc.name
-        FROM cost_center cc
-        WHERE cc.company_id = UUID_TO_BIN(?)
-      `,
-        [companyId]
-      )
-
-      // 3. Obtener los sectores de la empresa
-      const [sectorsRows] = await connection.query(
-        `
-        SELECT 
-          s.id,
-          s.name
-        FROM sector s
-        WHERE s.company_id = UUID_TO_BIN(?)
-      `,
-        [companyId]
-      )
-
-      // 4. Obtener los contactos de la empresa
-      const [contactsRows] = await connection.query(
-        `
-        SELECT
-          co.id,
-          co.name,
-          co.email,
-          co.notes
-        FROM company_contact co
-        WHERE co.company_id = UUID_TO_BIN(?)
-      `,
-        [companyId]
-      )
-
-      // 5. Construir un objeto unificado
-      const result = {
-        ...company, // Datos principales de la empresa
-        costCenters: costCentersRows,
-        sectors: sectorsRows,
-        contacts: contactsRows,
-      }
-
-      return result
+      return company
     } catch (error) {
-      console.error('Error fetching company by ID:', error)
+      console.error('Error al buscar la empresa por ID:', error)
       throw new Error(`Hubo un error al buscar la empresa`)
     } finally {
       connection.release()
@@ -280,20 +92,13 @@ export class CompanyModel {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
-
-      // Ejecutamos el DELETE sobre la tabla principal
       const [result] = await connection.query(
         `DELETE FROM company WHERE id = UUID_TO_BIN(?)`,
         [companyId]
       )
-
-      // Confirmamos la transacción
       await connection.commit()
-
-      // result.affectedRows indica cuántas filas se borraron
       return result.affectedRows
     } catch (error) {
-      // Revertir cambios si hubo error
       await connection.rollback()
       console.error('Error deleting company:', error)
       throw new Error(`Hubo un error al eliminar la empresa`)
@@ -301,13 +106,43 @@ export class CompanyModel {
       connection.release()
     }
   }
-  static async updateById(id, data) {
-    /* PENSAR CUAL SERÍA EL MEJOR ENFOQUE PARA MANEJAR ESTE MÉTODO 1 ENDPOINT O VARIOS PARA ACTUALIZAR LA EMPRESA. */
+  static async updateById(companyId, companyData) {
     const connection = await pool.getConnection()
     try {
-      const [result] = await connection.query(`
-      `)
-
+      await connection.beginTransaction()
+      /* creamos dinámicamente las clausulas y asignamos los valores para el update */
+      const setClauses = []
+      const values = []
+      if (companyData.name !== undefined) {
+        setClauses.push('name = ?')
+        values.push(companyData.name)
+      }
+      if (companyData.cuit !== undefined) {
+        setClauses.push('CUIT = ?')
+        values.push(companyData.cuit)
+      }
+      if (companyData.business_name !== undefined) {
+        setClauses.push('business_name = ?')
+        values.push(companyData.business_name)
+      }
+      if (companyData.sid !== undefined) {
+        setClauses.push('SID = ?')
+        values.push(companyData.sid)
+      }
+      if (companyData.survey_link !== undefined) {
+        setClauses.push('survey_link = ?')
+        values.push(companyData.survey_link)
+      }
+      if (setClauses.length === 0) {
+        return 0
+      }
+      const sql = `
+          UPDATE company
+          SET ${setClauses.join(', ')}
+          WHERE id = UUID_TO_BIN(?)
+        `
+      values.push(companyId)
+      const [result] = await connection.query(sql, values)
       await connection.commit()
       return result.affectedRows
     } catch (error) {
