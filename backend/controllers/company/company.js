@@ -1,4 +1,7 @@
-import { validateCompany, validatePartialCompany } from '../schemas/company.js'
+import {
+  validateCompany,
+  validatePartialCompany,
+} from '../../schemas/company/company.js'
 
 export class CompanyController {
   constructor({ companyModel }) {
@@ -9,6 +12,7 @@ export class CompanyController {
     const result = validateCompany(req.body)
 
     if (!result.success) {
+      console.log('Error al validar la empresa', result.error.message)
       return res.status(400).json({ error: JSON.parse(result.error.message) })
     }
 
@@ -23,8 +27,6 @@ export class CompanyController {
   getAll = async (req, res) => {
     try {
       const companies = await this.companyModel.getAll()
-
-      // Si no hay compañías, devuelve array vacío
       if (!companies.length) {
         return res.status(200).json({
           success: true,
