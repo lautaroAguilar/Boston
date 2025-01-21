@@ -1,6 +1,6 @@
 import {
   validateCostCenter,
-  validatePartialCostCenter,
+  validatePartialCostCenter
 } from '../../schemas/company/cost_center.js'
 
 export class CostCenterController {
@@ -29,6 +29,7 @@ export class CostCenterController {
       res.status(500).json({ success: false, error: error.message })
     }
   }
+
   getAll = async (req, res) => {
     try {
       const costCenters = await this.costCenterModel.getAll()
@@ -38,7 +39,7 @@ export class CostCenterController {
         return res.status(200).json({
           success: true,
           data: [],
-          message: 'No se encontraron los centros de costos',
+          message: 'No se encontraron los centros de costos'
         })
       }
 
@@ -46,10 +47,11 @@ export class CostCenterController {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: error.message,
+        message: error.message
       })
     }
   }
+
   getById = async (req, res) => {
     try {
       const { id } = req.params
@@ -64,13 +66,14 @@ export class CostCenterController {
       return res.status(500).json({ success: false, error: error.message })
     }
   }
+
   deleteById = async (req, res) => {
     try {
       const { id } = req.params
       const affectedRows = await this.costCenterModel.deleteById(id)
       if (affectedRows === 0) {
         return res.status(404).json({
-          error: 'No se encontró el centro de costo que querés eliminar',
+          error: 'No se encontró el centro de costo que querés eliminar'
         })
       }
       return res.json({ message: 'Centro de costo eliminado correctamente' })
@@ -79,6 +82,7 @@ export class CostCenterController {
       return res.status(500).json({ success: false, error: error.message })
     }
   }
+
   updateById = async (req, res) => {
     try {
       const { id } = req.params

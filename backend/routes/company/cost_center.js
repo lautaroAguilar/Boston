@@ -4,7 +4,7 @@ import { CostCenterModel } from '../../models/company/cost_center.js'
 export const costCenterRouter = Router({ mergeParams: true })
 
 const costCenterController = new CostCenterController({
-  costCenterModel: CostCenterModel,
+  costCenterModel: CostCenterModel
 })
 
 costCenterRouter.post('/', (req, res) => costCenterController.create(req, res))

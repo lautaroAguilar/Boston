@@ -1,6 +1,6 @@
 import {
   validateCompany,
-  validatePartialCompany,
+  validatePartialCompany
 } from '../../schemas/company/company.js'
 
 export class CompanyController {
@@ -31,7 +31,7 @@ export class CompanyController {
         return res.status(200).json({
           success: true,
           data: [],
-          message: 'No se encontraron empresas',
+          message: 'No se encontraron empresas'
         })
       }
 
@@ -40,7 +40,7 @@ export class CompanyController {
       res.status(500).json({
         success: false,
         message: 'Error al buscar empresas',
-        error,
+        error
       })
     }
   }

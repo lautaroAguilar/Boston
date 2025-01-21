@@ -1,6 +1,6 @@
 import {
   validateContact,
-  validatePartialContact,
+  validatePartialContact
 } from '../../schemas/company/contacts.js'
 export class ContactController {
   constructor({ contactModel }) {
@@ -34,7 +34,7 @@ export class ContactController {
         return res.status(200).json({
           success: true,
           data: [],
-          message: 'No se encontraron contactos',
+          message: 'No se encontraron contactos'
         })
       }
 
@@ -42,7 +42,7 @@ export class ContactController {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: error.message,
+        message: error.message
       })
     }
   }

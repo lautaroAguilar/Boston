@@ -1,6 +1,6 @@
 import {
   validateSector,
-  validatePartialSector,
+  validatePartialSector
 } from '../../schemas/company/sector.js'
 
 export class SectorController {
@@ -35,7 +35,7 @@ export class SectorController {
         return res.status(200).json({
           success: true,
           data: [],
-          message: 'No se encontraron sectores',
+          message: 'No se encontraron sectores'
         })
       }
 
@@ -43,7 +43,7 @@ export class SectorController {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: error.message,
+        message: error.message
       })
     }
   }

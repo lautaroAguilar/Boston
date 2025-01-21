@@ -21,13 +21,13 @@ export class CompanyModel {
           companyData.cuit,
           companyData.business_name,
           companyData.sid,
-          companyData.survey_link,
+          companyData.survey_link
         ]
       )
       await connection.commit()
       return {
         id: myUUID,
-        ...companyData,
+        ...companyData
       }
     } catch (error) {
       console.log(error)
