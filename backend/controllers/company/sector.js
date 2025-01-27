@@ -75,10 +75,14 @@ export class SectorController {
     }
   }
   updateById = async (req, res) => {
+    const result = validatePartialSector(req.body)
+    if (!result.success) {
+      console.log('Error al validar parcialmente el sector', result.error.message)
+      return res.status(400).json({ error: JSON.parse(result.error.message) })
+    }
     try {
       const { id } = req.params
-      const data = validatePartialSector(req.body)
-      const affectedRows = await this.sectorModel.updateById(id, data)
+      const affectedRows = await this.sectorModel.updateById(id, result.data)
       if (affectedRows === 0) {
         return res
           .status(404)

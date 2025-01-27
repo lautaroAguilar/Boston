@@ -74,10 +74,14 @@ export class CompanyController {
     }
   }
   updateById = async (req, res) => {
+    const result = validatePartialCompany(req.body)
+    if (!result.success) {
+      console.log('Error al validar parcialmente la empresa', result.error.message)
+      return res.status(400).json({ error: JSON.parse(result.error.message) })
+    }
     try {
       const { id } = req.params
-      const data = validatePartialCompany(req.body)
-      const affectedRows = await this.companyModel.updateById(id, data)
+      const affectedRows = await this.companyModel.updateById(id, result.data)
       if (affectedRows === 0) {
         return res
           .status(404)
