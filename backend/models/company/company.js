@@ -76,7 +76,7 @@ export class CompanyModel {
       `,
         [companyId]
       )
-      // Si no existe, retornamos null o podríamos lanzar un error
+      
       if (company.length === 0) {
         return null
       }
