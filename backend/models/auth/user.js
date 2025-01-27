@@ -24,17 +24,17 @@ export class UserAuthModel {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
-      const [result] = await connection.query(
-        `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
-        [name, email, password]
-      )
-      const userId = result.insertId
       const [roleResult] = await connection.query(
-        `INSERT INTO roles (name, user_id) VALUES (?, ?)`,
-        [role, userId]
+        `INSERT INTO roles (name) VALUES (?)`,
+        [role]
+      )
+      const roleId = roleResult.insertId
+      const [result] = await connection.query(
+        `INSERT INTO users (name, email, password, role_id) VALUES (?, ?, ?, ?)`,
+        [name, email, password, roleId]
       )
       await connection.commit()
-      return { userId, roleId: roleResult.insertId }
+      return { userId: result.insertId, roleId }
     } catch (err) {
       console.log(err)
       await connection.rollback()
