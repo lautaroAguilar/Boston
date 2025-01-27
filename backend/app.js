@@ -1,17 +1,22 @@
 import express, { json } from 'express'
-import corsMiddleware from './middlewares/cors.js'
 import 'dotenv/config'
+import cookieParser from 'cookie-parser'
+import corsMiddleware from './middlewares/cors.js'
 import { companiesRouter } from './routes/company/company.js'
-
+import { userAuthRouter } from './routes/auth/user.js'
+import { userRouter } from './routes/users/users.js'
 const app = express()
 const PORT = process.env.PORT ?? 3000
 app.use(json())
 app.use(corsMiddleware())
+app.use(cookieParser())
 app.disable('x-powered-by')
 
 app.use('/api/companies', companiesRouter)
-/* app.use('/api/user', Router)
-  app.use('/api/auth', Router)
+app.use('/api/user', userRouter)
+app.use('/api/auth', userAuthRouter)
+/* 
+  
   app.use('/api/course', Router)
   app.use('/api/education', Router) */
 app.listen(PORT, () => {
