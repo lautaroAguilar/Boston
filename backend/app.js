@@ -5,6 +5,7 @@ import corsMiddleware from './middlewares/cors.js'
 import { companiesRouter } from './routes/company/company.js'
 import { userAuthRouter } from './routes/auth/user.js'
 import { userRouter } from './routes/users/users.js'
+import { studentsRouter } from './routes/students/students.js'
 const app = express()
 const PORT = process.env.PORT ?? 3000
 app.use(json())
@@ -15,6 +16,7 @@ app.disable('x-powered-by')
 app.use('/api/companies', companiesRouter)
 app.use('/api/user', userRouter)
 app.use('/api/auth', userAuthRouter)
+app.use('/api/students', studentsRouter)
 /* 
   
   app.use('/api/course', Router)
