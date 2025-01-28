@@ -80,7 +80,7 @@ export class CompanyModel {
       if (company.length === 0) {
         return null
       }
-      return company
+      return company[0]
     } catch (error) {
       console.error('Error al buscar la empresa por ID:', error)
       throw new Error(`Hubo un error al buscar la empresa`)

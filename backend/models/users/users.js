@@ -27,7 +27,7 @@ export class UserModel {
       if (user.length === 0) {
         return null
       }
-      return user
+      return user[0]
     } catch (error) {
       console.error('Error al buscar el usuario:', error)
       throw new Error(`Hubo un error al buscar el usuario`)
@@ -57,6 +57,7 @@ export class UserModel {
     const connection = await pool.getConnection()
     try {
       /* Se crean las clausulas dinámicamente */
+      await connection.beginTransaction()
       const clauses = Object.keys(updateData)
         .map((key) => `${key} = ?`)
         .join(', ')
@@ -67,10 +68,11 @@ export class UserModel {
         `UPDATE users SET ${clauses} WHERE id = ?`,
         [...values, userId]
       )
-
+      await connection.commit()
       return result.affectedRows
     } catch (error) {
       console.error('Error al actualizar el usuario:', error)
+      await connection.rollback()
       throw new Error('Hubo un error al actualizar el usuario')
     } finally {
       connection.release()
