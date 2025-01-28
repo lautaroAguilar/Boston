@@ -5,7 +5,7 @@ export class UserAuthModel {
     const connection = await pool.getConnection()
     try {
       const [rows] = await connection.query(
-        `SELECT id, email, password FROM users WHERE email = ?`,
+        `SELECT id, name, email, password, role_id FROM users WHERE email = ?`,
         [email]
       )
 

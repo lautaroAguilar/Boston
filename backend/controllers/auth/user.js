@@ -60,9 +60,18 @@ export class UserAuthController {
         return res.status(401).json({ message: 'Contraseña invalida' })
       }
       // Se genera el token de acceso y el de refresco, y lo guardamos en las cookies
-      const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-        expiresIn: '15m'
-      })
+      const accessToken = jwt.sign(
+        {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role_id: user.role_id
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: '15m'
+        }
+      )
       const refreshToken = jwt.sign(
         { id: user.id },
         process.env.JWT_REFRESH_SECRET,
@@ -109,6 +118,23 @@ export class UserAuthController {
       return res
         .status(403)
         .json({ message: 'Refresh token inválido o expirado' })
+    }
+  }
+  me = async (req, res) => {
+    try {
+      const userInfo = {
+        userId: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        roleId: req.user.role_id
+      }
+      return res.status(200).json(userInfo)
+    } catch (error) {
+      console.error(error)
+      return res.status(500).json({
+        message:
+          'Error interno del servidor al intentar buscar el usuario activo'
+      })
     }
   }
 }

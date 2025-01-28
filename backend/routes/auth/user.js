@@ -7,7 +7,7 @@ export const userAuthRouter = Router()
 const userAuthController = new UserAuthController({
   userAuthModel: UserAuthModel
 })
-
+userAuthRouter.get('/me', authenticateToken, userAuthController.me)
 userAuthRouter.post('/register', userAuthController.register)
 userAuthRouter.post('/login', userAuthController.login)
 userAuthRouter.post('/logout', authenticateToken, userAuthController.logout)
