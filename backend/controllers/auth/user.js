@@ -7,18 +7,17 @@ export class UserAuthController {
     this.userAuthModel = userAuthModel
   }
   register = async (req, res) => {
-    const result = validateRegister(req.body)
-
-    if (!result.success) {
-      return res.status(400).json({ error: result.error.message })
-    }
-    const { name, email, password, role } = result.data
     try {
+      const result = validateRegister(req.body)
+      if (!result.success) {
+        return res.status(400).json(result.error.issues)
+      }
+      const { name, email, password, role } = result.data
       const userExist = await this.userAuthModel.findOne(email)
       if (userExist) {
         return res
           .status(400)
-          .json({ message: 'Ya existe un usuario con ese email' })
+          .json([{ path: ['email'], message: 'Este email ya está en uso' }])
       }
       const saltRounds =
         process.env.NODE_ENV === 'production'
@@ -42,13 +41,13 @@ export class UserAuthController {
     }
   }
   login = async (req, res) => {
-    const result = validateLogin(req.body)
-
-    if (!result.success) {
-      return res.status(400).json({ error: result.error.message })
-    }
-    const { email, password } = result.data
     try {
+      const result = validateLogin(req.body)
+
+      if (!result.success) {
+        return res.status(400).json({ error: result.error.message })
+      }
+      const { email, password } = result.data
       const user = await this.userAuthModel.findOne(email)
       if (!user) {
         return res

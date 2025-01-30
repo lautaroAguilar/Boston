@@ -24,11 +24,16 @@ export class UserAuthModel {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
+      /* OBTENEMOS EL ROLE_ID SEGÚN EL QUE SE ELIGIÓ */
       const [roleResult] = await connection.query(
-        `INSERT INTO roles (name) VALUES (?)`,
+        `SELECT id FROM roles WHERE name = ?`,
         [role]
       )
-      const roleId = roleResult.insertId
+      if (roleResult.length === 0) {
+        throw new Error('Hubo un error al agregar el rol')
+      }
+      const roleId = roleResult[0].id
+      /* CREAMOS EL USUARIO */
       const [result] = await connection.query(
         `INSERT INTO users (name, email, password, role_id) VALUES (?, ?, ?, ?)`,
         [name, email, password, roleId]
