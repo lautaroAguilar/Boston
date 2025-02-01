@@ -1,0 +1,111 @@
+import React from "react";
+import {
+  Box,
+  Stack,
+  TextField,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+  FormControl,
+  FormHelperText,
+  Typography,
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers";
+/* import MyInput from "./input"; */
+export default function MyForm({
+  fields,
+  values = {},
+  onChange,
+  onSubmit,
+  buttonText,
+  errors = {},
+  successMessage,
+  errorMessage,
+}) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(e);
+  };
+
+  return (
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ width: "100%", margin: "0 auto" }}
+    >
+      <Stack spacing={2}>
+        {fields.map((field, index) => (
+          <Stack xs={12} sm={6} key={index}>
+            {(() => {
+              switch (field.component) {
+                case "select":
+                  return (
+                    <FormControl fullWidth>
+                      <InputLabel>{field.label}</InputLabel>
+                      <Select
+                        name={field.name}
+                        label={field.label}
+                        value={values[field.name] || ""}
+                        onChange={(e) => onChange(field.name, e.target.value)}
+                        required={field.required ?? false}
+                      >
+                        {field.options?.map((opt) => (
+                          <MenuItem key={opt.id} value={opt.label}>
+                            {opt.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors && errors[field.name] && (
+                        <FormHelperText>{errors[field.name]}</FormHelperText>
+                      )}
+                    </FormControl>
+                  );
+                case "date":
+                  return (
+                    <DatePicker
+                      label={field.label}
+                      value={(values && values[field.name]) ?? null}
+                      onChange={(newValue) =>
+                        onChange(
+                          field.name,
+                          newValue ? newValue.toString() : ""
+                        )
+                      }
+                      slotProps={{
+                        textField: {
+                          error: Boolean(errors[field.name]),
+                          helperText: errors[field.name] ?? "",
+                        },
+                      }}
+                    />
+                  );
+                default:
+                  return (
+                    <TextField
+                      fullWidth
+                      type={field.type ?? "text"}
+                      label={field.label}
+                      name={field.name}
+                      required={field.required ?? false}
+                      value={(values && values[field.name]) ?? ""}
+                      onChange={(e) => onChange(field.name, e.target.value)}
+                      error={Boolean(errors[field.name])}
+                      helperText={errors[field.name] ?? ""}
+                    />
+                  );
+              }
+            })()}
+          </Stack>
+        ))}
+        <Typography>{successMessage}</Typography>
+        <Typography>{errorMessage}</Typography>
+      </Stack>
+      <Stack sx={{ mt: 2, textAlign: "center" }}>
+        <Button type="submit" variant="contained">
+          {buttonText}
+        </Button>
+      </Stack>
+    </Box>
+  );
+}
