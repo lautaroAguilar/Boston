@@ -1,5 +1,4 @@
 import cors from 'cors'
-
 const ACCEPTED_ORIGINS = [
   'http://localhost:8080',
   'http://localhost:3306',
@@ -12,15 +11,13 @@ export default function corsMiddleware({
 } = {}) {
   return cors({
     origin: (origin, callback) => {
-      if (acceptedOrigins.includes(origin)) {
+      if (acceptedOrigins.includes(origin) || !origin) {
         return callback(null, true)
       }
-
-      if (!origin) {
-        return callback(null, true)
-      }
-
       return callback(new Error('Not allowed by CORS'))
-    }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 }

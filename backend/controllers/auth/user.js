@@ -45,7 +45,7 @@ export class UserAuthController {
       const result = validateLogin(req.body)
 
       if (!result.success) {
-        return res.status(400).json({ error: result.error.message })
+        return res.status(400).json(result.error.issues)
       }
       const { email, password } = result.data
       const user = await this.userAuthModel.findOne(email)
@@ -56,15 +56,14 @@ export class UserAuthController {
       }
       const isPasswordValid = await bcrypt.compare(password, user.password)
       if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Contraseña invalida' })
+        return res
+          .status(401)
+          .json([{ path: ['email'], message: 'Contraseña invalida' }])
       }
       // Se genera el token de acceso y el de refresco, y lo guardamos en las cookies
       const accessToken = jwt.sign(
         {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role_id: user.role_id
+          id: user.id
         },
         process.env.JWT_SECRET,
         {
@@ -76,29 +75,34 @@ export class UserAuthController {
         process.env.JWT_REFRESH_SECRET,
         { expiresIn: '7d' }
       )
-      res.cookie('refreshToken', refreshToken, {
+      res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'Strict',
-        path: '/'
+        maxAge: 1000 * 60 * 60 * 24 * 7
       })
-      res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        path: '/'
-      })
-      return res.status(200).json({ message: 'Login exitoso' })
+      res
+        .cookie('access_token', accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'Strict',
+          maxAge: 1000 * 60 * 15
+        })
+        .status(200)
+        .json({ message: 'Login exitoso' })
     } catch (error) {
       return res.status(500).json({ message: 'Error al iniciar sesión', error })
     }
   }
   logout = async (req, res) => {
-    res.clearCookie('refreshToken', { path: '/' })
+    res.clearCookie('refresh_token', {
+      sameSite: 'Strict',
+      secure: true
+    })
     return res.status(200).json({ message: 'Logout exitoso' })
   }
   refreshToken = (req, res) => {
-    const refreshToken = req.cookies.refreshToken
+    const refreshToken = req.cookies.refresh_token
 
     if (!refreshToken) {
       return res.status(401).json({ message: 'No hay refresh token' })
@@ -112,7 +116,15 @@ export class UserAuthController {
         { expiresIn: '15m' }
       )
 
-      return res.status(200).json({ accessToken: newAccessToken })
+      res
+        .cookie('access_token', newAccessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'Strict',
+          maxAge: 1000 * 60 * 15
+        })
+        .status(200)
+        .json({ message: 'Tienes un nuevo token, felicidades.' })
     } catch (error) {
       return res
         .status(403)
@@ -122,10 +134,7 @@ export class UserAuthController {
   me = async (req, res) => {
     try {
       const userInfo = {
-        userId: req.user.id,
-        name: req.user.name,
-        email: req.user.email,
-        roleId: req.user.role_id
+        userId: req.user.id
       }
       return res.status(200).json(userInfo)
     } catch (error) {
