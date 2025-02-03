@@ -4,6 +4,7 @@ import { NextAppProvider } from "@toolpad/core/nextjs";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import NAVIGATION from "@/components/Items";
 import { LinearProgress } from "@mui/material";
+import ClientLayout from "@/components/ClientLayout";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -22,7 +23,7 @@ export default function RootLayout({ children }) {
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <React.Suspense fallback={<LinearProgress />}>
             <NextAppProvider navigation={NAVIGATION}>
-              {children}
+              <ClientLayout>{children}</ClientLayout>
             </NextAppProvider>
           </React.Suspense>
         </AppRouterCacheProvider>
