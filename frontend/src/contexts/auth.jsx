@@ -12,9 +12,6 @@ export const AuthProvider = ({ children }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    checkUserSession();
-  }, []);
   const checkUserSession = async () => {
     try {
       setLoading(true);
@@ -74,6 +71,8 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
       });
       if (res.ok) {
+        const successMessage = res.json()
+        console.log(successMessage.message)
         setUser(null);
         router.push("/auth");
       }
@@ -102,7 +101,7 @@ export const AuthProvider = ({ children }) => {
   };
   return (
     <AuthContext.Provider
-      value={{ user, userInfo, loading, logout, errorMessage }}
+      value={{ user, userInfo, loading, logout, errorMessage, checkUserSession }}
     >
       {children}
     </AuthContext.Provider>
