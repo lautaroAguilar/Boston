@@ -48,12 +48,15 @@ export const AuthProvider = ({ children }) => {
       if (res.status === 401 || res.status === 403) {
         setUser(null);
         console.log("refreshToken dio 401 o 403");
-        router.push("/auth");
+        router.push("/autenticacion");
         return null;
       }
 
       const data = await res.json();
       console.log("Nuevo token obtenido:", data);
+      
+      // Redirige a /inicio después de obtener el nuevo access_token
+      router.push("/inicio"); 
 
       return await checkUserSession();
     } catch (error) {
@@ -74,7 +77,7 @@ export const AuthProvider = ({ children }) => {
         const successMessage = res.json()
         console.log(successMessage.message)
         setUser(null);
-        router.push("/auth");
+        router.push("/autenticacion");
       }
     } catch (error) {
       console.error(error);

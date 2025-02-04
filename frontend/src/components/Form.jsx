@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Stack,
@@ -12,6 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 /* import MyInput from "./input"; */
 export default function MyForm({
   fields,
@@ -23,6 +24,7 @@ export default function MyForm({
   successMessage,
   errorMessage,
 }) {
+  const [showPassword, setShowPassword] = useState(false);
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(e);
@@ -84,7 +86,7 @@ export default function MyForm({
                   return (
                     <TextField
                       fullWidth
-                      type={field.type ?? "text"}
+                      type={showPassword ? 'text' : field.type ?? "text"}
                       label={field.label}
                       name={field.name}
                       required={field.required ?? false}
@@ -92,6 +94,21 @@ export default function MyForm({
                       onChange={(e) => onChange(field.name, e.target.value)}
                       error={Boolean(errors[field.name])}
                       helperText={errors[field.name] ?? ""}
+                      slotProps={{
+                        input: {
+                          endAdornment: field.type === "password" && (
+                            <Button
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </Button>
+                          ),
+                        },
+                      }}
                     />
                   );
               }

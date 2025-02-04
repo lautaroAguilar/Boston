@@ -136,16 +136,28 @@ export default function page() {
   };
   function changeForm(show) {
     setShowRegister(show);
+    setSuccessMessage(false);
+    setErrorMessage(false);
+    setFormErrors({});
   }
 
   return (
-    <Stack sx={{ background: "#ffffff" }}>
-      <Typography variant="h4" sx={{ color: "#000000" }}>
-        Bienvenidos al sistema
-      </Typography>
-      <Typography variant="p" sx={{ color: "#000000" }}>
-        Si ya tienes un usuario puedes iniciar sesión haciendo click acá
-      </Typography>
+    <Stack
+      sx={{
+        height: "100%",
+        width: "100%",
+        maxWidth: 500,
+        display: "flex",
+        direction: "column",
+        gap: "20px",
+      }}
+    >
+      <Stack spacing={1}>
+        <Typography variant="h4">Bienvenidos</Typography>
+        <Typography variant="p">
+          Registrate o inicia sesión para poder continuar.
+        </Typography>
+      </Stack>
       <ButtonGroup
         variant="contained"
         aria-label="Basic button group"
@@ -185,7 +197,17 @@ export default function page() {
           </Paper>
         </>
       ) : (
-        <Paper elevation={4} square={false} sx={{ p: 2, maxWidth: 500 }}>
+        <Paper
+          elevation={4}
+          square={false}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            p: 2,
+            gap: 2,
+            maxWidth: 500,
+          }}
+        >
           <Typography variant="h4">Iniciar Sesión</Typography>
           <MyForm
             fields={fieldsLogin}

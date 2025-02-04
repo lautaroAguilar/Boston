@@ -31,6 +31,7 @@ export function middleware(req) {
 export const config = {
   matcher: [
     "/",
+    "/inicio/:path*",
     "/estudiantes/:path*",
     "/docentes/:path*",
     "/grupos/:path*",
