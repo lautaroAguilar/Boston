@@ -54,10 +54,14 @@ export const AuthProvider = ({ children }) => {
 
       const data = await res.json();
       console.log("Nuevo token obtenido:", data);
-      
-      // Redirige a /inicio después de obtener el nuevo access_token
-      router.push("/inicio"); 
 
+      // Redirige a /inicio después de obtener el nuevo access_token
+      const currentPath = window.location.pathname;
+
+      // 🔹 Si el usuario está en autenticación o en "/", lo mandamos a inicio
+      if (currentPath === "/autenticacion" || currentPath === "/") {
+        router.push("/inicio");
+      }
       return await checkUserSession();
     } catch (error) {
       console.error("Error al refrescar token:", error);
@@ -74,8 +78,8 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
       });
       if (res.ok) {
-        const successMessage = res.json()
-        console.log(successMessage.message)
+        const successMessage = res.json();
+        console.log(successMessage.message);
         setUser(null);
         router.push("/autenticacion");
       }
@@ -102,9 +106,28 @@ export const AuthProvider = ({ children }) => {
       console.error(error);
     }
   };
+  /* SE INTENTA REFRESCAR EL ACCESS_TOKEN AUTOMÁTICAMENTE */
+  useEffect(() => {
+    checkUserSession();
+    const interval = setInterval(
+      () => {
+        console.log("Intentando refrescar el token automáticamente...");
+        refreshToken();
+      },
+      14 * 60 * 1000
+    );
+    return () => clearInterval(interval);
+  }, []);
   return (
     <AuthContext.Provider
-      value={{ user, userInfo, loading, logout, errorMessage, checkUserSession }}
+      value={{
+        user,
+        userInfo,
+        loading,
+        logout,
+        errorMessage,
+        checkUserSession,
+      }}
     >
       {children}
     </AuthContext.Provider>

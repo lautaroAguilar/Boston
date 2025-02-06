@@ -149,6 +149,7 @@ export default function page() {
         maxWidth: 500,
         display: "flex",
         direction: "column",
+        justifyContent: "center",
         gap: "20px",
       }}
     >
@@ -176,11 +177,16 @@ export default function page() {
             elevation={4}
             square={false}
             sx={{
+              height: "70%",
+              width: "100%",
               display: "flex",
               flexDirection: "column",
               p: 2,
               gap: 2,
               maxWidth: 500,
+              maxHeight: 600,
+              overflowY: "auto",
+              scrollbarWidth: "thin",
             }}
           >
             <Typography variant="h4">Registrarse</Typography>
@@ -201,11 +207,16 @@ export default function page() {
           elevation={4}
           square={false}
           sx={{
+            height: "50%",
+            width: "100%",
             display: "flex",
             flexDirection: "column",
             p: 2,
             gap: 2,
             maxWidth: 500,
+            maxHeight: 600,
+            overflowY: "auto",
+            scrollbarWidth: "thin",
           }}
         >
           <Typography variant="h4">Iniciar Sesión</Typography>

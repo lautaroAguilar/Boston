@@ -34,7 +34,14 @@ export default function MyForm({
     <Box
       component="form"
       onSubmit={handleSubmit}
-      sx={{ width: "100%", margin: "0 auto" }}
+      sx={{
+        height: "100%",
+        width: "100%",
+        margin: "0 auto",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
     >
       <Stack spacing={2}>
         {fields.map((field, index) => (
@@ -86,7 +93,7 @@ export default function MyForm({
                   return (
                     <TextField
                       fullWidth
-                      type={showPassword ? 'text' : field.type ?? "text"}
+                      type={showPassword ? "text" : (field.type ?? "text")}
                       label={field.label}
                       name={field.name}
                       required={field.required ?? false}

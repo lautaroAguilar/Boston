@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
         component={"body"}
         className={`${geistSans.variable} ${geistMono.variable}`}
         sx={{
-          height: "100%",
+          height: "100dvh",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
