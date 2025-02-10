@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useCallback } from "react";
 import {
   Stack,
   Typography,
@@ -8,11 +8,19 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Button,
 } from "@mui/material";
-import { DashboardLayout, PageContainer, ThemeSwitcher } from "@toolpad/core";
+import {
+  DashboardLayout,
+  PageContainer,
+  PageHeaderToolbar,
+  PageHeader,
+  ThemeSwitcher,
+} from "@toolpad/core";
 import { CheckCircleRounded } from "@mui/icons-material";
 import { AuthProvider } from "@/contexts/auth";
 import { useCompany } from "@/contexts/companies";
+import { DashboardProvider, useDashboard } from "@/contexts/dashboard";
 function CustomAppTitle() {
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
@@ -51,17 +59,56 @@ function CustomSelectCompany() {
     </Stack>
   );
 }
+function CustomPageToolbar({ toolbarButtonAction }) {
+  return (
+    <PageHeaderToolbar>
+      <Stack>
+        {toolbarButtonAction ? (
+          <Button
+            variant="contained"
+            onClick={toolbarButtonAction.action}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: 1,
+            }}
+          >
+            {toolbarButtonAction.label}
+            {toolbarButtonAction.icon}
+          </Button>
+        ) : null}
+      </Stack>
+    </PageHeaderToolbar>
+  );
+}
+
+function CustomPageHeader() {
+  const { toolbarButtonAction } = useDashboard();
+  const CustomPageToolbarComponent = useCallback(
+    () => <CustomPageToolbar toolbarButtonAction={toolbarButtonAction} />,
+    [toolbarButtonAction]
+  );
+
+  return <PageHeader slots={{ toolbar: CustomPageToolbarComponent }} />;
+}
 export default function DashboardRootLayout({ children }) {
+  const CustomPageHeaderComponent = useCallback(() => <CustomPageHeader />, []);
   return (
     <AuthProvider>
-      <DashboardLayout
-        slots={{
-          appTitle: CustomAppTitle,
-          toolbarActions: CustomSelectCompany,
-        }}
-      >
-        <PageContainer>{children}</PageContainer>
-      </DashboardLayout>
+      <DashboardProvider>
+        <DashboardLayout
+          defaultSidebarCollapsed
+          slots={{
+            appTitle: CustomAppTitle,
+            toolbarActions: CustomSelectCompany,
+          }}
+        >
+          <PageContainer slots={{ header: CustomPageHeaderComponent }}>
+            {children}
+          </PageContainer>
+        </DashboardLayout>
+      </DashboardProvider>
     </AuthProvider>
   );
 }

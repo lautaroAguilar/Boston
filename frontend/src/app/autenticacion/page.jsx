@@ -33,8 +33,7 @@ export default function page() {
       [fieldName]: newValue,
     }));
   };
-  const handleSubmitLogin = async (e) => {
-    e.preventDefault();
+  const handleSubmitLogin = async () => {
     setErrorMessage("");
     setSuccessMessage("");
     setFormErrors({});
@@ -97,8 +96,7 @@ export default function page() {
     }));
   };
 
-  const handleSubmitRegister = async (e) => {
-    e.preventDefault();
+  const handleSubmitRegister = async () => {
     setErrorMessage("");
     setSuccessMessage("");
     setFormErrors({});
