@@ -4,6 +4,9 @@ import CONFIG from "../../config/api";
 const CompanyContext = createContext();
 
 export const CompanyProvider = ({ children }) => {
+  const [errorMessage, setErrorMessage] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+
   const [companiesInfo, setCompaniesInfo] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -11,6 +14,162 @@ export const CompanyProvider = ({ children }) => {
   const [costCenters, setCostCenters] = useState(false);
   const [contacts, setContacts] = useState(false);
   const [sectors, setSectors] = useState(false);
+
+  /* HANDLE PARA CREAR DATOS PRINCIPALES DE LA EMPRESA */
+  async function handleSubmitCompany(dataToSend) {
+    setFormErrors({});
+    setErrorMessage("");
+    try {
+      const res = await fetch(`${CONFIG.API_URL}/companies`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: dataToSend.name,
+          cuit: Number(dataToSend.cuit),
+          business_name: dataToSend.business_name,
+          sid: dataToSend.sid,
+          survey_link: dataToSend.survey_link,
+        }),
+      });
+      if (res.status !== 201) {
+        const errorData = await res.json();
+        /* CREAMOS OBJETO DE ERRORES PARA PASAR AL FORM COMPONENT */
+        if (Array.isArray(errorData)) {
+          const errorObj = errorData.reduce((acc, issue) => {
+            const fieldName = issue.path[0];
+            acc[fieldName] = issue.message;
+            return acc;
+          }, {});
+          setFormErrors(errorObj);
+        } else {
+          setErrorMessage(errorData.error);
+        }
+        return;
+      }
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      setErrorMessage(err.error);
+      console.error("Error al crear empresa: ", err);
+    }
+  }
+  /* CREAMOS UN CENTRO DE COSTO */
+  async function handleSubmitCostCenter(dataToSend, newCompanyId) {
+    setFormErrors({});
+    setErrorMessage("");
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/companies/${newCompanyId}/cost-centers`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: dataToSend.name,
+          }),
+        }
+      );
+      if (res.status !== 201) {
+        const errorData = await res.json();
+        /* CREAMOS OBJETO DE ERRORES PARA PASAR AL FORM COMPONENT */
+        if (Array.isArray(errorData)) {
+          const errorObj = errorData.reduce((acc, issue) => {
+            const fieldName = issue.path[0];
+            acc[fieldName] = issue.message;
+            return acc;
+          }, {});
+          setFormErrors(errorObj);
+        } else {
+          setErrorMessage(errorData.error);
+        }
+        return;
+      }
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      setErrorMessage(err.error);
+      console.error("Error al crear el centro de costo: ", err);
+    }
+  }
+  /* CREAMOS UN SECTOR */
+  async function handleSubmitSector(dataToSend, newCompanyId) {
+    setFormErrors({});
+    setErrorMessage("");
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/companies/${newCompanyId}/sectors`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: dataToSend.name,
+          }),
+        }
+      );
+      if (res.status !== 201) {
+        const errorData = await res.json();
+        /* CREAMOS OBJETO DE ERRORES PARA PASAR AL FORM COMPONENT */
+        if (Array.isArray(errorData)) {
+          const errorObj = errorData.reduce((acc, issue) => {
+            const fieldName = issue.path[0];
+            acc[fieldName] = issue.message;
+            return acc;
+          }, {});
+          setFormErrors(errorObj);
+        } else {
+          setErrorMessage(errorData.error);
+        }
+        return;
+      }
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      setErrorMessage(err.error);
+      console.error("Error al crear el Sector: ", err);
+    }
+  }
+  /* CREAMOS UN CONTACTO */
+  async function handleSubmitContact(dataToSend, newCompanyId) {
+    setFormErrors({});
+    setErrorMessage("");
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/companies/${newCompanyId}/contacts`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: dataToSend.name,
+            email: dataToSend.email,
+            notes: dataToSend.notes,
+          }),
+        }
+      );
+      if (res.status !== 201) {
+        const errorData = await res.json();
+        /* CREAMOS OBJETO DE ERRORES PARA PASAR AL FORM COMPONENT */
+        if (Array.isArray(errorData)) {
+          const errorObj = errorData.reduce((acc, issue) => {
+            const fieldName = issue.path[0];
+            acc[fieldName] = issue.message;
+            return acc;
+          }, {});
+          setFormErrors(errorObj);
+        } else {
+          setErrorMessage(errorData.error);
+        }
+        return;
+      }
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      setErrorMessage(err.error);
+      console.error("Error al crear el centro de costo: ", err);
+    }
+  }
 
   const selectCompany = async (companyId) => {
     try {
@@ -21,7 +180,6 @@ export const CompanyProvider = ({ children }) => {
       });
       const data = await response.json();
       setCompanyId(data.id);
-      console.log(data);
       // Manejar la información de la empresa seleccionada
     } catch (error) {
       console.log("Fallo al buscar empresas:", error);
@@ -37,7 +195,6 @@ export const CompanyProvider = ({ children }) => {
         }
       );
       const data = await response.json();
-      console.log(data);
       setCostCenters(data);
       return data;
     } catch (error) {
@@ -55,7 +212,6 @@ export const CompanyProvider = ({ children }) => {
         }
       );
       const data = await response.json();
-      console.log(data);
       setContacts(data);
       return data;
     } catch (error) {
@@ -73,7 +229,6 @@ export const CompanyProvider = ({ children }) => {
         }
       );
       const data = await response.json();
-      console.log(data);
       setSectors(data);
       return data;
     } catch (error) {
@@ -90,8 +245,6 @@ export const CompanyProvider = ({ children }) => {
 
       const companiesData = await response.json();
       setCompaniesInfo(companiesData);
-      console.log("Empresas:", companiesData);
-
       // Llamamos los datos de cada empresa
       const enrichedCompanies = await Promise.all(
         companiesData.map(async (company) => {
@@ -102,7 +255,7 @@ export const CompanyProvider = ({ children }) => {
               fetchSectors(company.id),
             ]);
 
-          // CHEQUEAMOS SI LA RESPUESTA ES UNA ARRAY Y LA DEVOLVEMOS, 
+          // CHEQUEAMOS SI LA RESPUESTA ES UNA ARRAY Y LA DEVOLVEMOS,
           // SI NO DEVOLVEMOS .data (QUE DEBERÍA SER UN ARRAY VACÍO) O UN ARRAY VACÍO DIRECTAMENTE
           const extractData = (apiResponse) =>
             Array.isArray(apiResponse) ? apiResponse : apiResponse.data || [];
@@ -127,8 +280,6 @@ export const CompanyProvider = ({ children }) => {
           };
         })
       );
-
-      console.log("Empresas con información completa:", enrichedCompanies);
       setCompanies(enrichedCompanies);
     } catch (error) {
       console.error("Fallo al buscar empresas:", error);
@@ -145,6 +296,14 @@ export const CompanyProvider = ({ children }) => {
         costCenters,
         contacts,
         sectors,
+
+        handleSubmitCompany,
+        handleSubmitCostCenter,
+        handleSubmitContact,
+        handleSubmitSector,
+        errorMessage,
+        formErrors,
+        setErrorMessage,
 
         selectCompany,
         fetchCompaniesInfo,

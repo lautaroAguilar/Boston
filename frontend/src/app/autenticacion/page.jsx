@@ -38,7 +38,6 @@ export default function page() {
     setSuccessMessage("");
     setFormErrors({});
     try {
-      console.log(formLoginValues);
       const response = await fetch(`${CONFIG.API_URL}/auth/login`, {
         method: "POST",
         headers: {
@@ -64,7 +63,6 @@ export default function page() {
       }
       const data = await response.json();
       setSuccessMessage(data.message);
-      console.log("Login exitoso: ", data);
       router.push("/");
     } catch (err) {
       setErrorMessage(err.message);
@@ -101,7 +99,6 @@ export default function page() {
     setSuccessMessage("");
     setFormErrors({});
     try {
-      console.log(formRegisterValues);
       const response = await fetch(`${CONFIG.API_URL}/auth/register`, {
         method: "POST",
         headers: {
@@ -126,7 +123,6 @@ export default function page() {
       }
       const data = await response.json();
       setSuccessMessage(data.message);
-      console.log("Registro exitoso: ", data);
     } catch (err) {
       setErrorMessage(err.message);
       console.error("Error al registrar: ", err);
@@ -195,9 +191,8 @@ export default function page() {
               successMessage={successMessage}
               errorMessage={errorMessage}
               onChange={handleChangeRegister}
-              onSubmit={handleSubmitRegister}
-              buttonText={"Crear usuario"}
             />
+            <Button variant="contained" onClick={handleSubmitRegister}>Crear usuario</Button>
           </Paper>
         </>
       ) : (
@@ -225,9 +220,8 @@ export default function page() {
             successMessage={successMessage}
             errorMessage={errorMessage}
             onChange={handleChangeLogin}
-            onSubmit={handleSubmitLogin}
-            buttonText={"Iniciar sesión"}
           />
+          <Button variant="contained" onClick={handleSubmitLogin}>Iniciar sesión</Button>
         </Paper>
       )}
     </Stack>

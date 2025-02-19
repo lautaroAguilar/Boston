@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
       }
       const data = await res.json();
       setUser(data);
-      console.log(data);
+      
 
       if (data && data.userId) {
         await fetchUserInfo(data.userId);
@@ -47,13 +47,13 @@ export const AuthProvider = ({ children }) => {
 
       if (res.status === 401 || res.status === 403) {
         setUser(null);
-        console.log("refreshToken dio 401 o 403");
+        
         router.push("/autenticacion");
         return null;
       }
 
       const data = await res.json();
-      console.log("Nuevo token obtenido:", data);
+      
 
       // Redirige a /inicio después de obtener el nuevo access_token
       const currentPath = window.location.pathname;
@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }) => {
       });
       if (res.ok) {
         const successMessage = res.json();
-        console.log(successMessage.message);
+        
         setUser(null);
         router.push("/autenticacion");
       }
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       const userInfo = await res.json();
-      console.log(userInfo);
+      
       setUserInfo(userInfo);
     } catch (error) {
       console.error(error);
@@ -111,7 +111,6 @@ export const AuthProvider = ({ children }) => {
     checkUserSession();
     const interval = setInterval(
       () => {
-        console.log("Intentando refrescar el token automáticamente...");
         refreshToken();
       },
       14 * 60 * 1000
