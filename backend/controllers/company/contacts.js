@@ -9,15 +9,11 @@ export class ContactController {
 
   create = async (req, res) => {
     const companyId = req.params.id
-    const result = validateContact(req.body)
-
-    if (!result.success) {
-      return res
-        .status(400)
-        .json({ success: false, error: JSON.parse(result.error.message) })
-    }
-
     try {
+      const result = validateContact(req.body)
+      if (!result.success) {
+        return res.status(400).json(result.error.issues)
+      }
       const newContact = await this.contactModel.create(companyId, result.data)
       res.status(201).json(newContact)
     } catch (error) {
@@ -74,12 +70,15 @@ export class ContactController {
     }
   }
   updateById = async (req, res) => {
-    const result = validatePartialContact(req.body)
-    if (!result.success) {
-      console.log('Error al validar parcialmente el contacto', result.error.message)
-      return res.status(400).json({ error: JSON.parse(result.error.message) })
-    }
     try {
+      const result = validatePartialContact(req.body)
+      if (!result.success) {
+        console.log(
+          'Error al validar parcialmente el contacto',
+          result.error.message
+        )
+        return res.status(400).json(result.error.issues)
+      }
       const { id } = req.params
       const affectedRows = await this.contactModel.updateById(id, result.data)
       if (affectedRows === 0) {

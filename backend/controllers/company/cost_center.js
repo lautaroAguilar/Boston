@@ -10,15 +10,11 @@ export class CostCenterController {
 
   create = async (req, res) => {
     const companyId = req.params.id
-    const result = validateCostCenter(req.body)
-
-    if (!result.success) {
-      return res
-        .status(400)
-        .json({ success: false, error: JSON.parse(result.error.message) })
-    }
-
     try {
+      const result = validateCostCenter(req.body)
+      if (!result.success) {
+        return res.status(400).json(result.error.issues)
+      }
       const newCostCenter = await this.costCenterModel.create(
         companyId,
         result.data
@@ -84,14 +80,20 @@ export class CostCenterController {
   }
 
   updateById = async (req, res) => {
-    const result = validatePartialCostCenter(req.body)
-    if (!result.success) {
-      console.log('Error al validar parcialmente el centro de costo', result.error.message)
-      return res.status(400).json({ error: JSON.parse(result.error.message) })
-    }
     try {
+      const result = validatePartialCostCenter(req.body)
+      if (!result.success) {
+        console.log(
+          'Error al validar parcialmente el centro de costo',
+          result.error.message
+        )
+        return res.status(400).json(result.error.issues)
+      }
       const { id } = req.params
-      const affectedRows = await this.costCenterModel.updateById(id, result.data)
+      const affectedRows = await this.costCenterModel.updateById(
+        id,
+        result.data
+      )
       if (affectedRows === 0) {
         return res
           .status(404)
