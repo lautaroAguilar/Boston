@@ -66,7 +66,7 @@ const columns = [
   {
     field: "costCenters",
     headerName: "Centros de costo",
-    flex: 1,
+    width: 150,
     renderCell: (params) => {
       const value =
         params.value?.success === true && params.value?.data?.length === 0
@@ -79,7 +79,7 @@ const columns = [
   {
     field: "sectors",
     headerName: "Sectores",
-    flex: 1,
+    width: 150,
     renderCell: (params) => {
       const value =
         params.value?.success === true && params.value?.data?.length === 0
@@ -91,7 +91,7 @@ const columns = [
   {
     field: "contacts",
     headerName: "Contactos",
-    flex: 1,
+    width: 150,
     renderCell: (params) => {
       const value =
         params.value?.success === true && params.value?.data?.length === 0
@@ -108,7 +108,6 @@ const columns = [
 ];
 export default function Page() {
   const {
-    fetchCompaniesInfo,
     companies,
     handleSubmitCompany,
     handleSubmitCostCenter,
@@ -232,7 +231,6 @@ export default function Page() {
   }
   /* LLAMAMOS A LAS EMPRESAS CON SU INFO + CC, SECTORES Y CONTACTOS */
   useEffect(() => {
-    fetchCompaniesInfo();
     setToolbarButtonAction({
       label: "Crear nueva",
       action: handleShowForm,

@@ -9,6 +9,7 @@ import {
   Select,
   MenuItem,
   Button,
+  useMediaQuery
 } from "@mui/material";
 import {
   DashboardLayout,
@@ -17,7 +18,6 @@ import {
   PageHeader,
   ThemeSwitcher,
 } from "@toolpad/core";
-import { CheckCircleRounded } from "@mui/icons-material";
 import { AuthProvider } from "@/contexts/auth";
 import { useCompany } from "@/contexts/companies";
 import { DashboardProvider, useDashboard } from "@/contexts/dashboard";
@@ -25,15 +25,13 @@ function CustomAppTitle() {
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
       <Typography variant="h6">Boston</Typography>
-      <Tooltip title="Connected to production">
-        <CheckCircleRounded color="success" fontSize="small" />
-      </Tooltip>
     </Stack>
   );
 }
 /* CREAMOS COMPONENTE PARA FILTRAR POR EMPRESA EN EL HEADER DEL LAYOUT */
 function CustomSelectCompany() {
   const { companiesInfo, selectedCompany, selectCompany } = useCompany();
+  const isMobile = useMediaQuery("(max-width:600px)");
   return (
     <Stack direction={"row"} alignItems={"center"} spacing={2}>
       <FormControl fullWidth size="small">
@@ -45,7 +43,7 @@ function CustomSelectCompany() {
           value={selectedCompany || ""}
           label={"Empresa"}
           onChange={(e) => selectCompany(e.target.value)}
-          sx={{ width: "200px" }}
+          sx={{ width: isMobile ? "120px" : "200px" }}
         >
           {companiesInfo.map((opt) => (
             <MenuItem key={opt.id} value={opt.id}>
