@@ -108,6 +108,7 @@ const columns = [
 ];
 export default function Page() {
   const {
+    fetchCompaniesInfo,
     companies,
     handleSubmitCompany,
     handleSubmitCostCenter,
@@ -231,6 +232,7 @@ export default function Page() {
   }
   /* LLAMAMOS A LAS EMPRESAS CON SU INFO + CC, SECTORES Y CONTACTOS */
   useEffect(() => {
+    fetchCompaniesInfo();
     setToolbarButtonAction({
       label: "Crear nueva",
       action: handleShowForm,

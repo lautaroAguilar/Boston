@@ -1,5 +1,5 @@
 "use client";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import {
   Stack,
   Typography,
@@ -9,7 +9,7 @@ import {
   Select,
   MenuItem,
   Button,
-  useMediaQuery
+  useMediaQuery,
 } from "@mui/material";
 import {
   DashboardLayout,
@@ -30,7 +30,15 @@ function CustomAppTitle() {
 }
 /* CREAMOS COMPONENTE PARA FILTRAR POR EMPRESA EN EL HEADER DEL LAYOUT */
 function CustomSelectCompany() {
-  const { companiesInfo, selectedCompany, selectCompany } = useCompany();
+  const {
+    companiesInfo,
+    selectedCompany,
+    selectCompany,
+    fetchCompaniesToSelect,
+  } = useCompany();
+  useEffect(() => {
+    fetchCompaniesToSelect();
+  }, []);
   const isMobile = useMediaQuery("(max-width:600px)");
   return (
     <Stack direction={"row"} alignItems={"center"} spacing={2}>

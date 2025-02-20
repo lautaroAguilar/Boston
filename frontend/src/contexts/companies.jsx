@@ -244,7 +244,7 @@ export const CompanyProvider = ({ children }) => {
       });
 
       const companiesData = await response.json();
-      setCompaniesInfo(companiesData);
+
       // Llamamos los datos de cada empresa
       const enrichedCompanies = await Promise.all(
         companiesData.map(async (company) => {
@@ -285,7 +285,29 @@ export const CompanyProvider = ({ children }) => {
       console.error("Fallo al buscar empresas:", error);
     }
   };
+  const fetchCompaniesToSelect = async () => {
+    try {
+      const response = await fetch(`${CONFIG.API_URL}/companies`, {
+        method: "GET",
+        credentials: "include",
+      });
 
+      const companiesData = await response.json();
+      if (response.ok) {
+        if (Array.isArray(companiesData)) {
+          setCompaniesInfo(companiesData);
+        } else if (companiesData.success && companiesData.data.length === 0) {
+          setCompaniesInfo([]);
+          setErrorMessage(companiesData.message);
+        }
+      } else {
+        setErrorMessage(companiesData.message);
+      }
+    } catch (error) {
+      setErrorMessage("Error de red al buscar empresas");
+      console.error("Error al buscar empresas:", error);
+    }
+  };
   return (
     <CompanyContext.Provider
       value={{
@@ -310,6 +332,7 @@ export const CompanyProvider = ({ children }) => {
         fetchCostCenters,
         fetchContacts,
         fetchSectors,
+        fetchCompaniesToSelect
       }}
     >
       {children}
