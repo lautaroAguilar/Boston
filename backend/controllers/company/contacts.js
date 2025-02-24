@@ -8,7 +8,7 @@ export class ContactController {
   }
 
   create = async (req, res) => {
-    const companyId = req.params.id
+    const { companyId } = req.params
     try {
       const result = validateContact(req.body)
       if (!result.success) {
@@ -23,7 +23,8 @@ export class ContactController {
   }
   getAll = async (req, res) => {
     try {
-      const contacts = await this.contactModel.getAll()
+      const { companyId } = req.params
+      const contacts = await this.contactModel.getAll(companyId)
 
       // Si no hay compañías, devuelve array vacío
       if (!contacts.length) {
@@ -44,8 +45,8 @@ export class ContactController {
   }
   getById = async (req, res) => {
     try {
-      const { id } = req.params
-      const contactData = await this.contactModel.getById(id)
+      const { contactId } = req.params
+      const contactData = await this.contactModel.getById(contactId)
       if (!contactData) {
         return res.status(404).json({ error: 'No se encontró el contacto' })
       }
@@ -56,8 +57,8 @@ export class ContactController {
   }
   deleteById = async (req, res) => {
     try {
-      const { id } = req.params
-      const affectedRows = await this.contactModel.deleteById(id)
+      const { contactId } = req.params
+      const affectedRows = await this.contactModel.deleteById(contactId)
       if (affectedRows === 0) {
         return res
           .status(404)
@@ -79,8 +80,8 @@ export class ContactController {
         )
         return res.status(400).json(result.error.issues)
       }
-      const { id } = req.params
-      const affectedRows = await this.contactModel.updateById(id, result.data)
+      const { contactId } = req.params
+      const affectedRows = await this.contactModel.updateById(contactId, result.data)
       if (affectedRows === 0) {
         return res
           .status(404)

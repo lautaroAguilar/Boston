@@ -22,7 +22,7 @@ export class SectorModel {
       connection.release()
     }
   }
-  static async getAll() {
+  static async getAll(companyId) {
     const connection = await pool.getConnection()
     try {
       const result = await connection.query(
@@ -32,7 +32,9 @@ export class SectorModel {
                 BIN_TO_UUID(s.company_id) AS company_id,
                 s.name AS sector_name
             FROM sector s
-          `
+            WHERE BIN_TO_UUID(s.company_id) = ?
+          `,
+          [companyId]
       )
       return result[0]
     } catch (error) {

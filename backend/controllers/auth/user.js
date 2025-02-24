@@ -58,7 +58,7 @@ export class UserAuthController {
       if (!isPasswordValid) {
         return res
           .status(401)
-          .json([{ path: ['email'], message: 'Contraseña invalida' }])
+          .json([{ path: ['password'], message: 'Contraseña incorrecta' }])
       }
       // Se genera el token de acceso y el de refresco, y lo guardamos en las cookies
       const accessToken = jwt.sign(

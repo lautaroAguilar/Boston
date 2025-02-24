@@ -12,12 +12,12 @@ contactRouter.post('/', authenticateToken, (req, res) =>
 contactRouter.get('/', authenticateToken, (req, res) =>
   contactController.getAll(req, res)
 )
-contactRouter.get('/:id', authenticateToken, (req, res) =>
+contactRouter.get('/:contactId', authenticateToken, (req, res) =>
   contactController.getById(req, res)
 )
-contactRouter.delete('/:id', authenticateToken, (req, res) =>
+contactRouter.delete('/:contactId', authenticateToken, (req, res) =>
   contactController.deleteById(req, res)
 )
-contactRouter.patch('/:id', authenticateToken, (req, res) =>
+contactRouter.patch('/:contactId', authenticateToken, (req, res) =>
   contactController.updateById(req, res)
 )

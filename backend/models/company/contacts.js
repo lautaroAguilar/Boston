@@ -22,7 +22,7 @@ export class ContactsModel {
       connection.release()
     }
   }
-  static async getAll() {
+  static async getAll(companyId) {
     const connection = await pool.getConnection()
     try {
       const result = await connection.query(
@@ -34,7 +34,9 @@ export class ContactsModel {
                 c.email AS contact_email,
                 c.notes AS contact_notes
             FROM company_contact c
-          `
+            WHERE BIN_TO_UUID(c.company_id) = ?
+          `,
+        [companyId]
       )
       return result[0]
     } catch (error) {

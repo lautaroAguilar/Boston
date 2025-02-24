@@ -43,8 +43,8 @@ export class CompanyController {
   }
   getById = async (req, res) => {
     try {
-      const { id } = req.params
-      const companyData = await this.companyModel.getById(id)
+      const { companyId } = req.params
+      const companyData = await this.companyModel.getById(companyId)
       if (!companyData) {
         return res.status(404).json({ error: 'No se encontró la empresa' })
       }
@@ -55,8 +55,8 @@ export class CompanyController {
   }
   deleteById = async (req, res) => {
     try {
-      const { id } = req.params
-      const affectedRows = await this.companyModel.deleteById(id)
+      const { companyId } = req.params
+      const affectedRows = await this.companyModel.deleteById(companyId)
       if (affectedRows === 0) {
         return res
           .status(404)
@@ -80,8 +80,8 @@ export class CompanyController {
         )
         return res.status(400).json(result.error.issues)
       }
-      const { id } = req.params
-      const affectedRows = await this.companyModel.updateById(id, result.data)
+      const { companyId } = req.params
+      const affectedRows = await this.companyModel.updateById(companyId, result.data)
       if (affectedRows === 0) {
         return res
           .status(404)

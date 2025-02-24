@@ -12,12 +12,12 @@ sectorRouter.post('/', authenticateToken, (req, res) =>
 sectorRouter.get('/', authenticateToken, (req, res) =>
   sectorController.getAll(req, res)
 )
-sectorRouter.get('/:id', authenticateToken, (req, res) =>
+sectorRouter.get('/:sectorId', authenticateToken, (req, res) =>
   sectorController.getById(req, res)
 )
-sectorRouter.delete('/:id', authenticateToken, (req, res) =>
+sectorRouter.delete('/:sectorId', authenticateToken, (req, res) =>
   sectorController.deleteById(req, res)
 )
-sectorRouter.patch('/:id', authenticateToken, (req, res) =>
+sectorRouter.patch('/:sectorId', authenticateToken, (req, res) =>
   sectorController.updateById(req, res)
 )

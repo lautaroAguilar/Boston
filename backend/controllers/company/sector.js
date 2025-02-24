@@ -9,7 +9,7 @@ export class SectorController {
   }
 
   create = async (req, res) => {
-    const companyId = req.params.id
+    const { companyId } = req.params
     try {
       const result = validateSector(req.body)
       if (!result.success) {
@@ -24,7 +24,8 @@ export class SectorController {
   }
   getAll = async (req, res) => {
     try {
-      const sectors = await this.sectorModel.getAll()
+      const { companyId } = req.params
+      const sectors = await this.sectorModel.getAll(companyId)
 
       // Si no hay compañías, devuelve array vacío
       if (!sectors.length) {
@@ -45,8 +46,8 @@ export class SectorController {
   }
   getById = async (req, res) => {
     try {
-      const { id } = req.params
-      const sectorData = await this.sectorModel.getById(id)
+      const { sectorId } = req.params
+      const sectorData = await this.sectorModel.getById(sectorId)
       if (!sectorData) {
         return res.status(404).json({ error: 'No se encontró el sector' })
       }
@@ -57,8 +58,8 @@ export class SectorController {
   }
   deleteById = async (req, res) => {
     try {
-      const { id } = req.params
-      const affectedRows = await this.sectorModel.deleteById(id)
+      const { sectorId } = req.params
+      const affectedRows = await this.sectorModel.deleteById(sectorId)
       if (affectedRows === 0) {
         return res
           .status(404)
@@ -80,8 +81,11 @@ export class SectorController {
         )
         return res.status(400).json(result.error.issues)
       }
-      const { id } = req.params
-      const affectedRows = await this.sectorModel.updateById(id, result.data)
+      const { sectorId } = req.params
+      const affectedRows = await this.sectorModel.updateById(
+        sectorId,
+        result.data
+      )
       if (affectedRows === 0) {
         return res
           .status(404)

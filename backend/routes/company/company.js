@@ -12,10 +12,18 @@ const companyController = new CompanyController({ companyModel: CompanyModel })
 
 companiesRouter.get('/', authenticateToken, companyController.getAll)
 companiesRouter.post('/', authenticateToken, companyController.create)
-companiesRouter.get('/:id', authenticateToken, companyController.getById)
-companiesRouter.delete('/:id', authenticateToken, companyController.deleteById)
-companiesRouter.patch('/:id', authenticateToken, companyController.updateById)
+companiesRouter.get('/:companyId', authenticateToken, companyController.getById)
+companiesRouter.delete(
+  '/:companyId',
+  authenticateToken,
+  companyController.deleteById
+)
+companiesRouter.patch(
+  '/:companyId',
+  authenticateToken,
+  companyController.updateById
+)
 
-companiesRouter.use('/:id/contacts', contactRouter)
-companiesRouter.use('/:id/sectors', sectorRouter)
-companiesRouter.use('/:id/cost-centers', costCenterRouter)
+companiesRouter.use('/:companyId/contacts', contactRouter)
+companiesRouter.use('/:companyId/sectors', sectorRouter)
+companiesRouter.use('/:companyId/cost-centers', costCenterRouter)

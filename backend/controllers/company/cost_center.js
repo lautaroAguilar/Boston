@@ -9,7 +9,7 @@ export class CostCenterController {
   }
 
   create = async (req, res) => {
-    const companyId = req.params.id
+    const { companyId } = req.params
     try {
       const result = validateCostCenter(req.body)
       if (!result.success) {
@@ -28,7 +28,8 @@ export class CostCenterController {
 
   getAll = async (req, res) => {
     try {
-      const costCenters = await this.costCenterModel.getAll()
+      const { companyId } = req.params
+      const costCenters = await this.costCenterModel.getAll(companyId)
 
       // Si no hay compañías, devuelve array vacío
       if (!costCenters.length) {
@@ -50,8 +51,8 @@ export class CostCenterController {
 
   getById = async (req, res) => {
     try {
-      const { id } = req.params
-      const costCenterData = await this.costCenterModel.getById(id)
+      const { costCenterId } = req.params
+      const costCenterData = await this.costCenterModel.getById(costCenterId)
       if (!costCenterData) {
         return res
           .status(404)
@@ -65,8 +66,8 @@ export class CostCenterController {
 
   deleteById = async (req, res) => {
     try {
-      const { id } = req.params
-      const affectedRows = await this.costCenterModel.deleteById(id)
+      const { costCenterId } = req.params
+      const affectedRows = await this.costCenterModel.deleteById(costCenterId)
       if (affectedRows === 0) {
         return res.status(404).json({
           error: 'No se encontró el centro de costo que querés eliminar'
@@ -89,9 +90,9 @@ export class CostCenterController {
         )
         return res.status(400).json(result.error.issues)
       }
-      const { id } = req.params
+      const { costCenterId } = req.params
       const affectedRows = await this.costCenterModel.updateById(
-        id,
+        costCenterId,
         result.data
       )
       if (affectedRows === 0) {

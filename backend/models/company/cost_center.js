@@ -17,22 +17,24 @@ export class CostCenterModel {
     } catch (error) {
       await connection.rollback()
       console.log('Error al crear los centros de costo', error)
-      throw new Error('Hubo un error al crear los contactos de la empresa')
+      throw new Error('Hubo un error al crear los centros de costo de la empresa')
     } finally {
       connection.release()
     }
   }
-  static async getAll() {
+  static async getAll(companyId) {
     const connection = await pool.getConnection()
     try {
       const result = await connection.query(
         `
             SELECT
-          c.id AS cost_center_id,
-          BIN_TO_UUID(c.company_id) AS company_id,
-          c.name AS cost_center_name
-        FROM cost_center c
-          `
+              c.id AS cost_center_id,
+              BIN_TO_UUID(c.company_id) AS company_id,
+              c.name AS cost_center_name
+            FROM cost_center c
+            WHERE BIN_TO_UUID(c.company_id) = ?
+          `,
+        [companyId]
       )
       return result[0]
     } catch (error) {

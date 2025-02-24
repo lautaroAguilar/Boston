@@ -14,12 +14,12 @@ costCenterRouter.post('/', authenticateToken, (req, res) =>
 costCenterRouter.get('/', authenticateToken, (req, res) =>
   costCenterController.getAll(req, res)
 )
-costCenterRouter.get('/:id', authenticateToken, (req, res) =>
+costCenterRouter.get('/:costCenterId', authenticateToken, (req, res) =>
   costCenterController.getById(req, res)
 )
-costCenterRouter.delete('/:id', authenticateToken, (req, res) =>
+costCenterRouter.delete('/:costCenterId', authenticateToken, (req, res) =>
   costCenterController.deleteById(req, res)
 )
-costCenterRouter.patch('/:id', authenticateToken, (req, res) =>
+costCenterRouter.patch('/:costCenterId', authenticateToken, (req, res) =>
   costCenterController.updateById(req, res)
 )
