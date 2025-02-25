@@ -1,16 +1,51 @@
 import { pool } from '../../config/database.js'
+import { ContactsModel } from './contacts.js'
+import { CostCenterModel } from './cost_center.js'
+import { SectorModel } from './sector.js'
 
 import { randomUUID } from 'node:crypto'
 
 export class CompanyModel {
-  static async create(companyData) {
+  static async createWithRelations(
+    companyData,
+    contactData,
+    costCenterData,
+    sectorData
+  ) {
     const connection = await pool.getConnection()
-    const myUUID = randomUUID()
+
     try {
       await connection.beginTransaction()
 
+      // 🔹 Reutilizamos el método `create()`, pasándole la conexión
+      const newCompany = await CompanyModel.create(companyData, connection)
+      const newCompanyId = newCompany.id
+
+      // Crear entidades relacionadas
+      await ContactsModel.create(newCompanyId, contactData, connection)
+      await CostCenterModel.create(newCompanyId, costCenterData, connection)
+      await SectorModel.create(newCompanyId, sectorData, connection)
+
+      await connection.commit()
+      connection.release()
+
+      return newCompany
+    } catch (error) {
+      await connection.rollback()
+      connection.release()
+      throw new Error(
+        `Hubo un error al crear la empresa`
+      )
+    }
+  }
+  static async create(companyData, connection = null) {
+    const conn = connection || (await pool.getConnection())
+    const myUUID = randomUUID()
+    try {
+      if (!connection) await conn.beginTransaction()
+
       // Se inserta la empresa
-      await connection.query(
+      await conn.query(
         `
         INSERT INTO COMPANY (id, name, CUIT, business_name, SID, survey_link)
         VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?)
@@ -24,17 +59,20 @@ export class CompanyModel {
           companyData.survey_link
         ]
       )
-      await connection.commit()
+      if (!connection) {
+        await conn.commit()
+        conn.release()
+      }
       return {
         id: myUUID,
         ...companyData
       }
     } catch (error) {
-      console.log(error)
-      await connection.rollback()
+      if (!connection) {
+        await conn.rollback()
+        conn.release()
+      }
       throw new Error(`Hubo un error al crear la empresa `)
-    } finally {
-      connection.release()
     }
   }
 
@@ -76,7 +114,7 @@ export class CompanyModel {
       `,
         [companyId]
       )
-      
+
       if (company.length === 0) {
         return null
       }

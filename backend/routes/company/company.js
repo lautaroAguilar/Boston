@@ -12,6 +12,7 @@ const companyController = new CompanyController({ companyModel: CompanyModel })
 
 companiesRouter.get('/', authenticateToken, companyController.getAll)
 companiesRouter.post('/', authenticateToken, companyController.create)
+companiesRouter.post('/fullCompany', authenticateToken, companyController.createFullCompany) 
 companiesRouter.get('/:companyId', authenticateToken, companyController.getById)
 companiesRouter.delete(
   '/:companyId',

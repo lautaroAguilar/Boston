@@ -1,25 +1,30 @@
 import { pool } from '../../config/database.js'
 
 export class SectorModel {
-  static async create(companyId, sectorData) {
-    const connection = await pool.getConnection()
+  static async create(companyId, sectorData, connection = null) {
+    const conn = connection || (await pool.getConnection())
     try {
-      await connection.beginTransaction()
-      const result = await connection.query(
+      if (!connection) await conn.beginTransaction()
+
+      const result = await conn.query(
         `
             INSERT INTO sector (company_id, name)
             VALUES (UUID_TO_BIN(?), ?)
           `,
         [companyId, sectorData.name]
       )
-      await connection.commit()
+      if (!connection) {
+        await conn.commit()
+        conn.release()
+      }
       return result[0]
     } catch (error) {
-      await connection.rollback()
+      if (!connection) {
+        await conn.rollback()
+        conn.release()
+      }
       console.log('Error al crear el sector', error)
       throw new Error('Hubo un error al crear el sector de la empresa')
-    } finally {
-      connection.release()
     }
   }
   static async getAll(companyId) {
@@ -34,7 +39,7 @@ export class SectorModel {
             FROM sector s
             WHERE BIN_TO_UUID(s.company_id) = ?
           `,
-          [companyId]
+        [companyId]
       )
       return result[0]
     } catch (error) {

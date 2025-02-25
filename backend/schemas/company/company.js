@@ -3,23 +3,20 @@ import { z } from 'zod'
 const companySchema = z.object({
   name: z
     .string({
-      required_error: 'El nombre de la empresa es requerido',
       invalid_type_error: 'No puedes enviar este campo vacío'
     })
-    .min(1),
+    .min(1, 'El nombre de la empresa es requerido'),
   cuit: z.coerce
     .number({
-      required_error: 'El CUIT es requerido',
       invalid_type_error: 'El CUIT debe ser un número'
     })
-    .min(1, 'Debe ser mayor a 0'),
+    .min(1, 'El CUIT es requerido'),
 
   business_name: z
     .string({
-      required_error: 'La razón social es requerida',
       invalid_type_error: 'No puedes enviar este campo vacío'
     })
-    .min(1),
+    .min(1, 'La razón social es requerida'),
   sid: z.union([z.string().min(1), z.literal(''), z.null()]).optional(),
   survey_link: z
     .union([

@@ -1,25 +1,31 @@
 import { pool } from '../../config/database.js'
 
 export class CostCenterModel {
-  static async create(companyId, costCenterData) {
-    const connection = await pool.getConnection()
+  static async create(companyId, costCenterData, connection = null) {
+    const conn = connection || (await pool.getConnection())
     try {
-      await connection.beginTransaction()
-      const result = await connection.query(
+      if (!connection) await conn.beginTransaction()
+      const result = await conn.query(
         `
             INSERT INTO cost_center (company_id, name)
             VALUES (UUID_TO_BIN(?), ?)
           `,
         [companyId, costCenterData.name]
       )
-      await connection.commit()
+      if (!connection) {
+        await conn.commit()
+        conn.release()
+      }
       return result[0]
     } catch (error) {
-      await connection.rollback()
       console.log('Error al crear los centros de costo', error)
-      throw new Error('Hubo un error al crear los centros de costo de la empresa')
-    } finally {
-      connection.release()
+      if (!connection) {
+        await conn.rollback()
+        conn.release()
+      }
+      throw new Error(
+        'Hubo un error al crear los centros de costo de la empresa'
+      )
     }
   }
   static async getAll(companyId) {

@@ -2,7 +2,9 @@ import {
   validateCompany,
   validatePartialCompany
 } from '../../schemas/company/company.js'
-
+import { validateContact } from '../../schemas/company/contacts.js'
+import { validateSector } from '../../schemas/company/sector.js'
+import { validateCostCenter } from '../../schemas/company/cost_center.js'
 export class CompanyController {
   constructor({ companyModel }) {
     this.companyModel = companyModel
@@ -18,6 +20,39 @@ export class CompanyController {
       res.status(201).json(newCompany)
     } catch (error) {
       console.log(error)
+      res.status(500).json({ error: error.message })
+    }
+  }
+  createFullCompany = async (req, res) => {
+    try {
+      const { companyData, contactData, costCenterData, sectorData } = req.body
+
+      const companyValidationResult = validateCompany(companyData)
+      const contactValidationResult = validateContact(contactData)
+      const costCenterValidationResult = validateCostCenter(costCenterData)
+      const sectorValidationResult = validateSector(sectorData)
+
+      if (!companyValidationResult.success) {
+        return res.status(400).json(companyValidationResult.error.issues)
+      }
+      if (!contactValidationResult.success) {
+        return res.status(400).json(contactValidationResult.error.issues)
+      }
+      if (!costCenterValidationResult.success) {
+        return res.status(400).json(costCenterValidationResult.error.issues)
+      }
+      if (!sectorValidationResult.success) {
+        return res.status(400).json(sectorValidationResult.error.issues)
+      }
+      const newCompany = await this.companyModel.createWithRelations(
+        companyValidationResult.data,
+        contactValidationResult.data,
+        costCenterValidationResult.data,
+        sectorValidationResult.data
+      )
+      res.status(201).json(newCompany)
+    } catch (error) {
+      console.error('Error al crear empresa y sus relaciones:', error)
       res.status(500).json({ error: error.message })
     }
   }
@@ -81,7 +116,10 @@ export class CompanyController {
         return res.status(400).json(result.error.issues)
       }
       const { companyId } = req.params
-      const affectedRows = await this.companyModel.updateById(companyId, result.data)
+      const affectedRows = await this.companyModel.updateById(
+        companyId,
+        result.data
+      )
       if (affectedRows === 0) {
         return res
           .status(404)

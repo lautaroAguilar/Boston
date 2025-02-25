@@ -1,25 +1,29 @@
 import { pool } from '../../config/database.js'
 
 export class ContactsModel {
-  static async create(companyId, contactsData) {
-    const connection = await pool.getConnection()
+  static async create(companyId, contactsData, connection = null) {
+    const conn = connection || (await pool.getConnection())
     try {
-      await connection.beginTransaction()
-      const result = await connection.query(
+      if (!connection) await conn.beginTransaction()
+      const result = await conn.query(
         `
             INSERT INTO company_contact (company_id, name, email, notes)
             VALUES (UUID_TO_BIN(?), ?, ?, ?)
           `,
         [companyId, contactsData.name, contactsData.email, contactsData.notes]
       )
-      await connection.commit()
+      if (!connection) {
+        await conn.commit()
+        conn.release()
+      }
       return result[0]
     } catch (error) {
-      await connection.rollback()
+      if (!connection) {
+        await conn.rollback()
+        conn.release()
+      }
       console.log('Error al crear los contactos', error)
       throw new Error('Hubo un error al crear los contactos de la empresa')
-    } finally {
-      connection.release()
     }
   }
   static async getAll(companyId) {
