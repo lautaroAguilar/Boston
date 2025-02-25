@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Stack,
   Button,
@@ -25,6 +26,7 @@ import {
   costCenterSchema,
   sectorSchema,
 } from "../../../../schemas/companies";
+import CONFIG from "../../../../config/api";
 
 /**
  * ExpandableCell componente que permite expandir el campo si el texto es demasiado.
@@ -60,9 +62,26 @@ const columns = [
     width: 150,
     renderCell: (params) => <ExpandableCell {...params} />,
   },
-  { field: "name", headerName: "Nombre", width: 150 },
-  { field: "SID", headerName: "SID", width: 150 },
+  {
+    field: "name",
+    headerName: "Nombre",
+    width: 150,
+    renderCell: (params) => (
+      <Link
+        href={`/empresas/${params.row.id}`}
+        style={{
+          textDecoration: "none",
+          color: "inherit",
+          textTransform: "uppercase",
+        }}
+      >
+        {params.value}
+      </Link>
+    ),
+  },
   { field: "business_name", headerName: "Razón social", width: 150 },
+  { field: "CUIT", headerName: "CUIT", width: 150 },
+  { field: "SID", headerName: "SID", width: 150 },
   {
     field: "costCenters",
     headerName: "Centros de costo",
@@ -107,20 +126,13 @@ const columns = [
   },
 ];
 export default function Page() {
-  const {
-    fetchCompaniesInfo,
-    companies,
-    handleSubmitCompany,
-    handleSubmitCostCenter,
-    handleSubmitContact,
-    handleSubmitSector,
-    errorMessage,
-    setErrorMessage,
-  } = useCompany();
+  const { fetchCompaniesInfo, companies, errorMessage, setErrorMessage } =
+    useCompany();
   const { setToolbarButtonAction } = useDashboard();
   const isMobile = useMediaQuery("(max-width:600px)");
   /* ESTADOS */
   const [showForm, setShowForm] = useState(false);
+  const [companyCreated, setCompanyCreated] = useState(false);
   const [formCompanyValues, setFormCompanyValues] = useState({
     name: "",
     cuit: "",
@@ -155,10 +167,12 @@ export default function Page() {
     {
       name: "name",
       label: "Nombre",
+      required: true,
     },
     {
       name: "email",
       label: "Email",
+      required: true,
     },
     {
       name: "notes",
@@ -219,26 +233,44 @@ export default function Page() {
   /* FUNCION QUE SE EJECUTA AL FINAL PARA CREAR LA EMPRESA */
   async function handleFinish() {
     try {
-      const companyRes = await handleSubmitCompany(formCompanyValues);
-      const newCompanyId = companyRes?.id;
-      await Promise.all([
-        handleSubmitCostCenter(formCostCenterValues, newCompanyId),
-        handleSubmitSector(formSectorValues, newCompanyId),
-        handleSubmitContact(formContactValues, newCompanyId),
-      ]);
+      const res = await fetch(`${CONFIG.API_URL}/companies/fullCompany`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          companyData: formCompanyValues,
+          contactData: formContactValues,
+          costCenterData: formCostCenterValues,
+          sectorData: formSectorValues,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErrorMessage(data.error);
+        return;
+      }
+      setCompanyCreated(true);
+      setShowForm(false);
+      setFormCompanyValues({});
+      setFormCostCenterValues({});
+      setFormSectorValues({});
+      setFormContactValues({});
+      return data;
     } catch (error) {
       console.error("Error al crear entidades: ", error);
     }
   }
   /* LLAMAMOS A LAS EMPRESAS CON SU INFO + CC, SECTORES Y CONTACTOS */
   useEffect(() => {
-    fetchCompaniesInfo();
     setToolbarButtonAction({
       label: "Crear nueva",
       action: handleShowForm,
       icon: <ApartmentRounded />,
     });
   }, [setToolbarButtonAction]);
+  useEffect(() => {
+    fetchCompaniesInfo();
+  }, [companyCreated]);
   return (
     <Stack
       sx={{
@@ -255,7 +287,6 @@ export default function Page() {
           rows={companies}
           getEstimatedRowHeight={() => 100}
           getRowHeight={() => "auto"}
-          /* slots={{ toolbar: GridToolbar }} */
           sx={{
             width: "100%",
             "&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell": {

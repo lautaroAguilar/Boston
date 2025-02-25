@@ -65,8 +65,6 @@ export const AuthProvider = ({ children }) => {
       return await checkUserSession();
     } catch (error) {
       console.error("Error al refrescar token:", error);
-      setUser(null);
-      logout();
       return null;
     }
   };
@@ -97,6 +95,7 @@ export const AuthProvider = ({ children }) => {
       if (res.status === 404) {
         const errorMessage = await res.json();
         setErrorMessage(errorMessage.error);
+        logout()
       }
 
       const userInfo = await res.json();
@@ -109,13 +108,13 @@ export const AuthProvider = ({ children }) => {
   /* SE INTENTA REFRESCAR EL ACCESS_TOKEN AUTOMÁTICAMENTE */
   useEffect(() => {
     checkUserSession();
-    const interval = setInterval(
+    /* const interval = setInterval(
       () => {
         refreshToken();
       },
       14 * 60 * 1000
     );
-    return () => clearInterval(interval);
+    return () => clearInterval(interval); */
   }, []);
   return (
     <AuthContext.Provider

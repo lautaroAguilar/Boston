@@ -8,12 +8,10 @@ export const CompanyProvider = ({ children }) => {
   const [formErrors, setFormErrors] = useState({});
 
   const [companiesInfo, setCompaniesInfo] = useState([]);
-  const [companies, setCompanies] = useState([]);
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [companyId, setCompanyId] = useState(false);
   const [costCenters, setCostCenters] = useState(false);
   const [contacts, setContacts] = useState(false);
   const [sectors, setSectors] = useState(false);
+  const [companies, setCompanies] = useState([]);
 
   /* HANDLE PARA CREAR DATOS PRINCIPALES DE LA EMPRESA */
   async function handleSubmitCompany(dataToSend) {
@@ -171,18 +169,16 @@ export const CompanyProvider = ({ children }) => {
     }
   }
 
-  const selectCompany = async (companyId) => {
+  const fetchCompany = async (companyId) => {
     try {
-      setSelectedCompany(companyId);
       const response = await fetch(`${CONFIG.API_URL}/companies/${companyId}`, {
         method: "GET",
         credentials: "include",
       });
       const data = await response.json();
-      setCompanyId(data.id);
-      // Manejar la información de la empresa seleccionada
+      return data;
     } catch (error) {
-      console.log("Fallo al buscar empresas:", error);
+      console.log("Fallo al buscar empresas:", data.error);
     }
   };
   const fetchCostCenters = async (companyId) => {
@@ -236,6 +232,7 @@ export const CompanyProvider = ({ children }) => {
       return [];
     }
   };
+  /* FUNCION PARA OBTENER TODAS LAS EMPRESAS COMPLETAS CON SUS CC, SECTORES Y CONTACTOS */
   const fetchCompaniesInfo = async () => {
     try {
       const response = await fetch(`${CONFIG.API_URL}/companies`, {
@@ -244,6 +241,11 @@ export const CompanyProvider = ({ children }) => {
       });
 
       const companiesData = await response.json();
+      // Verificamos si companiesData es un array
+      if (!Array.isArray(companiesData)) {
+        setErrorMessage("No se encontraron empresas");
+        return null;
+      }
 
       // Llamamos los datos de cada empresa
       const enrichedCompanies = await Promise.all(
@@ -285,6 +287,7 @@ export const CompanyProvider = ({ children }) => {
       console.error("Fallo al buscar empresas:", error);
     }
   };
+  /* FUNCION PARA OBTENER INFORMACION BÁSICA (NOMBRE) DE LA EMPRESA */
   const fetchCompaniesToSelect = async () => {
     try {
       const response = await fetch(`${CONFIG.API_URL}/companies`, {
@@ -313,8 +316,6 @@ export const CompanyProvider = ({ children }) => {
       value={{
         companiesInfo,
         companies,
-        selectedCompany,
-        companyId,
         costCenters,
         contacts,
         sectors,
@@ -327,12 +328,12 @@ export const CompanyProvider = ({ children }) => {
         formErrors,
         setErrorMessage,
 
-        selectCompany,
+        fetchCompany,
         fetchCompaniesInfo,
         fetchCostCenters,
         fetchContacts,
         fetchSectors,
-        fetchCompaniesToSelect
+        fetchCompaniesToSelect,
       }}
     >
       {children}
