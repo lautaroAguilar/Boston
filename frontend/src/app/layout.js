@@ -2,8 +2,15 @@ import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextAppProvider } from "@toolpad/core/nextjs";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import NAVIGATION from "@/components/Items";
 import { Box, LinearProgress } from "@mui/material";
+import {
+  HomeRounded,
+  SchoolRounded,
+  GroupRounded,
+  Diversity3Rounded,
+  CalendarMonthRounded,
+  ApartmentRounded,
+} from "@mui/icons-material";
 import ClientLayout from "@/components/ClientLayout";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -17,6 +24,38 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const NAVIGATION = [
+    {
+      segment: "",
+      title: "Inicio",
+      icon: <HomeRounded />,
+    },
+    {
+      segment: "estudiantes",
+      title: "Estudiantes",
+      icon: <SchoolRounded />,
+    },
+    {
+      segment: "docentes",
+      title: "Docentes",
+      icon: <GroupRounded />,
+    },
+    {
+      segment: "grupos",
+      title: "Grupos",
+      icon: <Diversity3Rounded />,
+    },
+    {
+      segment: "cronograma",
+      title: "Cronograma",
+      icon: <CalendarMonthRounded />,
+    },
+    {
+      segment: "empresas",
+      title: "Empresas",
+      icon: <ApartmentRounded />,
+    },
+  ];
   return (
     <Box component={"html"} lang="en" suppressHydrationWarning>
       <Box

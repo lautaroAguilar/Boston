@@ -1,9 +1,8 @@
 "use client";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Stack,
   Typography,
-  Tooltip,
   FormControl,
   InputLabel,
   Select,
@@ -18,9 +17,10 @@ import {
   PageHeader,
   ThemeSwitcher,
 } from "@toolpad/core";
-import { AuthProvider } from "@/contexts/auth";
 import { useCompany } from "@/contexts/companies";
-import { DashboardProvider, useDashboard } from "@/contexts/dashboard";
+import { useDashboard } from "@/contexts/dashboard";
+import CONFIG from "../../../config/api";
+import MySnackbar from "@/components/Snackbar";
 function CustomAppTitle() {
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
@@ -30,12 +30,23 @@ function CustomAppTitle() {
 }
 /* CREAMOS COMPONENTE PARA FILTRAR POR EMPRESA EN EL HEADER DEL LAYOUT */
 function CustomSelectCompany() {
-  const {
-    companiesInfo,
-    selectedCompany,
-    selectCompany,
-    fetchCompaniesToSelect,
-  } = useCompany();
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const { companiesInfo, fetchCompaniesToSelect } = useCompany();
+
+  const fetchCompanyId = async (companyId) => {
+    try {
+      setSelectedCompany(companyId);
+      const response = await fetch(`${CONFIG.API_URL}/companies/${companyId}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log("Fallo al buscar empresas:", error);
+    }
+  };
+
   useEffect(() => {
     fetchCompaniesToSelect();
   }, []);
@@ -50,7 +61,9 @@ function CustomSelectCompany() {
           id="selectCompany"
           value={selectedCompany || ""}
           label={"Empresa"}
-          onChange={(e) => selectCompany(e.target.value)}
+          onChange={(e) => {
+            fetchCompanyId(e.target.value);
+          }}
           sx={{ width: isMobile ? "120px" : "200px" }}
         >
           {companiesInfo.map((opt) => (
@@ -100,21 +113,19 @@ function CustomPageHeader() {
 }
 export default function DashboardRootLayout({ children }) {
   const CustomPageHeaderComponent = useCallback(() => <CustomPageHeader />, []);
+  const { snackbarMessage, openSnackbar } = useDashboard();
   return (
-    <AuthProvider>
-      <DashboardProvider>
-        <DashboardLayout
-          defaultSidebarCollapsed
-          slots={{
-            appTitle: CustomAppTitle,
-            toolbarActions: CustomSelectCompany,
-          }}
-        >
-          <PageContainer slots={{ header: CustomPageHeaderComponent }}>
-            {children}
-          </PageContainer>
-        </DashboardLayout>
-      </DashboardProvider>
-    </AuthProvider>
+    <DashboardLayout
+      defaultSidebarCollapsed
+      slots={{
+        appTitle: CustomAppTitle,
+        toolbarActions: CustomSelectCompany,
+      }}
+    >
+      <PageContainer slots={{ header: CustomPageHeaderComponent }}>
+        {children}
+        <MySnackbar open={openSnackbar} message={snackbarMessage} />
+      </PageContainer>
+    </DashboardLayout>
   );
 }

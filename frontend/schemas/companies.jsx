@@ -3,23 +3,20 @@ import { z } from "zod";
 export const companySchema = z.object({
   name: z
     .string({
-      required_error: "El nombre de la empresa es requerido",
       invalid_type_error: "No puedes enviar este campo vacío",
     })
-    .min(1),
+    .min(1, "El nombre de la empresa es requerido"),
   cuit: z.coerce
     .number({
-      required_error: "El CUIT es requerido",
       invalid_type_error: "El CUIT debe ser un número",
     })
-    .min(1, "Debe ser mayor a 0"),
+    .min(1, "El CUIT es requerido"),
 
   business_name: z
     .string({
-      required_error: "La razón social es requerida",
       invalid_type_error: "No puedes enviar este campo vacío",
     })
-    .min(1),
+    .min(1, "La razón social es requerida"),
   sid: z.union([z.string().min(1), z.literal(""), z.null()]).optional(),
   survey_link: z
     .union([
@@ -33,22 +30,15 @@ export const companySchema = z.object({
 });
 export const contactSchema = z.object({
   name: z
-    .string({
-      required_error: "El nombre del contacto es requerido",
-    })
-    .min(1, "El nombre del contacto no puede estar vacío"),
+    .string()
+    .min(1, "El nombre no puede estar vacío"),
   email: z
-    .string({
-      required_error: "El email del contacto es requerido",
-    })
-    .min(1)
+    .string()
+    .min(1, "El email no puede estar vacío")
     .email("El email del contacto debe ser válido"),
   notes: z
     .string()
-    .optional()
-    .refine((val) => val === undefined || val.length > 0, {
-      message: "Las notas deben ser un texto válido si se proporcionan",
-    }),
+    .optional(),
 });
 export const costCenterSchema = z.object({
   name: z
