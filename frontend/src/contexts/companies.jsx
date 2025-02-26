@@ -1,18 +1,21 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import CONFIG from "../../config/api";
+import { useDashboard } from "./dashboard";
 
 const CompanyContext = createContext();
 
 export const CompanyProvider = ({ children }) => {
+  const { setSnackbarMessage, setSnackbarErrorMessage } = useDashboard();
   const [errorMessage, setErrorMessage] = useState(false);
   const [formErrors, setFormErrors] = useState({});
-
+  const [updated, setUpdated] = useState(false);
   const [companiesInfo, setCompaniesInfo] = useState([]);
   const [costCenters, setCostCenters] = useState(false);
   const [contacts, setContacts] = useState(false);
   const [sectors, setSectors] = useState(false);
   const [companies, setCompanies] = useState([]);
-
+  const router = useRouter();
   /* HANDLE PARA CREAR DATOS PRINCIPALES DE LA EMPRESA */
   async function handleSubmitCompany(dataToSend) {
     setFormErrors({});
@@ -41,7 +44,7 @@ export const CompanyProvider = ({ children }) => {
           }, {});
           setFormErrors(errorObj);
         } else {
-          setErrorMessage(errorData.error);
+          setSnackbarErrorMessage(errorData.error);
         }
         return;
       }
@@ -79,11 +82,13 @@ export const CompanyProvider = ({ children }) => {
           }, {});
           setFormErrors(errorObj);
         } else {
-          setErrorMessage(errorData.error);
+          setSnackbarErrorMessage(errorData.error);
         }
         return;
       }
       const data = await res.json();
+      setSnackbarMessage("Nuevo centro de costo agregado correctamente.");
+      setUpdated((prev) => !prev);
       return data;
     } catch (err) {
       setErrorMessage(err.error);
@@ -117,11 +122,13 @@ export const CompanyProvider = ({ children }) => {
           }, {});
           setFormErrors(errorObj);
         } else {
-          setErrorMessage(errorData.error);
+          setSnackbarErrorMessage(errorData.error);
         }
         return;
       }
       const data = await res.json();
+      setSnackbarMessage("Nuevo sector agregado correctamente.");
+      setUpdated((prev) => !prev);
       return data;
     } catch (err) {
       setErrorMessage(err.error);
@@ -157,11 +164,13 @@ export const CompanyProvider = ({ children }) => {
           }, {});
           setFormErrors(errorObj);
         } else {
-          setErrorMessage(errorData.error);
+          setSnackbarErrorMessage(errorData.error);
         }
         return;
       }
       const data = await res.json();
+      setSnackbarMessage("Nuevo contacto agregado correctamente.");
+      setUpdated((prev) => !prev);
       return data;
     } catch (err) {
       setErrorMessage(err.error);
@@ -311,6 +320,218 @@ export const CompanyProvider = ({ children }) => {
       console.error("Error al buscar empresas:", error);
     }
   };
+  /* ACTUALIZAMOS EMPRESA */
+  async function updateCompany(dataToUpdate, companyId) {
+    try {
+      const res = await fetch(`${CONFIG.API_URL}/companies/${companyId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: dataToUpdate.name,
+          cuit: Number(dataToUpdate.cuit),
+          business_name: dataToUpdate.business_name,
+          sid: dataToUpdate.sid,
+          survey_link: dataToUpdate.survey_link,
+        }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.error);
+        return;
+      }
+      const data = await res.json();
+      setSnackbarMessage(data.message);
+      setUpdated((prev) => !prev);
+      return data;
+    } catch (err) {
+      console.error("Error al actualizar la empresa: ", err);
+    }
+  }
+  /* ELIMINAMOS UNA EMRPESA */
+  async function deleteCompany(id) {
+    try {
+      const res = await fetch(`${CONFIG.API_URL}/companies/${id}`, {
+        method: "delete",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSnackbarErrorMessage(data.error);
+      }
+      setSnackbarMessage(data.message);
+      router.replace("/empresas");
+    } catch (error) {
+      console.error("error al eliminar empresa", error);
+    }
+  }
+  /* ACTUALIZAMOS UN CENTRO DE COSTO */
+  async function updateCostCenter(dataToUpdate, companyId, costCenterId) {
+    setFormErrors({});
+    setErrorMessage("");
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/companies/${companyId}/cost-centers/${costCenterId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: dataToUpdate.name,
+          }),
+        }
+      );
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.error);
+        return;
+      }
+      const data = await res.json();
+      setSnackbarMessage(data.message);
+      setUpdated((prev) => !prev);
+      return data;
+    } catch (err) {
+      console.error("Error al actualizar el centro de costo: ", err);
+    }
+  }
+  /* ELIMINAMOS UN CENTRO DE COSTO */
+  async function deleteCostCenter(companyId, costCenterId) {
+    setErrorMessage("");
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/companies/${companyId}/cost-centers/${costCenterId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.error);
+        return;
+      }
+      const data = await res.json();
+      setSnackbarMessage(data.message);
+      setUpdated((prev) => !prev);
+      return data;
+    } catch (err) {
+      console.error("Error al eliminar el centro de costo: ", err);
+    }
+  }
+
+  /* ACTUALIZAMOS UN CONTACTO */
+  async function updateContact(dataToUpdate, companyId, contactId) {
+    setFormErrors({});
+    setErrorMessage("");
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/companies/${companyId}/contacts/${contactId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: dataToUpdate.name,
+            email: dataToUpdate.email,
+            notes: dataToUpdate.notes,
+          }),
+        }
+      );
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.log(errorData.error);
+        setSnackbarErrorMessage(errorData.error);
+        return;
+      }
+      const data = await res.json();
+      setSnackbarMessage(data.message);
+      setUpdated((prev) => !prev);
+      return data;
+    } catch (err) {
+      console.error("Error al actualizar el contacto: ", err);
+    }
+  }
+
+  /* ELIMINAMOS UN CONTACTO */
+  async function deleteContact(companyId, contactId) {
+    setErrorMessage("");
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/companies/${companyId}/contacts/${contactId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.error);
+        return;
+      }
+      const data = await res.json();
+      setSnackbarMessage(data.message);
+      setUpdated((prev) => !prev);
+      return data;
+    } catch (err) {
+      console.error("Error al eliminar el contacto: ", err);
+    }
+  }
+
+  /* ACTUALIZAMOS UN SECTOR */
+  async function updateSector(dataToUpdate, companyId, sectorId) {
+    setFormErrors({});
+    setErrorMessage("");
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/companies/${companyId}/sectors/${sectorId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: dataToUpdate.name,
+          }),
+        }
+      );
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.error);
+        return;
+      }
+      const data = await res.json();
+      setSnackbarMessage(data.message);
+      setUpdated((prev) => !prev);
+      return data;
+    } catch (err) {
+      console.error("Error al actualizar el sector: ", err);
+    }
+  }
+
+  /* ELIMINAMOS UN SECTOR */
+  async function deleteSector(companyId, sectorId) {
+    setErrorMessage("");
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/companies/${companyId}/sectors/${sectorId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.error);
+        return;
+      }
+      const data = await res.json();
+      setSnackbarMessage(data.message);
+      setUpdated((prev) => !prev);
+      return data;
+    } catch (err) {
+      console.error("Error al eliminar el sector: ", err);
+    }
+  }
+
   return (
     <CompanyContext.Provider
       value={{
@@ -324,6 +545,7 @@ export const CompanyProvider = ({ children }) => {
         handleSubmitCostCenter,
         handleSubmitContact,
         handleSubmitSector,
+
         errorMessage,
         formErrors,
         setErrorMessage,
@@ -334,6 +556,18 @@ export const CompanyProvider = ({ children }) => {
         fetchContacts,
         fetchSectors,
         fetchCompaniesToSelect,
+
+        updateCompany,
+        deleteCompany,
+        updateCostCenter,
+        deleteCostCenter,
+        updateContact,
+        deleteContact,
+        updateSector,
+        deleteSector,
+
+        updated,
+        setUpdated,
       }}
     >
       {children}

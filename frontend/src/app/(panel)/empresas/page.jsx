@@ -148,12 +148,14 @@ export default function Page() {
     email: "",
     notes: "",
   });
-  const [formSectorValues, setFormSectorValues] = useState({ name: "" });
+  const [formSectorValues, setFormSectorValues] = useState({
+    name: "",
+  });
   /* CASILLAS PARA EL COMPONENTE MY FORM */
   const fieldsCompany = [
     { name: "name", label: "Nombre", required: true },
-    { name: "cuit", label: "CUIT", required: true, type: "number" },
     { name: "business_name", label: "Razón Social", required: true },
+    { name: "cuit", label: "CUIT", required: true, type: "number" },
     { name: "sid", label: "SID" },
     { name: "survey_link", label: "Link de encuesta" },
   ];

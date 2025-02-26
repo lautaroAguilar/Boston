@@ -8,8 +8,8 @@ import LocalizationWrapper from "./LocalizationWrapper";
 export default function ClientLayout({ children }) {
   return (
     <AuthProvider>
-      <CompanyProvider>
-        <DashboardProvider>
+      <DashboardProvider>
+        <CompanyProvider>
           <LocalizationWrapper>
             <Suspense
               fallback={
@@ -21,8 +21,8 @@ export default function ClientLayout({ children }) {
               {children}
             </Suspense>
           </LocalizationWrapper>
-        </DashboardProvider>
-      </CompanyProvider>
+        </CompanyProvider>
+      </DashboardProvider>
     </AuthProvider>
   );
 }

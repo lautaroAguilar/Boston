@@ -113,7 +113,8 @@ function CustomPageHeader() {
 }
 export default function DashboardRootLayout({ children }) {
   const CustomPageHeaderComponent = useCallback(() => <CustomPageHeader />, []);
-  const { snackbarMessage, openSnackbar } = useDashboard();
+  const { snackbarMessage, snackbarErrorMessage, openSnackbar } =
+    useDashboard();
   return (
     <DashboardLayout
       defaultSidebarCollapsed
@@ -124,7 +125,11 @@ export default function DashboardRootLayout({ children }) {
     >
       <PageContainer slots={{ header: CustomPageHeaderComponent }}>
         {children}
-        <MySnackbar open={openSnackbar} message={snackbarMessage} />
+        <MySnackbar
+          open={openSnackbar}
+          message={snackbarMessage}
+          errorMessage={snackbarErrorMessage}
+        />
       </PageContainer>
     </DashboardLayout>
   );
