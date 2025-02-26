@@ -12,7 +12,7 @@ app.use(json())
 app.use(corsMiddleware())
 app.use(cookieParser())
 app.disable('x-powered-by')
-
+app.options('/api/*', corsMiddleware())
 app.use('/api/companies', companiesRouter)
 app.use('/api/user', userRouter)
 app.use('/api/auth', userAuthRouter)
