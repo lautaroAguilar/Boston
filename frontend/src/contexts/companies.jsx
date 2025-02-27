@@ -11,9 +11,9 @@ export const CompanyProvider = ({ children }) => {
   const [formErrors, setFormErrors] = useState({});
   const [updated, setUpdated] = useState(false);
   const [companiesInfo, setCompaniesInfo] = useState([]);
-  const [costCenters, setCostCenters] = useState(false);
-  const [contacts, setContacts] = useState(false);
-  const [sectors, setSectors] = useState(false);
+  const [costCenters, setCostCenters] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [sectors, setSectors] = useState([]);
   const [companies, setCompanies] = useState([]);
   const router = useRouter();
   /* HANDLE PARA CREAR DATOS PRINCIPALES DE LA EMPRESA */
