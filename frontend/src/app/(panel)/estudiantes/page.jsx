@@ -10,11 +10,29 @@ import {
   studentStepOneSchema,
   studentStepTwoSchema,
 } from "../../../../schemas/students";
+import { DataGrid } from "@mui/x-data-grid";
+import { esES } from "@mui/x-data-grid/locales";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
+/* COLUMNAS PARA EL DATAGRID DE ESTUDIANTES */
+const studentColumns = [
+  { field: "student_id", headerName: "ID", minWidth: 50, },
+  { field: "first_name", headerName: "Nombre", minWidth: 150, flex: 1 },
+  { field: "last_name", headerName: "Apellido", minWidth: 150, flex: 1 },
+  { field: "email", headerName: "Email", minWidth: 200, flex: 1 },
+  { field: "company_name", headerName: "Empresa", minWidth: 150, flex: 1 },
+  { field: "cost_center_name", headerName: "Centro de Costo", minWidth: 150, flex: 1 },
+  { field: "sector_name", headerName: "Sector", minWidth: 150, flex: 1 },
+];
+
 export default function Page() {
-  const { companyId, fetchCostCenters, fetchSectors, sectors, costCenters } =
-    useCompany();
+  const theme = createTheme(esES);
+  const { fetchCostCenters, fetchSectors, sectors, costCenters } = useCompany();
   const {
     setToolbarButtonAction,
+    setOpenSnackbar,
+    snackbarMessage,
+    snackbarErrorMessage,
     selectedCompany,
     fetchModules,
     fetchLanguages,
@@ -23,7 +41,7 @@ export default function Page() {
     levels,
     modules,
   } = useDashboard();
-  const { student, createStudent } = useStudent();
+  const { fetchStudents, students, createStudent, updated } = useStudent();
   const isMobile = useMediaQuery("(max-width:600px)");
   /* ESTADOS */
   const [showForm, setShowForm] = useState(false);
@@ -32,7 +50,7 @@ export default function Page() {
     first_name: "",
     last_name: "",
     email: "",
-    company_id: companyId, // Se asigna automáticamente
+    company_id: "",
     cost_center_id: "",
     sector_id: "",
   });
@@ -51,18 +69,24 @@ export default function Page() {
   const steps = [
     {
       label: "Datos Personales",
+      description: "Completa los datos personales del alumno",
+      schema: studentStepOneSchema,
       fields: [
-        { name: "first_name", label: "Nombre" },
-        { name: "last_name", label: "Apellido" },
-        { name: "email", label: "Email", type: "email" },
+        { name: "first_name", label: "Nombre", required: true },
+        { name: "last_name", label: "Apellido", required: true },
+        { name: "email", label: "Email", required: true, type: "email" },
         {
           name: "cost_center_id",
           label: "Centro de Costo",
           component: "select",
           options:
             Array.isArray(costCenters) && costCenters.length > 0
-              ? costCenters.map((cc) => ({ id: cc.id, label: cc.name }))
-              : [{ id: "no_cost_center", label: costCenters.message }],
+              ? costCenters.map((cc) => ({
+                  id: cc.cost_center_id,
+                  label: cc.cost_center_name,
+                }))
+              : [{ id: 0, label: "No se encontraron centros de costo" }],
+          required: true,
         },
         {
           name: "sector_id",
@@ -71,54 +95,60 @@ export default function Page() {
           options:
             Array.isArray(sectors) && sectors.length > 0
               ? sectors.map((sector) => ({
-                  id: sector.id,
-                  label: sector.name,
+                  id: sector.sector_id,
+                  label: sector.sector_name,
                 }))
-              : [{ id: "no_sectors", label: sectors?.message }],
+              : [{ id: 0, label: "No se encontraron sectores" }],
+          required: true,
         },
       ],
       values: step1Values,
       setValues: setStep1Values,
-      schema: studentStepOneSchema,
     },
     {
       label: "Detalles de Nivelación",
+      schema: studentStepTwoSchema,
       fields: [
         {
           name: "initial_leveling_date",
           label: "Fecha de Nivelación",
           type: "date",
+          required: true,
         },
         {
           name: "language_id",
           label: "Idioma",
           component: "select",
           options: languages.map((lang) => ({ id: lang.id, label: lang.name })),
+          required: true,
         },
         {
           name: "module_id",
           label: "Módulo",
           component: "select",
           options: modules.map((mod) => ({ id: mod.id, label: mod.name })),
+          required: true,
         },
         {
           name: "level_id",
           label: "Nivel",
           component: "select",
           options: levels.map((lvl) => ({ id: lvl.id, label: lvl.name })),
+          required: true,
         },
       ],
       values: step2Values,
       setValues: setStep2Values,
-      schema: studentStepTwoSchema,
     },
   ];
   const handleFinish = async () => {
     const studentData = {
       ...step1Values,
       ...step2Values,
+      company_id: selectedCompany,
     };
     await createStudent(studentData);
+    setShowForm(false);
   };
   useEffect(() => {
     setToolbarButtonAction({
@@ -128,15 +158,45 @@ export default function Page() {
     });
   }, [setToolbarButtonAction]);
   useEffect(() => {
-    fetchCostCenters(selectedCompany);
-    fetchSectors(selectedCompany);
+    if (snackbarMessage || snackbarErrorMessage) {
+      setOpenSnackbar(true);
+    }
+  }, [snackbarMessage, snackbarErrorMessage]);
+  useEffect(() => {
+    fetchStudents();
+  }, [updated, selectedCompany]);
+  useEffect(() => {
+    if (selectedCompany) {
+      fetchCostCenters(selectedCompany);
+      fetchSectors(selectedCompany);
+    }
     fetchModules();
     fetchLanguages();
     fetchLevels();
   }, [selectedCompany]);
   return (
     <Stack>
-      <Typography>Welcome to estudiantes page in the dashboard!</Typography>
+      <ThemeProvider theme={theme}>
+        <DataGrid
+          columns={studentColumns}
+          rows={students}
+          getRowId={(row) => row.student_id}
+          getEstimatedRowHeight={() => 100}
+          getRowHeight={() => "auto"}
+          sx={{
+            width: "100%",
+            "&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell": {
+              py: 1,
+            },
+            "&.MuiDataGrid-root--densityStandard .MuiDataGrid-cell": {
+              py: "15px",
+            },
+            "&.MuiDataGrid-root--densityComfortable .MuiDataGrid-cell": {
+              py: "22px",
+            },
+          }}
+        />
+      </ThemeProvider>
       <Modal
         open={showForm}
         onClose={() => {

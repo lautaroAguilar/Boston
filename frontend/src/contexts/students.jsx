@@ -5,7 +5,8 @@ import { useDashboard } from "./dashboard";
 const StudentContext = createContext();
 
 export const StudentProvider = ({ children }) => {
-  const { setSnackbarErrorMessage, setSnackbarMessage } = useDashboard();
+  const { setSnackbarErrorMessage, setSnackbarMessage, selectedCompany } =
+    useDashboard();
   const [students, setStudents] = useState([]);
   const [updated, setUpdated] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -19,8 +20,19 @@ export const StudentProvider = ({ children }) => {
         body: JSON.stringify(studentData),
       });
       const data = res.json();
+
       if (!res.ok) {
-        setSnackbarErrorMessage(data.error);
+        if (Array.isArray(data)) {
+          const errorObj = data.reduce((acc, issue) => {
+            const fieldName = issue.path[0];
+            acc[fieldName] = issue.message;
+            return acc;
+          }, {});
+          setFormErrors(errorObj);
+        } else {
+          setSnackbarErrorMessage(data.error);
+        }
+        return;
       }
       setSnackbarMessage("Alumno creado correctamente");
       setUpdated((prev) => !prev);
@@ -31,10 +43,13 @@ export const StudentProvider = ({ children }) => {
   };
   const fetchStudents = async () => {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/students`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${CONFIG.API_URL}/students?companyId=${selectedCompany}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
       const data = await res.json();
       if (!res.ok) {
         setSnackbarErrorMessage(data.message);
@@ -45,13 +60,9 @@ export const StudentProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
   return (
     <StudentContext.Provider
-      value={{ students, errorMessage, updated, createStudent }}
+      value={{ students, errorMessage, updated, createStudent, fetchStudents }}
     >
       {children}
     </StudentContext.Provider>

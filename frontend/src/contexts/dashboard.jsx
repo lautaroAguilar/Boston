@@ -5,7 +5,7 @@ import CONFIG from "../../config/api";
 const DashboardContext = createContext();
 
 export function DashboardProvider({ children }) {
-  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState("");
   const [toolbarButtonAction, setToolbarButtonAction] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");

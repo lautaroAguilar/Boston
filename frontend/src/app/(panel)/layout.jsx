@@ -30,7 +30,7 @@ function CustomAppTitle() {
 }
 /* CREAMOS COMPONENTE PARA FILTRAR POR EMPRESA EN EL HEADER DEL LAYOUT */
 function CustomSelectCompany() {
-  const [selectedCompany, setSelectedCompany] = useState(null);
+  const { selectedCompany, setSelectedCompany } = useDashboard();
   const { companiesInfo, fetchCompaniesToSelect } = useCompany();
 
   const fetchCompanyId = async (companyId) => {
