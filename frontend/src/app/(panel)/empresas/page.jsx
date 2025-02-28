@@ -59,13 +59,14 @@ const columns = [
   {
     field: "id",
     headerName: "ID",
-    width: 150,
+    minWidth: 150,
     renderCell: (params) => <ExpandableCell {...params} />,
   },
   {
     field: "name",
     headerName: "Nombre",
-    width: 150,
+    minWidth: 150,
+    flex: 1,
     renderCell: (params) => (
       <Link
         href={`/empresas/${params.row.id}`}
@@ -79,13 +80,19 @@ const columns = [
       </Link>
     ),
   },
-  { field: "business_name", headerName: "Razón social", width: 150 },
-  { field: "CUIT", headerName: "CUIT", width: 150 },
-  { field: "SID", headerName: "SID", width: 150 },
+  {
+    field: "business_name",
+    headerName: "Razón social",
+    minWidth: 150,
+    flex: 1,
+  },
+  { field: "CUIT", headerName: "CUIT", minWidth: 150, flex: 1 },
+  { field: "SID", headerName: "SID", minWidth: 150, flex: 1 },
   {
     field: "costCenters",
     headerName: "Centros de costo",
-    width: 150,
+    minWidth: 150,
+    flex: 1,
     renderCell: (params) => {
       const value =
         params.value?.success === true && params.value?.data?.length === 0
@@ -98,7 +105,8 @@ const columns = [
   {
     field: "sectors",
     headerName: "Sectores",
-    width: 150,
+    minWidth: 150,
+    flex: 1,
     renderCell: (params) => {
       const value =
         params.value?.success === true && params.value?.data?.length === 0
@@ -107,32 +115,27 @@ const columns = [
       return <ExpandableCell value={value} />;
     },
   },
-  {
-    field: "contacts",
-    headerName: "Contactos",
-    width: 150,
-    renderCell: (params) => {
-      const value =
-        params.value?.success === true && params.value?.data?.length === 0
-          ? params.value.message
-          : params.value
-              ?.map(
-                (c) =>
-                  `- ${c.contact_name} (${c.contact_email}) ${c.contact_notes}`
-              )
-              .join("\n");
-      return <ExpandableCell value={value} />;
-    },
-  },
 ];
 export default function Page() {
-  const { fetchCompaniesInfo, companies, errorMessage, setErrorMessage } =
-    useCompany();
-  const { setToolbarButtonAction } = useDashboard();
+  const {
+    companyCreated,
+    setCompanyCreated,
+    fetchCompaniesInfo,
+    companies,
+    errorMessage,
+    setErrorMessage,
+  } = useCompany();
+  const {
+    setToolbarButtonAction,
+    setOpenSnackbar,
+    snackbarMessage,
+    snackbarErrorMessage,
+    setSnackbarMessage,
+    setSnackbarErrorMessage,
+  } = useDashboard();
   const isMobile = useMediaQuery("(max-width:600px)");
   /* ESTADOS */
   const [showForm, setShowForm] = useState(false);
-  const [companyCreated, setCompanyCreated] = useState(false);
   const [formCompanyValues, setFormCompanyValues] = useState({
     name: "",
     cuit: "",
@@ -156,8 +159,8 @@ export default function Page() {
     { name: "name", label: "Nombre", required: true },
     { name: "business_name", label: "Razón Social", required: true },
     { name: "cuit", label: "CUIT", required: true, type: "number" },
-    { name: "sid", label: "SID" },
-    { name: "survey_link", label: "Link de encuesta" },
+    { name: "sid", label: "SID", required: true },
+    { name: "survey_link", label: "Link de encuesta", required: true },
   ];
   const fieldsCostCenter = [
     {
@@ -248,9 +251,10 @@ export default function Page() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setErrorMessage(data.error);
+        setSnackbarErrorMessage(data.error);
         return;
       }
+      setSnackbarMessage("Empresa creada correctamente");
       setCompanyCreated(true);
       setShowForm(false);
       setFormCompanyValues({});
@@ -270,6 +274,11 @@ export default function Page() {
       icon: <ApartmentRounded />,
     });
   }, [setToolbarButtonAction]);
+  useEffect(() => {
+    if (snackbarMessage || snackbarErrorMessage) {
+      setOpenSnackbar(true);
+    }
+  }, [snackbarMessage, snackbarErrorMessage]);
   useEffect(() => {
     fetchCompaniesInfo();
   }, [companyCreated]);

@@ -80,7 +80,7 @@ export default function Page() {
           label: "Centro de Costo",
           component: "select",
           options:
-            Array.isArray(costCenters) && costCenters.length > 0
+            selectedCompany
               ? costCenters.map((cc) => ({
                   id: cc.cost_center_id,
                   label: cc.cost_center_name,
@@ -93,7 +93,7 @@ export default function Page() {
           label: "Sector",
           component: "select",
           options:
-            Array.isArray(sectors) && sectors.length > 0
+            selectedCompany
               ? sectors.map((sector) => ({
                   id: sector.sector_id,
                   label: sector.sector_name,

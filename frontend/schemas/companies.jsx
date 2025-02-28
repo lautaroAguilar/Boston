@@ -17,28 +17,19 @@ export const companySchema = z.object({
       invalid_type_error: "No puedes enviar este campo vacío",
     })
     .min(1, "La razón social es requerida"),
-  sid: z.union([z.string().min(1), z.literal(""), z.null()]).optional(),
+  sid: z.string().min(1, "El SID es requerido"),
   survey_link: z
-    .union([
-      z
-        .string()
-        .url({ message: "El enlace de la encuesta debe ser una URL válida" }),
-      z.literal(""),
-      z.null(),
-    ])
-    .optional(),
+    .string()
+    .min(1, "Tenés que agregar el link para la encuesta")
+    .url({ message: "El enlace de la encuesta debe ser una URL válida" }),
 });
 export const contactSchema = z.object({
-  name: z
-    .string()
-    .min(1, "El nombre no puede estar vacío"),
+  name: z.string().min(1, "El nombre no puede estar vacío"),
   email: z
     .string()
     .min(1, "El email no puede estar vacío")
     .email("El email del contacto debe ser válido"),
-  notes: z
-    .string()
-    .optional(),
+  notes: z.string().optional(),
 });
 export const costCenterSchema = z.object({
   name: z

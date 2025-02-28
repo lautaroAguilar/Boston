@@ -9,8 +9,11 @@ export const CompanyProvider = ({ children }) => {
   const { setSnackbarMessage, setSnackbarErrorMessage } = useDashboard();
   const [errorMessage, setErrorMessage] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+
+  const [companyCreated, setCompanyCreated] = useState(false);
   const [updated, setUpdated] = useState(false);
   const [companiesInfo, setCompaniesInfo] = useState([]);
+
   const [costCenters, setCostCenters] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [sectors, setSectors] = useState([]);
@@ -568,6 +571,8 @@ export const CompanyProvider = ({ children }) => {
 
         updated,
         setUpdated,
+        companyCreated,
+        setCompanyCreated,
       }}
     >
       {children}

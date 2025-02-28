@@ -38,7 +38,7 @@ export default function MyForm({
     >
       <Stack spacing={2} sx={{ mt: 2 }}>
         {fields.map((field, index) => (
-          <Stack key={index}>
+          <Stack key={field.name ?? index}>
             {(() => {
               switch (field.component) {
                 case "select":
@@ -52,8 +52,8 @@ export default function MyForm({
                         onChange={(e) => onChange(field.name, e.target.value)}
                         required={field.required ?? false}
                       >
-                        {field.options?.map((opt) => (
-                          <MenuItem key={opt.id} value={opt.label}>
+                        {field.options?.map((opt, i) => (
+                          <MenuItem key={opt.id ?? i} value={opt.id}>
                             {opt.label}
                           </MenuItem>
                         ))}
@@ -68,6 +68,7 @@ export default function MyForm({
                     <DatePicker
                       label={field.label}
                       value={values[field.name] ?? null}
+                      defaultValue={""}
                       onChange={(newValue) =>
                         onChange(
                           field.name,

@@ -31,7 +31,7 @@ function CustomAppTitle() {
 /* CREAMOS COMPONENTE PARA FILTRAR POR EMPRESA EN EL HEADER DEL LAYOUT */
 function CustomSelectCompany() {
   const { selectedCompany, setSelectedCompany } = useDashboard();
-  const { companiesInfo, fetchCompaniesToSelect } = useCompany();
+  const { companiesInfo, fetchCompaniesToSelect, companyCreated } = useCompany();
 
   const fetchCompanyId = async (companyId) => {
     try {
@@ -49,7 +49,7 @@ function CustomSelectCompany() {
 
   useEffect(() => {
     fetchCompaniesToSelect();
-  }, []);
+  }, [companyCreated]);
   const isMobile = useMediaQuery("(max-width:600px)");
   return (
     <Stack direction={"row"} alignItems={"center"} spacing={2}>
