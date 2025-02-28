@@ -8,14 +8,11 @@ export class StudentsController {
     this.studentsModel = studentsModel
   }
   create = async (req, res) => {
-    const result = validateStudents(req.body)
-
-    if (!result.success) {
-      console.log('Error al validar el estudiante', result.error.message)
-      return res.status(400).json({ error: JSON.parse(result.error.message) })
-    }
-
     try {
+      const result = validateStudents(req.body)
+      if (!result.success) {
+        return res.status(400).json(result.error.issues)
+      }
       const newStudent = await this.studentsModel.create(result.data)
       res.status(201).json(newStudent)
     } catch (error) {
@@ -25,18 +22,17 @@ export class StudentsController {
   }
   getAll = async (req, res) => {
     try {
-      const students = await this.studentsModel.getAll()
+      const { companyId } = req.query
+      const students = await this.studentsModel.getAll({ companyId })
       if (!students.length) {
-        res
+        return res
           .status(200)
           .json({ data: [], message: 'No se encontraron estudiantes' })
       }
       res.status(200).json(students)
     } catch (error) {
       res.status(500).json({
-        success: false,
-        message: 'Error al buscar estudiantes',
-        error
+        error: 'Error al buscar estudiantes'
       })
     }
   }
@@ -69,11 +65,7 @@ export class StudentsController {
   updateById = async (req, res) => {
     const result = validatePartialStudents(req.body)
     if (!result.success) {
-      console.log(
-        'Error al validar parcialmente el estudiante',
-        result.error.message
-      )
-      return res.status(400).json({ error: JSON.parse(result.error.message) })
+      return res.status(400).json(result.error.issues)
     }
     try {
       const { id } = req.params

@@ -42,18 +42,21 @@ export class StudentsModel {
       connection.release()
     }
   }
-  static async getAll() {
+  static async getAll({companyId}) {
     const connection = await pool.getConnection()
     try {
-      const [students] = await connection.query(
-        `SELECT 
+      let query = `
+        SELECT 
           s.id AS student_id,
           s.first_name,
           s.last_name,
           s.email,
           s.initial_leveling_date,
+          BIN_TO_UUID(c.id) AS company_id,
           c.name AS company_name,
+          cc.id AS cost_center_id,
           cc.name AS cost_center_name,
+          sec.id AS sector_id,
           sec.name AS sector_name,
           s.created_at,
           s.updated_at
@@ -61,9 +64,22 @@ export class StudentsModel {
         JOIN company c ON s.company_id = c.id
         JOIN cost_center cc ON s.cost_center_id = cc.id
         JOIN sector sec ON s.sector_id = sec.id
-        ORDER BY s.id`
-      )
-      return students
+        WHERE 1=1
+      `
+
+      const params = []
+
+      // Si hay companyId, filtramos por empresa
+      if (companyId) {
+        // Convertimos el ID a binario para comparar
+        query += ` AND s.company_id = UUID_TO_BIN(?)`
+        params.push(companyId)
+      }
+
+      query += ` ORDER BY s.id ASC`
+
+      const [rows] = await connection.query(query, params)
+      return rows
     } catch (err) {
       console.log(err)
       throw new Error('Error al obtener estudiantes')
