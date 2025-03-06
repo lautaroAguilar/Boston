@@ -12,17 +12,6 @@ export class SettingsModel {
       connection.release()
     }
   }
-  static async getAllLevels() {
-    const connection = await pool.getConnection()
-    try {
-      const [rows] = await connection.query(`SELECT id, name FROM levels`)
-      return rows
-    } catch (error) {
-      throw new Error('Error al obtener niveles')
-    } finally {
-      connection.release()
-    }
-  }
   static async getAllLanguages() {
     const connection = await pool.getConnection()
     try {
@@ -30,6 +19,17 @@ export class SettingsModel {
       return rows
     } catch (error) {
       throw new Error('Error al obtener idiomas')
+    } finally {
+      connection.release()
+    }
+  }
+  static async getAllRoles() {
+    const connection = await pool.getConnection()
+    try {
+      const [rows] = await connection.query(`SELECT id, name FROM roles`)
+      return rows
+    } catch (error) {
+      throw new Error('Error al obtener los roles')
     } finally {
       connection.release()
     }

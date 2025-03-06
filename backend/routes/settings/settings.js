@@ -9,4 +9,4 @@ const settingsController = new SettingsController({
 
 settingsRouter.get('/modules', settingsController.getAllModules)
 settingsRouter.get('/languages', settingsController.getAllLanguages)
-settingsRouter.get('/levels', settingsController.getAllLevels)
+settingsRouter.get('/roles', settingsController.getAllRoles)
