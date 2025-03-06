@@ -313,13 +313,13 @@ export const CompanyProvider = ({ children }) => {
           setCompaniesInfo(companiesData);
         } else if (companiesData.success && companiesData.data.length === 0) {
           setCompaniesInfo([]);
-          setErrorMessage(companiesData.message);
+          setSnackbarErrorMessage(companiesData.message);
         }
       } else {
-        setErrorMessage(companiesData.message);
+        setSnackbarErrorMessage(companiesData.message);
       }
     } catch (error) {
-      setErrorMessage("Error de red al buscar empresas");
+      setSnackbarErrorMessage("Error de red al buscar empresas");
       console.error("Error al buscar empresas:", error);
     }
   };

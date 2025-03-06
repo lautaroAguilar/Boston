@@ -10,6 +10,7 @@ import {
   Diversity3Rounded,
   CalendarMonthRounded,
   ApartmentRounded,
+  AdminPanelSettingsRounded
 } from "@mui/icons-material";
 import ClientLayout from "@/components/ClientLayout";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -54,6 +55,11 @@ export default function RootLayout({ children }) {
       segment: "empresas",
       title: "Empresas",
       icon: <ApartmentRounded />,
+    },
+    {
+      segment: "usuarios",
+      title: "Usuarios",
+      icon: <AdminPanelSettingsRounded />,
     },
   ];
   return (

@@ -1,12 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation.js";
 import MyForm from "../../components/Form.jsx";
-import { Paper, Stack, Typography, ButtonGroup, Button } from "@mui/material";
+import { Paper, Stack, Typography, Button } from "@mui/material";
 import CONFIG from "../../../config/api.js";
 
 export default function page() {
-  const [showRegister, setShowRegister] = useState(true);
+  const router = useRouter();
   const [successMessage, setSuccessMessage] = useState(false);
   const [errorMessage, setErrorMessage] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -14,19 +14,10 @@ export default function page() {
     email: "",
     password: "",
   });
-  const [formRegisterValues, setFormRegisterValues] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "",
-  });
-  /* FORM LOGIN */
   const fieldsLogin = [
     { name: "email", label: "Email", type: "email", required: true },
     { name: "password", label: "Contraseña", type: "password", required: true },
   ];
-
-  const router = useRouter();
   const handleChangeLogin = (fieldName, newValue) => {
     setFormLoginValues((prev) => ({
       ...prev,
@@ -69,72 +60,7 @@ export default function page() {
       console.error("Error al loguear: ", err);
     }
   };
-  /* FORM REGISTER */
-  const fieldsRegister = [
-    { name: "name", label: "Nombre", required: true },
-    { name: "email", label: "Email", type: "email", required: true },
-    { name: "password", label: "Contraseña", type: "password", required: true },
-    {
-      name: "role",
-      label: "Rol",
-      type: "select",
-      required: true,
-      component: "select",
-      options: [
-        { id: 1, label: "Administrador" },
-        { id: 2, label: "Coordinador" },
-        { id: 3, label: "Recursos Humanos" },
-      ],
-    },
-  ];
-  const handleChangeRegister = (fieldName, newValue) => {
-    setFormRegisterValues((prev) => ({
-      ...prev,
-      [fieldName]: newValue,
-    }));
-  };
-
-  const handleSubmitRegister = async () => {
-    setErrorMessage("");
-    setSuccessMessage("");
-    setFormErrors({});
-    try {
-      const response = await fetch(`${CONFIG.API_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formRegisterValues),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        /* CREAMOS OBJETO DE ERRORES PARA PASAR AL FORM COMPONENT */
-        if (Array.isArray(errorData)) {
-          const errorObj = errorData.reduce((acc, issue) => {
-            const fieldName = issue.path[0];
-            acc[fieldName] = issue.message;
-            return acc;
-          }, {});
-          setFormErrors(errorObj);
-        } else {
-          setErrorMessage(errorData.message || "Error desconocido");
-        }
-        return;
-      }
-      const data = await response.json();
-      setSuccessMessage(data.message);
-    } catch (err) {
-      setErrorMessage(err.message);
-      console.error("Error al registrar: ", err);
-    }
-  };
-  function changeForm(show) {
-    setShowRegister(show);
-    setSuccessMessage(false);
-    setErrorMessage(false);
-    setFormErrors({});
-  }
-
+  
   return (
     <Stack
       sx={{
@@ -150,80 +76,38 @@ export default function page() {
       <Stack spacing={1}>
         <Typography variant="h4">Bienvenidos</Typography>
         <Typography variant="p">
-          Registrate o inicia sesión para poder continuar.
+          Inicia sesión con tus credenciales para poder continuar.
         </Typography>
       </Stack>
-      <ButtonGroup
-        variant="contained"
-        aria-label="Basic button group"
-        fullWidth
+      <Paper
+        elevation={4}
+        square={false}
+        sx={{
+          height: "60%",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          p: 2,
+          gap: 2,
+          maxWidth: 500,
+          maxHeight: 600,
+          overflowY: "auto",
+          scrollbarWidth: "thin",
+        }}
       >
-        <Button disabled={showRegister} onClick={() => changeForm(true)}>
-          Registrarse
-        </Button>
-        <Button disabled={!showRegister} onClick={() => changeForm(false)}>
+        <Typography variant="h4">Iniciar Sesión</Typography>
+        <MyForm
+          fields={fieldsLogin}
+          values={formLoginValues}
+          errors={formErrors}
+          successMessage={successMessage}
+          errorMessage={errorMessage}
+          onChange={handleChangeLogin}
+        />
+        <Button variant="contained" onClick={handleSubmitLogin}>
           Iniciar sesión
         </Button>
-      </ButtonGroup>
-      {showRegister ? (
-        <>
-          <Paper
-            elevation={4}
-            square={false}
-            sx={{
-              height: "70%",
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              p: 2,
-              gap: 2,
-              maxWidth: 500,
-              maxHeight: 600,
-              overflowY: "auto",
-              scrollbarWidth: "thin",
-            }}
-          >
-            <Typography variant="h4">Registrarse</Typography>
-            <MyForm
-              fields={fieldsRegister}
-              values={formRegisterValues}
-              errors={formErrors}
-              successMessage={successMessage}
-              errorMessage={errorMessage}
-              onChange={handleChangeRegister}
-            />
-            <Button variant="contained" onClick={handleSubmitRegister}>Crear usuario</Button>
-          </Paper>
-        </>
-      ) : (
-        <Paper
-          elevation={4}
-          square={false}
-          sx={{
-            height: "50%",
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            p: 2,
-            gap: 2,
-            maxWidth: 500,
-            maxHeight: 600,
-            overflowY: "auto",
-            scrollbarWidth: "thin",
-          }}
-        >
-          <Typography variant="h4">Iniciar Sesión</Typography>
-          <MyForm
-            fields={fieldsLogin}
-            values={formLoginValues}
-            errors={formErrors}
-            successMessage={successMessage}
-            errorMessage={errorMessage}
-            onChange={handleChangeLogin}
-          />
-          <Button variant="contained" onClick={handleSubmitLogin}>Iniciar sesión</Button>
-        </Paper>
-      )}
+      </Paper>
     </Stack>
   );
 }

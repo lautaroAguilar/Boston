@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }) => {
       const res = await fetch(`${CONFIG.API_URL}/user/${id}`, {
         credentials: "include",
       });
-      if (res.status === 404) {
+      if (!res.ok) {
         const errorMessage = await res.json();
         setErrorMessage(errorMessage.error);
         logout()
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
       
       setUserInfo(userInfo);
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
   /* SE INTENTA REFRESCAR EL ACCESS_TOKEN AUTOMÁTICAMENTE */
