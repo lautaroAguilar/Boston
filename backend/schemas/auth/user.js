@@ -14,10 +14,7 @@ const userSchema = z.object({
     .string({ required_error: 'La contraseña es requerida' })
     .trim()
     .min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  role: z.enum(['Administrador', 'Coordinador', 'Recursos Humanos'], {
-    required_error: 'El rol es requerido',
-    message: 'El rol debe ser Administrador, Coordinador o RRHH'
-  })
+  role: z.number({ invalid_type_error: 'Por favor, selecciona un rol.' }).int()
 })
 
 export function validateRegister(user) {
