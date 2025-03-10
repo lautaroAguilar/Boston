@@ -20,6 +20,9 @@ app.use('/api/user', userRouter)
 app.use('/api/auth', userAuthRouter)
 app.use('/api/students', studentsRouter)
 app.use('/api/settings', settingsRouter)
+app.use('/api/test', (req, res) => {
+  res.status(200).send('Endpoint de pruebas funcionando correctamente');
+})
 /* 
   
   app.use('/api/course', Router)
