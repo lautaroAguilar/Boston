@@ -1,8 +1,8 @@
-import { Router } from 'express'
-import { SettingsController } from '../../controllers/settings/settings.js'
-import { SettingsModel } from '../../models/settings/settings.js'
+const { Router } = require('express')
+const { SettingsController } = require('../../controllers/settings/settings.js')
+const { SettingsModel } = require('../../models/settings/settings.js')
 
-export const settingsRouter = Router()
+const settingsRouter = Router()
 const settingsController = new SettingsController({
   settingsModel: SettingsModel
 })
@@ -10,3 +10,5 @@ const settingsController = new SettingsController({
 settingsRouter.get('/modules', settingsController.getAllModules)
 settingsRouter.get('/languages', settingsController.getAllLanguages)
 settingsRouter.get('/roles', settingsController.getAllRoles)
+
+module.exports = { settingsRouter }

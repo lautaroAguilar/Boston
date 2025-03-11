@@ -1,4 +1,4 @@
-import { z } from 'zod'
+const { z } = require('zod')
 
 const costCenterSchema = z.object({
   name: z
@@ -7,9 +7,13 @@ const costCenterSchema = z.object({
     })
     .min(1, 'El nombre del centro de costo no puede estar vacío')
 })
-export function validateCostCenter(costCenter) {
+
+function validateCostCenter(costCenter) {
   return costCenterSchema.safeParse(costCenter)
 }
-export function validatePartialCostCenter(costCenter) {
+
+function validatePartialCostCenter(costCenter) {
   return costCenterSchema.partial().safeParse(costCenter)
 }
+
+module.exports = { costCenterSchema, validateCostCenter, validatePartialCostCenter }

@@ -1,11 +1,11 @@
-import { pool } from '../../config/database.js'
+const { pool } = require('../../config/database.js')
 
-export class UserModel {
+class UserModel {
   static getAll = async () => {
     const connection = await pool.getConnection()
     try {
       const [users] = await connection.query(
-        `SELECT id, name, email FROM users`
+        `SELECT id, first_name, last_name, email, role_id, belongs_to FROM users`
       )
       return users
     } catch (error) {
@@ -19,7 +19,7 @@ export class UserModel {
     const connection = await pool.getConnection()
     try {
       const [user] = await connection.query(
-        `SELECT id, name, email 
+        `SELECT id, first_name, last_name, email, role_id, belongs_to
               FROM users u 
               WHERE u.id = ?`,
         [userId]
@@ -79,3 +79,4 @@ export class UserModel {
     }
   }
 }
+module.exports = { UserModel }

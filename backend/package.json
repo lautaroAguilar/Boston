@@ -5,9 +5,11 @@
   "scripts": {
     "start:sql": "node --watch server-sql.js",
     "start": "node --watch app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:syntax": "powershell -Command \"Get-ChildItem -Path .\\backend -Filter *.js -Recurse | ForEach-Object { node -c $_.FullName }\" && echo ✅ Sintaxis correcta en todos los archivos",
+    "test:imports": "node -e \"try { require('./app.js'); console.log('✅ Importaciones correctas'); } catch(e) { console.error('❌ Error en importaciones:', e); process.exit(1); }\"",
+    "verify": "npm run test:syntax && npm run test:imports"
   },
-  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",

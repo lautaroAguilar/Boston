@@ -1,8 +1,10 @@
-import { Router } from 'express'
-import { CostCenterController } from '../../controllers/company/cost_center.js'
-import { CostCenterModel } from '../../models/company/cost_center.js'
-import { authenticateToken } from '../../middlewares/auth.js'
-export const costCenterRouter = Router({ mergeParams: true })
+const { Router } = require('express')
+const {
+  CostCenterController
+} = require('../../controllers/company/cost_center.js')
+const { CostCenterModel } = require('../../models/company/cost_center.js')
+const { authenticateToken } = require('../../middlewares/auth.js')
+const costCenterRouter = Router({ mergeParams: true })
 
 const costCenterController = new CostCenterController({
   costCenterModel: CostCenterModel
@@ -23,3 +25,4 @@ costCenterRouter.delete('/:costCenterId', authenticateToken, (req, res) =>
 costCenterRouter.patch('/:costCenterId', authenticateToken, (req, res) =>
   costCenterController.updateById(req, res)
 )
+module.exports = { costCenterRouter }

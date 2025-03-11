@@ -1,9 +1,9 @@
-import {
+const {
   validateStudents,
   validatePartialStudents
-} from '../../schemas/students/students.js'
+} = require('../../schemas/students/students.js')
 
-export class StudentsController {
+class StudentsController {
   constructor({ studentsModel }) {
     this.studentsModel = studentsModel
   }
@@ -85,3 +85,5 @@ export class StudentsController {
     }
   }
 }
+
+module.exports = { StudentsController }

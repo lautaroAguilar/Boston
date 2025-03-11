@@ -1,9 +1,9 @@
-import {
+const {
   validateCostCenter,
   validatePartialCostCenter
-} from '../../schemas/company/cost_center.js'
+} = require('../../schemas/company/cost_center.js')
 
-export class CostCenterController {
+class CostCenterController {
   constructor({ costCenterModel }) {
     this.costCenterModel = costCenterModel
   }
@@ -107,3 +107,4 @@ export class CostCenterController {
     }
   }
 }
+module.exports = { CostCenterController }

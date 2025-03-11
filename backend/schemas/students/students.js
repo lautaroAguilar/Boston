@@ -1,4 +1,4 @@
-import { z } from 'zod'
+const { z } = require('zod')
 
 const studentsSchema = z.object({
   first_name: z
@@ -13,6 +13,7 @@ const studentsSchema = z.object({
     .string({ required_error: 'El email es requerido' })
     .trim()
     .email('El email debe ser válido'),
+  sid: z.union([z.string().min(1), z.literal(''), z.null()]).optional(),
   initial_leveling_date: z
     .string({
       required_error: 'La fecha de nivelación inicial es requerida'
@@ -42,9 +43,12 @@ const studentsSchema = z.object({
     .int('El ID del nivel debe ser un número entero')
 })
 
-export function validateStudents(student) {
+function validateStudents(student) {
   return studentsSchema.safeParse(student)
 }
-export function validatePartialStudents(student) {
+
+function validatePartialStudents(student) {
   return studentsSchema.partial().safeParse(student)
 }
+
+module.exports = { validateStudents, validatePartialStudents }

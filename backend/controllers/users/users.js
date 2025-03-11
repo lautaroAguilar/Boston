@@ -1,5 +1,6 @@
-import { validatePartialRegister } from '../../schemas/auth/user.js'
-export class UserController {
+const { validatePartialRegister } = require('../../schemas/auth/user.js')
+
+class UserController {
   constructor({ userModel }) {
     this.userModel = userModel
   }
@@ -69,3 +70,5 @@ export class UserController {
     }
   }
 }
+
+module.exports = { UserController }

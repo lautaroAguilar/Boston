@@ -1,6 +1,6 @@
-import { pool } from '../../config/database.js'
+const { pool } = require('../../config/database.js')
 
-export class StudentsModel {
+class StudentsModel {
   static async create(studentData) {
     const connection = await pool.getConnection()
 
@@ -8,11 +8,12 @@ export class StudentsModel {
       await connection.beginTransaction()
 
       const [studentResult] = await connection.query(
-        `INSERT INTO students (first_name, last_name, email, initial_leveling_date, company_id, cost_center_id, sector_id) VALUES (?, ?, ?, ?, UUID_TO_BIN(?), ?, ?)`,
+        `INSERT INTO students (first_name, last_name, email, sid, initial_leveling_date, company_id, cost_center_id, sector_id) VALUES (?, ?, ?, ?, ?, UUID_TO_BIN(?), ?, ?)`,
         [
           studentData.first_name,
           studentData.last_name,
           studentData.email,
+          studentData.sid,
           studentData.initial_leveling_date,
           studentData.company_id,
           studentData.cost_center_id,
@@ -22,14 +23,9 @@ export class StudentsModel {
       const studentId = studentResult.insertId
 
       await connection.query(
-        `INSERT INTO student_progress (student_id, language_id, module_id, level_id, start_date) 
-         VALUES (?, ?, ?, ?, CURDATE())`,
-        [
-          studentId,
-          studentData.language_id,
-          studentData.module_id,
-          studentData.level_id
-        ]
+        `INSERT INTO student_progress (student_id, language_id, module_id, start_date) 
+         VALUES (?, ?, ?, CURDATE())`,
+        [studentId, studentData.language_id, studentData.module_id]
       )
 
       await connection.commit()
@@ -42,7 +38,7 @@ export class StudentsModel {
       connection.release()
     }
   }
-  static async getAll({companyId}) {
+  static async getAll({ companyId }) {
     const connection = await pool.getConnection()
     try {
       let query = `
@@ -52,6 +48,7 @@ export class StudentsModel {
           s.last_name,
           s.email,
           s.initial_leveling_date,
+          s.sid,
           BIN_TO_UUID(c.id) AS company_id,
           c.name AS company_name,
           cc.id AS cost_center_id,
@@ -97,6 +94,7 @@ export class StudentsModel {
           s.last_name,
           s.email,
           s.initial_leveling_date,
+          s.sid,
           c.name AS company_name,
           cc.name AS cost_center_name,
           sec.name AS sector_name,
@@ -166,3 +164,4 @@ export class StudentsModel {
     }
   }
 }
+module.exports = { StudentsModel }

@@ -1,6 +1,5 @@
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
-
+const mysql = require('mysql2/promise');
+const dotenv = require('dotenv');
 
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.test';
 dotenv.config({ path: envFile });
@@ -16,4 +15,6 @@ const config = {
   queueLimit: 0
 };
 
-export const pool = mysql.createPool(config);
+const pool = mysql.createPool(config);
+
+module.exports = { pool };

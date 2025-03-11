@@ -1,11 +1,12 @@
-import {
+const {
   validateCompany,
   validatePartialCompany
-} from '../../schemas/company/company.js'
-import { validateContact } from '../../schemas/company/contacts.js'
-import { validateSector } from '../../schemas/company/sector.js'
-import { validateCostCenter } from '../../schemas/company/cost_center.js'
-export class CompanyController {
+} = require('../../schemas/company/company.js')
+const { validateContact } = require('../../schemas/company/contacts.js')
+const { validateSector } = require('../../schemas/company/sector.js')
+const { validateCostCenter } = require('../../schemas/company/cost_center.js')
+
+class CompanyController {
   constructor({ companyModel }) {
     this.companyModel = companyModel
   }
@@ -134,3 +135,5 @@ export class CompanyController {
     }
   }
 }
+
+module.exports = { CompanyController }

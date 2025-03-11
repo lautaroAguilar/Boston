@@ -1,6 +1,6 @@
-import { z } from 'zod'
+const { z } = require('zod')
 
-export const contactSchema = z.object({
+const contactSchema = z.object({
   name: z.string().min(1, 'El nombre no puede estar vacío'),
   email: z
     .string()
@@ -8,9 +8,13 @@ export const contactSchema = z.object({
     .email('El email del contacto debe ser válido'),
   notes: z.string().optional()
 })
-export function validateContact(contact) {
+
+function validateContact(contact) {
   return contactSchema.safeParse(contact)
 }
-export function validatePartialContact(contact) {
+
+function validatePartialContact(contact) {
   return contactSchema.partial().safeParse(contact)
 }
+
+module.exports = { contactSchema, validateContact, validatePartialContact }

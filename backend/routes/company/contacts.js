@@ -1,8 +1,8 @@
-import { Router } from 'express'
-import { ContactController } from '../../controllers/company/contacts.js'
-import { ContactsModel } from '../../models/company/contacts.js'
-import { authenticateToken } from '../../middlewares/auth.js'
-export const contactRouter = Router({ mergeParams: true })
+const { Router } = require('express')
+const { ContactController } = require('../../controllers/company/contacts.js')
+const { ContactsModel } = require('../../models/company/contacts.js')
+const { authenticateToken } = require('../../middlewares/auth.js')
+const contactRouter = Router({ mergeParams: true })
 
 const contactController = new ContactController({ contactModel: ContactsModel })
 
@@ -21,3 +21,4 @@ contactRouter.delete('/:contactId', authenticateToken, (req, res) =>
 contactRouter.patch('/:contactId', authenticateToken, (req, res) =>
   contactController.updateById(req, res)
 )
+module.exports = { contactRouter }

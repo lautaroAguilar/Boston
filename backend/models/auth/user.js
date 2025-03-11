@@ -1,11 +1,11 @@
-import { pool } from '../../config/database.js'
+const { pool } = require('../../config/database.js')
 
-export class UserAuthModel {
+class UserAuthModel {
   static findOne = async (email) => {
     const connection = await pool.getConnection()
     try {
       const [rows] = await connection.query(
-        `SELECT id, name, email, password, role_id FROM users WHERE email = ?`,
+        `SELECT id, first_name, last_name, email, password, role_id, belongs_to FROM users WHERE email = ?`,
         [email]
       )
 
@@ -20,13 +20,20 @@ export class UserAuthModel {
       connection.release()
     }
   }
-  static register = async (name, email, password, roleId) => {
+  static register = async (
+    first_name,
+    last_name,
+    email,
+    password,
+    roleId,
+    belongsTo
+  ) => {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
       const [result] = await connection.query(
-        `INSERT INTO users (name, email, password, role_id) VALUES (?, ?, ?, ?)`,
-        [name, email, password, roleId]
+        `INSERT INTO users (first_name, last_name, email, password, role_id, belongs_to) VALUES (?, ?, ?, ?, ?, ?)`,
+        [first_name, last_name, email, password, roleId, belongsTo]
       )
       await connection.commit()
       return { userId: result.insertId }
@@ -39,3 +46,4 @@ export class UserAuthModel {
     }
   }
 }
+module.exports = { UserAuthModel }

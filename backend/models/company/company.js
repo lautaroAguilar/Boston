@@ -1,11 +1,11 @@
-import { pool } from '../../config/database.js'
-import { ContactsModel } from './contacts.js'
-import { CostCenterModel } from './cost_center.js'
-import { SectorModel } from './sector.js'
+const { pool } = require('../../config/database.js')
+const { ContactsModel } = require('./contacts.js')
+const { CostCenterModel } = require('./cost_center.js')
+const { SectorModel } = require('./sector.js')
 
-import { randomUUID } from 'node:crypto'
+const { randomUUID } = require('node:crypto')
 
-export class CompanyModel {
+class CompanyModel {
   static async createWithRelations(
     companyData,
     contactData,
@@ -47,7 +47,7 @@ export class CompanyModel {
       // Se inserta la empresa
       await conn.query(
         `
-        INSERT INTO COMPANY (id, name, CUIT, business_name, SID, survey_link)
+        INSERT INTO COMPANY (id, name, cuit, business_name, first_survey_link, second_survey_link)
         VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?)
       `,
         [
@@ -55,8 +55,8 @@ export class CompanyModel {
           companyData.name,
           companyData.cuit,
           companyData.business_name,
-          companyData.sid,
-          companyData.survey_link
+          companyData.first_survey_link,
+          companyData.second_survey_link
         ]
       )
       if (!connection) {
@@ -83,10 +83,10 @@ export class CompanyModel {
         SELECT 
           BIN_TO_UUID(id) AS id,
           name,
-          CUIT,
+          cuit,
           business_name,
-          SID,
-          survey_link
+          first_survey_link,
+          second_survey_link
         FROM company
       `)
       return companies
@@ -105,10 +105,10 @@ export class CompanyModel {
         SELECT 
           BIN_TO_UUID(c.id) AS id,
           c.name,
-          c.CUIT,
+          c.cuit,
           c.business_name,
-          c.SID,
-          c.survey_link
+          c.first_survey_link,
+          c.second_survey_link
         FROM company c
         WHERE c.id = UUID_TO_BIN(?)
       `,
@@ -156,20 +156,20 @@ export class CompanyModel {
         values.push(companyData.name)
       }
       if (companyData.cuit !== undefined) {
-        setClauses.push('CUIT = ?')
+        setClauses.push('cuit = ?')
         values.push(companyData.cuit)
       }
       if (companyData.business_name !== undefined) {
         setClauses.push('business_name = ?')
         values.push(companyData.business_name)
       }
-      if (companyData.sid !== undefined) {
-        setClauses.push('SID = ?')
-        values.push(companyData.sid)
+      if (companyData.first_survey_link !== undefined) {
+        setClauses.push('first_survey_link = ?')
+        values.push(companyData.first_survey_link)
       }
-      if (companyData.survey_link !== undefined) {
-        setClauses.push('survey_link = ?')
-        values.push(companyData.survey_link)
+      if (companyData.second_survey_link !== undefined) {
+        setClauses.push('second_survey_link = ?')
+        values.push(companyData.second_survey_link)
       }
       if (setClauses.length === 0) {
         return 0
@@ -192,3 +192,5 @@ export class CompanyModel {
     }
   }
 }
+
+module.exports = { CompanyModel }

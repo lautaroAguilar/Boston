@@ -1,8 +1,8 @@
-import {
+const {
   validateContact,
   validatePartialContact
-} from '../../schemas/company/contacts.js'
-export class ContactController {
+} = require('../../schemas/company/contacts.js')
+class ContactController {
   constructor({ contactModel }) {
     this.contactModel = contactModel
   }
@@ -81,7 +81,10 @@ export class ContactController {
         return res.status(400).json(result.error.issues)
       }
       const { contactId } = req.params
-      const affectedRows = await this.contactModel.updateById(contactId, result.data)
+      const affectedRows = await this.contactModel.updateById(
+        contactId,
+        result.data
+      )
       if (affectedRows === 0) {
         return res
           .status(404)
@@ -94,3 +97,4 @@ export class ContactController {
     }
   }
 }
+module.exports = { ContactController }

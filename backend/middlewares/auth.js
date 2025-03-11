@@ -1,5 +1,6 @@
-import jwt from 'jsonwebtoken'
-export function authenticateToken(req, res, next) {
+const jwt = require('jsonwebtoken')
+
+function authenticateToken(req, res, next) {
   try {
     const token = req.cookies.access_token
     if (!token) {
@@ -19,3 +20,5 @@ export function authenticateToken(req, res, next) {
     return res.status(401).json({ error: 'Error de autenticación' })
   }
 }
+
+module.exports = { authenticateToken }

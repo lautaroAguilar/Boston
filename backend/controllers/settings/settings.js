@@ -1,4 +1,4 @@
-export class SettingsController {
+class SettingsController {
   constructor({ settingsModel }) {
     this.settingsModel = settingsModel
   }
@@ -42,4 +42,4 @@ export class SettingsController {
     }
   }
 }
-
+module.exports = { SettingsController }

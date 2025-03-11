@@ -1,4 +1,4 @@
-import cors from 'cors'
+const cors = require('cors')
 const ACCEPTED_ORIGINS = [
   'http://localhost:8080',
   'http://localhost:3306',
@@ -6,9 +6,7 @@ const ACCEPTED_ORIGINS = [
   'http://localhost:3000'
 ]
 
-export default function corsMiddleware({
-  acceptedOrigins = ACCEPTED_ORIGINS
-} = {}) {
+function corsMiddleware({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) {
   return cors({
     origin: (origin, callback) => {
       if (acceptedOrigins.includes(origin) || !origin) {
@@ -21,3 +19,5 @@ export default function corsMiddleware({
     allowedHeaders: ['Content-Type', 'Authorization']
   })
 }
+
+module.exports = { corsMiddleware }

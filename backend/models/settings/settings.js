@@ -1,6 +1,6 @@
-import { pool } from '../../config/database.js'
+const { pool } = require('../../config/database.js')
 
-export class SettingsModel {
+class SettingsModel {
   static async getAllModules() {
     const connection = await pool.getConnection()
     try {
@@ -35,3 +35,4 @@ export class SettingsModel {
     }
   }
 }
+module.exports = { SettingsModel }

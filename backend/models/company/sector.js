@@ -1,6 +1,6 @@
-import { pool } from '../../config/database.js'
+const { pool } = require('../../config/database.js')
 
-export class SectorModel {
+class SectorModel {
   static async create(companyId, sectorData, connection = null) {
     const conn = connection || (await pool.getConnection())
     try {
@@ -123,3 +123,4 @@ export class SectorModel {
     }
   }
 }
+module.exports = { SectorModel }

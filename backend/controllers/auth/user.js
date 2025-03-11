@@ -1,8 +1,8 @@
-import { validateLogin, validateRegister } from '../../schemas/auth/user.js'
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcrypt'
+const { validateLogin, validateRegister } = require('../../schemas/auth/user.js')
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
-export class UserAuthController {
+class UserAuthController {
   constructor({ userAuthModel }) {
     this.userAuthModel = userAuthModel
   }
@@ -155,3 +155,5 @@ export class UserAuthController {
     }
   }
 }
+
+module.exports = { UserAuthController }

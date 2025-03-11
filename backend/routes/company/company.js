@@ -1,12 +1,12 @@
-import { Router } from 'express'
-import { CompanyController } from '../../controllers/company/company.js'
-import { CompanyModel } from '../../models/company/company.js'
+const { Router } = require('express')
+const { CompanyController } = require('../../controllers/company/company.js')
+const { CompanyModel } = require('../../models/company/company.js')
 
-import { sectorRouter } from './sector.js'
-import { contactRouter } from './contacts.js'
-import { costCenterRouter } from './cost_center.js'
-import { authenticateToken } from '../../middlewares/auth.js'
-export const companiesRouter = Router()
+const { sectorRouter } = require('./sector.js')
+const { contactRouter } = require('./contacts.js')
+const { costCenterRouter } = require('./cost_center.js')
+const { authenticateToken } = require('../../middlewares/auth.js')
+const companiesRouter = Router()
 
 const companyController = new CompanyController({ companyModel: CompanyModel })
 
@@ -28,3 +28,5 @@ companiesRouter.patch(
 companiesRouter.use('/:companyId/contacts', contactRouter)
 companiesRouter.use('/:companyId/sectors', sectorRouter)
 companiesRouter.use('/:companyId/cost-centers', costCenterRouter)
+
+module.exports = { companiesRouter }

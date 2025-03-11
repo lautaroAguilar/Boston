@@ -1,9 +1,9 @@
-import {
+const {
   validateSector,
   validatePartialSector
-} from '../../schemas/company/sector.js'
+} = require('../../schemas/company/sector.js')
 
-export class SectorController {
+class SectorController {
   constructor({ sectorModel }) {
     this.sectorModel = sectorModel
   }
@@ -98,3 +98,4 @@ export class SectorController {
     }
   }
 }
+module.exports = { SectorController }

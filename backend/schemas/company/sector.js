@@ -1,4 +1,5 @@
-import { z } from 'zod'
+const { z } = require('zod')
+
 const sectorSchema = z.object({
   name: z
     .string({
@@ -6,9 +7,13 @@ const sectorSchema = z.object({
     })
     .min(1, 'El nombre del sector no puede estar vacío')
 })
-export function validateSector(sector) {
+
+function validateSector(sector) {
   return sectorSchema.safeParse(sector)
 }
-export function validatePartialSector(sector) {
+
+function validatePartialSector(sector) {
   return sectorSchema.partial().safeParse(sector)
 }
+
+module.exports = { sectorSchema, validateSector, validatePartialSector }

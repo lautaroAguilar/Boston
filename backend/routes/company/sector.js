@@ -1,8 +1,8 @@
-import { Router } from 'express'
-import { SectorController } from '../../controllers/company/sector.js'
-import { SectorModel } from '../../models/company/sector.js'
-import { authenticateToken } from '../../middlewares/auth.js'
-export const sectorRouter = Router({ mergeParams: true })
+const { Router } = require('express')
+const { SectorController } = require('../../controllers/company/sector.js')
+const { SectorModel } = require('../../models/company/sector.js')
+const { authenticateToken } = require('../../middlewares/auth.js')
+const sectorRouter = Router({ mergeParams: true })
 
 const sectorController = new SectorController({ sectorModel: SectorModel })
 
@@ -21,3 +21,4 @@ sectorRouter.delete('/:sectorId', authenticateToken, (req, res) =>
 sectorRouter.patch('/:sectorId', authenticateToken, (req, res) =>
   sectorController.updateById(req, res)
 )
+module.exports = { sectorRouter }
