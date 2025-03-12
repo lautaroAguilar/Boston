@@ -1,5 +1,5 @@
 const express = require('express')
-require('dotenv/config')
+const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser')
 const { corsMiddleware } = require('./middlewares/cors.js')
 const { companiesRouter } = require('./routes/company/company.js')
@@ -7,8 +7,9 @@ const { userAuthRouter } = require('./routes/auth/user.js')
 const { userRouter } = require('./routes/users/users.js')
 const { studentsRouter } = require('./routes/students/students.js')
 const { settingsRouter } = require('./routes/settings/settings.js')
+dotenv.config();
 const app = express()
-const PORT = process.env.PORT ?? 3000
+const PORT = process.env.PORT || 3000
 app.use(express.json())
 app.use(corsMiddleware())
 app.use(cookieParser())
@@ -29,7 +30,7 @@ app.use('/api/test', (req, res) => {
 
 // Solo inicia el servidor si este archivo se ejecuta directamente
 if (require.main === module) {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor escuchando en http://localhost:${PORT}`)
   })
 }

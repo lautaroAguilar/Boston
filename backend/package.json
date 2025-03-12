@@ -2,6 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
     "start:sql": "node --watch server-sql.js",
     "start": "node --watch app.js",
