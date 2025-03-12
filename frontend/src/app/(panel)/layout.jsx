@@ -31,7 +31,8 @@ function CustomAppTitle() {
 /* CREAMOS COMPONENTE PARA FILTRAR POR EMPRESA EN EL HEADER DEL LAYOUT */
 function CustomSelectCompany() {
   const { selectedCompany, setSelectedCompany } = useDashboard();
-  const { companiesInfo, fetchCompaniesToSelect, companyCreated } = useCompany();
+  const { companiesInfo, fetchCompaniesToSelect, companyCreated } =
+    useCompany();
 
   const fetchCompanyId = async (companyId) => {
     try {
@@ -66,11 +67,15 @@ function CustomSelectCompany() {
           }}
           sx={{ width: isMobile ? "120px" : "200px" }}
         >
-          {companiesInfo.map((opt) => (
-            <MenuItem key={opt.id} value={opt.id}>
-              {opt.name}
-            </MenuItem>
-          ))}
+          {companiesInfo.length > 0 ? (
+            companiesInfo.map((opt) => (
+              <MenuItem key={opt.id} value={opt.id}>
+                {opt.name}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem value="">No hay empresas disponibles</MenuItem>
+          )}
         </Select>
       </FormControl>
 

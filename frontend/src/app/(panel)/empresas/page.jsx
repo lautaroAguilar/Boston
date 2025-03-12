@@ -86,8 +86,7 @@ const columns = [
     minWidth: 150,
     flex: 1,
   },
-  { field: "CUIT", headerName: "CUIT", minWidth: 150, flex: 1 },
-  { field: "SID", headerName: "SID", minWidth: 150, flex: 1 },
+  { field: "cuit", headerName: "CUIT", minWidth: 150, flex: 1 },
   {
     field: "costCenters",
     headerName: "Centros de costo",
@@ -140,8 +139,8 @@ export default function Page() {
     name: "",
     cuit: "",
     business_name: "",
-    sid: "",
-    survey_link: "",
+    first_survey_link: "",
+    second_survey_link: "",
   });
   const [formCostCenterValues, setFormCostCenterValues] = useState({
     name: "",
@@ -159,8 +158,8 @@ export default function Page() {
     { name: "name", label: "Nombre", required: true },
     { name: "business_name", label: "Razón Social", required: true },
     { name: "cuit", label: "CUIT", required: true, type: "number" },
-    { name: "sid", label: "SID", required: true },
-    { name: "survey_link", label: "Link de encuesta", required: true },
+    { name: "first_survey_link", label: "Primer encuesta" },
+    { name: "second_survey_link", label: "Segunda encuesta" },
   ];
   const fieldsCostCenter = [
     {
@@ -172,12 +171,10 @@ export default function Page() {
     {
       name: "name",
       label: "Nombre",
-      required: true,
     },
     {
       name: "email",
       label: "Email",
-      required: true,
     },
     {
       name: "notes",

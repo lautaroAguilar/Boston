@@ -32,8 +32,8 @@ export const CompanyProvider = ({ children }) => {
           name: dataToSend.name,
           cuit: Number(dataToSend.cuit),
           business_name: dataToSend.business_name,
-          sid: dataToSend.sid,
-          survey_link: dataToSend.survey_link,
+          first_survey_link: dataToSend.first_survey_link,
+          second_survey_link: dataToSend.second_survey_link,
         }),
       });
       if (res.status !== 201) {
@@ -334,8 +334,8 @@ export const CompanyProvider = ({ children }) => {
           name: dataToUpdate.name,
           cuit: Number(dataToUpdate.cuit),
           business_name: dataToUpdate.business_name,
-          sid: dataToUpdate.sid,
-          survey_link: dataToUpdate.survey_link,
+          first_survey_link: dataToUpdate.first_survey_link,
+          second_survey_link: dataToUpdate.second_survey_link,
         }),
       });
       if (!res.ok) {

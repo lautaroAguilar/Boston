@@ -9,6 +9,7 @@ export const studentStepOneSchema = z.object({
     .trim()
     .min(3, "El apellido debe contener al menos 3 letras"),
   email: z.string().trim().email("El email debe ser válido"),
+  sid: z.union([z.string().min(1), z.literal(""), z.null()]).optional(),
   cost_center_id: z
     .union([
       z.number().int("El ID del centro de costo debe ser un número entero"),

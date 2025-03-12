@@ -16,12 +16,18 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 /* COLUMNAS PARA EL DATAGRID DE ESTUDIANTES */
 const studentColumns = [
-  { field: "student_id", headerName: "ID", minWidth: 50, },
+  { field: "student_id", headerName: "ID", minWidth: 50 },
   { field: "first_name", headerName: "Nombre", minWidth: 150, flex: 1 },
   { field: "last_name", headerName: "Apellido", minWidth: 150, flex: 1 },
-  { field: "email", headerName: "Email", minWidth: 200, flex: 1 },
+  { field: "modules", headerName: "Módulo y nivel", minWidth: 150, flex: 1 },
+  { field: "sid", headerName: "SID", minWidth: 150, flex: 1 },
   { field: "company_name", headerName: "Empresa", minWidth: 150, flex: 1 },
-  { field: "cost_center_name", headerName: "Centro de Costo", minWidth: 150, flex: 1 },
+  {
+    field: "cost_center_name",
+    headerName: "Centro de Costo",
+    minWidth: 150,
+    flex: 1,
+  },
   { field: "sector_name", headerName: "Sector", minWidth: 150, flex: 1 },
 ];
 
@@ -53,6 +59,7 @@ export default function Page() {
     company_id: "",
     cost_center_id: "",
     sector_id: "",
+    sid: "",
   });
 
   const [step2Values, setStep2Values] = useState({
@@ -79,26 +86,24 @@ export default function Page() {
           name: "cost_center_id",
           label: "Centro de Costo",
           component: "select",
-          options:
-            selectedCompany
-              ? costCenters.map((cc) => ({
-                  id: cc.cost_center_id,
-                  label: cc.cost_center_name,
-                }))
-              : [{ id: 0, label: "No se encontraron centros de costo" }],
+          options: selectedCompany
+            ? costCenters.map((cc) => ({
+                id: cc.cost_center_id,
+                label: cc.cost_center_name,
+              }))
+            : [{ id: 0, label: "No se encontraron centros de costo" }],
           required: true,
         },
         {
           name: "sector_id",
           label: "Sector",
           component: "select",
-          options:
-            selectedCompany
-              ? sectors.map((sector) => ({
-                  id: sector.sector_id,
-                  label: sector.sector_name,
-                }))
-              : [{ id: 0, label: "No se encontraron sectores" }],
+          options: selectedCompany
+            ? sectors.map((sector) => ({
+                id: sector.sector_id,
+                label: sector.sector_name,
+              }))
+            : [{ id: 0, label: "No se encontraron sectores" }],
           required: true,
         },
       ],

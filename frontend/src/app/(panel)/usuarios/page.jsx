@@ -8,11 +8,8 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import MyForm from "@/components/Form";
 import CONFIG from "../../../../config/api";
 import { useDashboard } from "@/contexts/dashboard";
-const userColumns = [
-  { field: "id", headerName: "ID", minWidth: 50 },
-  { field: "name", headerName: "Nombre", minWidth: 150, flex: 1 },
-  { field: "email", headerName: "Email", minWidth: 200, flex: 1 },
-];
+import { useCompany } from "@/contexts/companies";
+
 export default function page() {
   const theme = createTheme(esES);
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -24,17 +21,19 @@ export default function page() {
     snackbarErrorMessage,
     setOpenSnackbar,
   } = useDashboard();
-
+  const { companiesInfo } = useCompany();
   const [showForm, setShowForm] = useState(false);
   const [users, setUsers] = useState(false);
   const [roles, setRoles] = useState(false);
   const [created, setCreated] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [formRegisterValues, setFormRegisterValues] = useState({
-    name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     password: "",
-    role: "",
+    role_id: "",
+    belongs_to: "",
   });
   async function getRoles() {
     try {
@@ -47,11 +46,12 @@ export default function page() {
     }
   }
   const fieldsRegister = [
-    { name: "name", label: "Nombre", required: true },
+    { name: "first_name", label: "Nombre", required: true },
+    { name: "last_name", label: "Apellido", required: true },
     { name: "email", label: "Email", type: "email", required: true },
     { name: "password", label: "Contraseña", type: "password", required: true },
     {
-      name: "role",
+      name: "role_id",
       label: "Rol",
       type: "select",
       required: true,
@@ -60,10 +60,18 @@ export default function page() {
         ? roles.map((role) => ({ id: role.id, label: role.name }))
         : [{ id: 0, label: "No se encontraron roles" }],
     },
+    {
+      name: "belongs_to",
+      label: "Pertenece a la empresa",
+      type: "select",
+      component: "select",
+      options: companiesInfo
+        ? companiesInfo?.map((c) => ({ id: c.name, label: c.name }))
+        : [{ id: 0, label: "No se encontraron empresas" }],
+    },
   ];
   function handleShowForm() {
     setShowForm(true);
-    getRoles();
   }
   const handleChangeRegister = (fieldName, newValue) => {
     setFormRegisterValues((prev) => ({
@@ -123,6 +131,23 @@ export default function page() {
       console.log("error al buscar usuarios", error);
     }
   };
+  const userColumns = [
+    { field: "id", headerName: "ID", minWidth: 50 },
+    { field: "first_name", headerName: "Nombre", minWidth: 150, flex: 1 },
+    { field: "last_name", headerName: "Apellido", minWidth: 150, flex: 1 },
+    { field: "email", headerName: "Email", minWidth: 200, flex: 1 },
+    {
+      field: "role_id",
+      headerName: "Rol",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params) => {
+        const role = roles.find((role) => role.id === params.value);
+        return role ? role.name : "Desconocido";
+      },
+    },
+    { field: "belongs_to", headerName: "Empresa", minWidth: 150, flex: 1 },
+  ];
   useEffect(() => {
     setToolbarButtonAction({
       label: "Crear nuevo",
@@ -137,6 +162,7 @@ export default function page() {
   }, [snackbarMessage, snackbarErrorMessage]);
   useEffect(() => {
     getUsers();
+    getRoles();
   }, [created]);
   return (
     <>
@@ -172,7 +198,7 @@ export default function page() {
           elevation={4}
           square={false}
           sx={{
-            height: "70%",
+            height: "90%",
             width: isMobile ? "90%" : "50%",
             display: "flex",
             flexDirection: "column",

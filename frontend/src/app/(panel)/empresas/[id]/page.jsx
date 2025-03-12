@@ -85,15 +85,15 @@ export default function Page() {
         { name: "name", label: "Nombre" },
         { name: "business_name", label: "Razón Social" },
         { name: "cuit", label: "CUIT", type: "number" },
-        { name: "sid", label: "SID" },
-        { name: "survey_link", label: "Link de encuesta" },
+        { name: "first_survey_link", label: "Primer encuesta" },
+        { name: "second_survey_link", label: "Segunda encuesta" },
       ],
       values: (companyData) => ({
         name: companyData?.name || "",
         business_name: companyData?.business_name || "",
-        cuit: companyData?.CUIT || "",
-        sid: companyData?.SID || "",
-        survey_link: companyData?.survey_link || "",
+        cuit: companyData?.cuit || "",
+        first_survey_link: companyData?.first_survey_link || "",
+        second_survey_link: companyData?.second_survey_link || "",
       }),
       onSubmit: (data) => {
         updateCompany(data, id);
@@ -383,7 +383,7 @@ export default function Page() {
                   <Typography variant="body1" color="text.secondary">
                     CUIT
                   </Typography>
-                  <Typography variant="body1">{companyData?.CUIT}</Typography>
+                  <Typography variant="body1">{companyData?.cuit}</Typography>
                 </Box>
                 <Box
                   display="flex"
@@ -398,9 +398,42 @@ export default function Page() {
                   }}
                 >
                   <Typography variant="body1" color="text.secondary">
-                    SID
+                    Link de la primera encuesta
                   </Typography>
-                  <Typography variant="body1">{companyData?.SID}</Typography>
+                  {companyData?.first_survey_link ? (
+                    <Typography variant="body1">
+                      {companyData?.first_survey_link}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body1" color="text.secondary">
+                      No se encontró la encuesta
+                    </Typography>
+                  )}
+                </Box>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  sx={{
+                    backgroundColor:
+                      theme.palette.mode === "dark"
+                        ? theme.palette.grey[800]
+                        : theme.palette.grey[200],
+                    p: 1,
+                    borderRadius: 1,
+                  }}
+                >
+                  <Typography variant="body1" color="text.secondary">
+                    Link de la segunda encuesta
+                  </Typography>
+                  {companyData?.second_survey_link ? (
+                    <Typography variant="body1">
+                      {companyData?.second_survey_link}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body1" color="text.secondary">
+                      No se encontró la encuesta
+                    </Typography>
+                  )}
                 </Box>
                 <Box
                   display="flex"
