@@ -1,6 +1,6 @@
 const { validateLogin, validateRegister } = require('../../schemas/auth/user.js')
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 
 class UserAuthController {
   constructor({ userAuthModel }) {
