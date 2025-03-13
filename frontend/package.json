@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "start": "node server.js",
     "dev": "next dev -p 1234 --turbopack",
     "build": "next build",
-    "start": "next start",
+    "export": "next build && next export",
     "lint": "next lint"
   },
   "dependencies": {
