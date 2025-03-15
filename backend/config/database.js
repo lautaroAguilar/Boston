@@ -1,8 +1,4 @@
 const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
-
-const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.test';
-dotenv.config({ path: envFile });
 
 const config = {
   host: process.env.DB_HOST || 'localhost',
