@@ -16,7 +16,7 @@ app.use(cookieParser())
 app.disable('x-powered-by')
 app.options('/api/*', corsMiddleware())
 
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.redirect('/api/test')
 })
 app.get('/api/test', (req, res) => {
