@@ -58,14 +58,33 @@
       "static/chunks/118-3818ae6c1945bbeb.js",
       "static/chunks/app/(panel)/layout-aac30ee65863ecc2.js"
     ],
-    "/(panel)/cronograma/page": [
+    "/(panel)/docentes/page": [
       "static/chunks/webpack-bb784d5d107c213b.js",
       "static/chunks/4bd1b696-c9b8ec6ca1654f6f.js",
       "static/chunks/517-e35f28c5d2af5c48.js",
       "static/chunks/main-app-24703bac94fbe5de.js",
       "static/chunks/120-89037aaf48cb3251.js",
       "static/chunks/735-00bfa27b44f9cfee.js",
-      "static/chunks/app/(panel)/cronograma/page-216b8ce740fa0f6f.js"
+      "static/chunks/app/(panel)/docentes/page-8158f9f777adb49e.js"
+    ],
+    "/(panel)/estudiantes/page": [
+      "static/chunks/webpack-bb784d5d107c213b.js",
+      "static/chunks/4bd1b696-c9b8ec6ca1654f6f.js",
+      "static/chunks/517-e35f28c5d2af5c48.js",
+      "static/chunks/main-app-24703bac94fbe5de.js",
+      "static/chunks/120-89037aaf48cb3251.js",
+      "static/chunks/735-00bfa27b44f9cfee.js",
+      "static/chunks/539-78967fefaa5f086a.js",
+      "static/chunks/85-e8d5217ffa96654d.js",
+      "static/chunks/724-c5e35b180d551be7.js",
+      "static/chunks/392-5e9b693299b133a4.js",
+      "static/chunks/926-c0c6e920aa75274d.js",
+      "static/chunks/675-680ced56deaad793.js",
+      "static/chunks/255-c9e6aa81b705518d.js",
+      "static/chunks/34-d6e287f68d63d141.js",
+      "static/chunks/569-332aefac834158c0.js",
+      "static/chunks/118-3818ae6c1945bbeb.js",
+      "static/chunks/app/(panel)/estudiantes/page-bb1ad94a5a9d4e9d.js"
     ],
     "/(panel)/empresas/page": [
       "static/chunks/webpack-bb784d5d107c213b.js",
@@ -87,15 +106,6 @@
       "static/chunks/118-3818ae6c1945bbeb.js",
       "static/chunks/app/(panel)/empresas/page-e748ed2154cb0598.js"
     ],
-    "/(panel)/docentes/page": [
-      "static/chunks/webpack-bb784d5d107c213b.js",
-      "static/chunks/4bd1b696-c9b8ec6ca1654f6f.js",
-      "static/chunks/517-e35f28c5d2af5c48.js",
-      "static/chunks/main-app-24703bac94fbe5de.js",
-      "static/chunks/120-89037aaf48cb3251.js",
-      "static/chunks/735-00bfa27b44f9cfee.js",
-      "static/chunks/app/(panel)/docentes/page-8158f9f777adb49e.js"
-    ],
     "/(panel)/empresas/[id]/page": [
       "static/chunks/webpack-bb784d5d107c213b.js",
       "static/chunks/4bd1b696-c9b8ec6ca1654f6f.js",
@@ -111,15 +121,6 @@
       "static/chunks/118-3818ae6c1945bbeb.js",
       "static/chunks/app/(panel)/empresas/[id]/page-824b928d5d6b0663.js"
     ],
-    "/(panel)/grupos/page": [
-      "static/chunks/webpack-bb784d5d107c213b.js",
-      "static/chunks/4bd1b696-c9b8ec6ca1654f6f.js",
-      "static/chunks/517-e35f28c5d2af5c48.js",
-      "static/chunks/main-app-24703bac94fbe5de.js",
-      "static/chunks/120-89037aaf48cb3251.js",
-      "static/chunks/735-00bfa27b44f9cfee.js",
-      "static/chunks/app/(panel)/grupos/page-f68fc730a60b27a2.js"
-    ],
     "/(panel)/inicio/page": [
       "static/chunks/webpack-bb784d5d107c213b.js",
       "static/chunks/4bd1b696-c9b8ec6ca1654f6f.js",
@@ -128,6 +129,15 @@
       "static/chunks/120-89037aaf48cb3251.js",
       "static/chunks/735-00bfa27b44f9cfee.js",
       "static/chunks/app/(panel)/inicio/page-24299f46bf01587e.js"
+    ],
+    "/(panel)/grupos/page": [
+      "static/chunks/webpack-bb784d5d107c213b.js",
+      "static/chunks/4bd1b696-c9b8ec6ca1654f6f.js",
+      "static/chunks/517-e35f28c5d2af5c48.js",
+      "static/chunks/main-app-24703bac94fbe5de.js",
+      "static/chunks/120-89037aaf48cb3251.js",
+      "static/chunks/735-00bfa27b44f9cfee.js",
+      "static/chunks/app/(panel)/grupos/page-f68fc730a60b27a2.js"
     ],
     "/(panel)/usuarios/page": [
       "static/chunks/webpack-bb784d5d107c213b.js",
@@ -147,24 +157,14 @@
       "static/chunks/118-3818ae6c1945bbeb.js",
       "static/chunks/app/(panel)/usuarios/page-d06e1c2432b10e5a.js"
     ],
-    "/(panel)/estudiantes/page": [
+    "/(panel)/cronograma/page": [
       "static/chunks/webpack-bb784d5d107c213b.js",
       "static/chunks/4bd1b696-c9b8ec6ca1654f6f.js",
       "static/chunks/517-e35f28c5d2af5c48.js",
       "static/chunks/main-app-24703bac94fbe5de.js",
       "static/chunks/120-89037aaf48cb3251.js",
       "static/chunks/735-00bfa27b44f9cfee.js",
-      "static/chunks/539-78967fefaa5f086a.js",
-      "static/chunks/85-e8d5217ffa96654d.js",
-      "static/chunks/724-c5e35b180d551be7.js",
-      "static/chunks/392-5e9b693299b133a4.js",
-      "static/chunks/926-c0c6e920aa75274d.js",
-      "static/chunks/675-680ced56deaad793.js",
-      "static/chunks/255-c9e6aa81b705518d.js",
-      "static/chunks/34-d6e287f68d63d141.js",
-      "static/chunks/569-332aefac834158c0.js",
-      "static/chunks/118-3818ae6c1945bbeb.js",
-      "static/chunks/app/(panel)/estudiantes/page-bb1ad94a5a9d4e9d.js"
+      "static/chunks/app/(panel)/cronograma/page-216b8ce740fa0f6f.js"
     ]
   }
 }
