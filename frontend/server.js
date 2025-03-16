@@ -34,5 +34,7 @@ app.prepare().then(() => {
     })
     .listen(port, () => {
       console.log(`Escuchando http://${hostname}:${port}`);
+      console.log("API en producción:", process.env.NEXT_PUBLIC_API_URL);
+
     });
 });
