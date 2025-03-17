@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useState, useEffect, useContext, use } from "react";
+import { createContext, useState, useEffect, useContext,} from "react";
 import { useRouter } from "next/navigation";
 import CONFIG from "../../config/api";
 
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
         await fetchUserInfo(data.userId);
       }
     } catch (error) {
-      console.error("Error comprobando sesión:", error);
+      console.log("Error comprobando sesión:", error);
       setUser(null);
     } finally {
       setLoading(false);
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
       }
       return await checkUserSession();
     } catch (error) {
-      console.error("Error al refrescar token:", error);
+      console.log("Error al refrescar token:", error);
       return null;
     }
   };
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
         router.push("/autenticacion");
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     } finally {
       setLoading(false);
     }

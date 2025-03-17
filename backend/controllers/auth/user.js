@@ -1,4 +1,7 @@
-const { validateLogin, validateRegister } = require('../../schemas/auth/user.js')
+const {
+  validateLogin,
+  validateRegister
+} = require('../../schemas/auth/user.js')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
@@ -12,7 +15,8 @@ class UserAuthController {
       if (!result.success) {
         return res.status(400).json(result.error.issues)
       }
-      const { name, email, password, role } = result.data
+      const { first_name, last_name, email, password, role_id, belongs_to } =
+        result.data
       const userExist = await this.userAuthModel.findOne(email)
       if (userExist) {
         return res
@@ -25,10 +29,12 @@ class UserAuthController {
           : 1
       const hashedPassword = await bcrypt.hash(password, saltRounds)
       const newUser = await this.userAuthModel.register(
-        name,
+        first_name,
+        last_name,
         email,
         hashedPassword,
-        role
+        role_id,
+        belongs_to
       )
       return res.status(201).json({
         message: 'Usuario registrado exitosamente',
