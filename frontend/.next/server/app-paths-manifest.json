@@ -1,14 +1,8 @@
 {
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/autenticacion/page": "app/autenticacion/page.js",
   "/page": "app/page.js",
-  "/(panel)/cronograma/page": "app/(panel)/cronograma/page.js",
-  "/(panel)/empresas/page": "app/(panel)/empresas/page.js",
-  "/(panel)/docentes/page": "app/(panel)/docentes/page.js",
-  "/(panel)/estudiantes/page": "app/(panel)/estudiantes/page.js",
-  "/(panel)/grupos/page": "app/(panel)/grupos/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/(panel)/inicio/page": "app/(panel)/inicio/page.js",
+  "/(panel)/empresas/page": "app/(panel)/empresas/page.js",
   "/(panel)/empresas/[id]/page": "app/(panel)/empresas/[id]/page.js",
-  "/(panel)/usuarios/page": "app/(panel)/usuarios/page.js"
+  "/(panel)/estudiantes/page": "app/(panel)/estudiantes/page.js"
 }

@@ -48,12 +48,4 @@ export const studentStepTwoSchema = z.object({
     .refine((val) => val !== "", {
       message: "Se debe seleccionar una opción para asignar el módulo",
     }),
-  level_id: z
-    .union([
-      z.number().int("El ID del nivel debe ser un número entero"),
-      z.literal(""),
-    ])
-    .refine((val) => val !== "", {
-      message: "Se debe seleccionar una opción para asignar el nivel",
-    }),
 });

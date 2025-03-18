@@ -19,7 +19,20 @@ const studentColumns = [
   { field: "student_id", headerName: "ID", minWidth: 50 },
   { field: "first_name", headerName: "Nombre", minWidth: 150, flex: 1 },
   { field: "last_name", headerName: "Apellido", minWidth: 150, flex: 1 },
-  { field: "modules", headerName: "Módulo y nivel", minWidth: 150, flex: 1 },
+  {
+    field: "module_name",
+    headerName: "Módulo actual",
+    minWidth: 150,
+    flex: 1,
+    valueGetter: (params) => params.row.module_name || "Sin módulo asignado",
+  },
+  {
+    field: "language_name",
+    headerName: "Idioma",
+    minWidth: 150,
+    flex: 1,
+    valueGetter: (params) => params.row.language_name || "Sin idioma asignado",
+  },
   { field: "sid", headerName: "SID", minWidth: 150, flex: 1 },
   { field: "company_name", headerName: "Empresa", minWidth: 150, flex: 1 },
   {
@@ -42,9 +55,7 @@ export default function Page() {
     selectedCompany,
     fetchModules,
     fetchLanguages,
-    fetchLevels,
     languages,
-    levels,
     modules,
   } = useDashboard();
   const { fetchStudents, students, createStudent, updated } = useStudent();
@@ -66,7 +77,6 @@ export default function Page() {
     initial_leveling_date: "",
     language_id: "",
     module_id: "",
-    level_id: "",
   });
 
   function handleShowForm() {
@@ -106,6 +116,7 @@ export default function Page() {
             : [{ id: 0, label: "No se encontraron sectores" }],
           required: true,
         },
+        { name: "sid", label: "SID" },
       ],
       values: step1Values,
       setValues: setStep1Values,
@@ -129,16 +140,9 @@ export default function Page() {
         },
         {
           name: "module_id",
-          label: "Módulo",
+          label: "Módulo y Nivel",
           component: "select",
           options: modules.map((mod) => ({ id: mod.id, label: mod.name })),
-          required: true,
-        },
-        {
-          name: "level_id",
-          label: "Nivel",
-          component: "select",
-          options: levels.map((lvl) => ({ id: lvl.id, label: lvl.name })),
           required: true,
         },
       ],
@@ -177,7 +181,6 @@ export default function Page() {
     }
     fetchModules();
     fetchLanguages();
-    fetchLevels();
   }, [selectedCompany]);
   return (
     <Stack>

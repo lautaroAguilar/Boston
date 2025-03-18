@@ -38,9 +38,6 @@ const studentsSchema = z.object({
   module_id: z
     .number({ required_error: 'El ID del módulo es requerido' })
     .int('El ID del módulo debe ser un número entero'),
-  level_id: z
-    .number({ required_error: 'El ID del nivel es requerido' })
-    .int('El ID del nivel debe ser un número entero')
 })
 
 function validateStudents(student) {
