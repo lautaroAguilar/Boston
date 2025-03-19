@@ -41,13 +41,16 @@ model cost_center {
 }
 
 model languages {
-  id   Int    @id @default(autoincrement())
-  name String @unique(map: "name") @db.VarChar(50)
+  id             Int              @id @default(autoincrement())
+  name           String           @unique(map: "name") @db.VarChar(50)
+  teacherLanguages TeacherLanguages[]
+  progress student_progress[]
 }
 
 model modules {
   id   Int    @id @default(autoincrement())
   name String @unique(map: "name") @db.VarChar(10)
+  progress             student_progress[]
 }
 
 model roles {
@@ -72,25 +75,31 @@ model student_progress {
   module_id   Int
   start_date  DateTime  @db.Date
   end_date    DateTime? @db.Date
+  is_current  Boolean   @default(true)
+  student     students  @relation(fields: [student_id], references: [id])
+  language    languages @relation(fields: [language_id], references: [id])
+  module      modules   @relation(fields: [module_id], references: [id])
 
   @@index([language_id], map: "language_id")
   @@index([module_id], map: "module_id")
   @@index([student_id], map: "student_id")
+  @@unique([student_id, is_current], name: "unique_active_module")
 }
 
 model students {
-  id                    Int       @id @default(autoincrement())
-  first_name            String    @db.VarChar(100)
-  last_name             String    @db.VarChar(100)
-  email                 String    @unique(map: "email") @db.VarChar(100)
-  initial_leveling_date DateTime? @db.Date
-  sid                   String?   @db.VarChar(50)
-  company_id            Bytes     @db.Binary(16)
+  id                    Int               @id @default(autoincrement())
+  first_name            String           @db.VarChar(100)
+  last_name             String           @db.VarChar(100)
+  email                 String           @unique(map: "email") @db.VarChar(100)
+  initial_leveling_date DateTime?        @db.Date
+  sid                   String?          @db.VarChar(50)
+  company_id            Bytes            @db.Binary(16)
   cost_center_id        Int
   sector_id             Int
-  active                Boolean?  @default(true)
-  created_at            DateTime? @default(now()) @db.Timestamp(0)
-  updated_at            DateTime? @default(now()) @db.Timestamp(0)
+  active                Boolean?         @default(true)
+  created_at            DateTime?        @default(now()) @db.Timestamp(0)
+  updated_at            DateTime?        @default(now()) @db.Timestamp(0)
+  progress             student_progress[]
 
   @@index([company_id], map: "company_id")
   @@index([cost_center_id], map: "cost_center_id")
@@ -110,4 +119,37 @@ model users {
   active     Boolean?  @default(true)
 
   @@index([role_id], map: "role_id")
+}
+
+model ProfessionalCategory {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique @db.VarChar(50)
+  teachers Teacher[]
+}
+
+model Teacher {
+  id                     Int                 @id @default(autoincrement())
+  lastName               String
+  firstName              String
+  email                  String              @unique
+  phone                  String?
+  CBU                    String?
+  CUIT                   String?
+  professionalCategoryId Int
+  professionalCategory   ProfessionalCategory @relation(fields: [professionalCategoryId], references: [id])
+  languages             TeacherLanguages[]   
+  fictitiousSeniority   Int
+  bostonSeniority       Int
+  observations          String?              @db.Text
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+}
+
+model TeacherLanguages {
+  teacher    Teacher   @relation(fields: [teacherId], references: [id])
+  teacherId  Int
+  language   languages @relation(fields: [languageId], references: [id])
+  languageId Int
+
+  @@id([teacherId, languageId])
 }
