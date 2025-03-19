@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model company {
+  id                 Bytes     @id @db.Binary(16)
+  name               String    @db.VarChar(100)
+  cuit               String    @unique(map: "cuit") @db.VarChar(20)
+  business_name      String    @unique(map: "business_name") @db.VarChar(150)
+  first_survey_link  String?   @db.Text
+  second_survey_link String?   @db.Text
+  created_at         DateTime? @default(now()) @db.Timestamp(0)
+  updated_at         DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model company_contact {
+  id         Int       @id @default(autoincrement())
+  company_id Bytes     @db.Binary(16)
+  name       String    @db.VarChar(100)
+  email      String    @unique(map: "email") @db.VarChar(100)
+  notes      String?   @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([company_id], map: "company_id")
+}
+
+model cost_center {
+  id         Int       @id @default(autoincrement())
+  company_id Bytes     @db.Binary(16)
+  name       String    @db.VarChar(100)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([company_id], map: "company_id")
+}
+
+model languages {
+  id   Int    @id @default(autoincrement())
+  name String @unique(map: "name") @db.VarChar(50)
+}
+
+model modules {
+  id   Int    @id @default(autoincrement())
+  name String @unique(map: "name") @db.VarChar(10)
+}
+
+model roles {
+  id   Int    @id @default(autoincrement())
+  name String @unique(map: "name") @db.VarChar(100)
+}
+
+model sector {
+  id         Int       @id @default(autoincrement())
+  company_id Bytes     @db.Binary(16)
+  name       String    @db.VarChar(100)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([company_id], map: "company_id")
+}
+
+model student_progress {
+  id          Int       @id @default(autoincrement())
+  student_id  Int
+  language_id Int
+  module_id   Int
+  start_date  DateTime  @db.Date
+  end_date    DateTime? @db.Date
+
+  @@index([language_id], map: "language_id")
+  @@index([module_id], map: "module_id")
+  @@index([student_id], map: "student_id")
+}
+
+model students {
+  id                    Int       @id @default(autoincrement())
+  first_name            String    @db.VarChar(100)
+  last_name             String    @db.VarChar(100)
+  email                 String    @unique(map: "email") @db.VarChar(100)
+  initial_leveling_date DateTime? @db.Date
+  sid                   String?   @db.VarChar(50)
+  company_id            Bytes     @db.Binary(16)
+  cost_center_id        Int
+  sector_id             Int
+  active                Boolean?  @default(true)
+  created_at            DateTime? @default(now()) @db.Timestamp(0)
+  updated_at            DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([company_id], map: "company_id")
+  @@index([cost_center_id], map: "cost_center_id")
+  @@index([sector_id], map: "sector_id")
+}
+
+model users {
+  id         Int       @id @default(autoincrement())
+  first_name String    @db.VarChar(100)
+  last_name  String    @db.VarChar(100)
+  email      String    @unique(map: "email") @db.VarChar(100)
+  password   String    @db.VarChar(60)
+  role_id    Int
+  belongs_to String?   @db.VarChar(50)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  last_login DateTime? @db.Timestamp(0)
+  active     Boolean?  @default(true)
+
+  @@index([role_id], map: "role_id")
+}
