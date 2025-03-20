@@ -6,7 +6,7 @@ const getApiBaseUrl = () => {
   // Comprobar si estamos en el ambiente de prueba o producción
   if (hostname.includes("sistema-test.bostoncelop.com.ar")) {
     return {
-      API_URL: "http://api.sistema-test.bostoncelop.com.ar/api",
+      API_URL: "https://api.sistema-test.bostoncelop.com.ar/api",
     };
   } else if (hostname.includes("sistema.bostoncelop.com.ar")) {
     return {
