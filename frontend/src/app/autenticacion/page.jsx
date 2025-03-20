@@ -54,7 +54,7 @@ export default function page() {
       }
       const data = await response.json();
       setSuccessMessage(data.message);
-      router.push("/");
+      router.push("/inicio");
     } catch (err) {
       setErrorMessage(err.message);
       console.error("Error al loguear: ", err);

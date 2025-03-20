@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node server.js",
+    "start": "next start",
     "dev": "next dev -p 1234 --turbopack",
     "build": "next build",
     "export": "next build && next export",

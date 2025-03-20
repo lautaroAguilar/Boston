@@ -5,20 +5,27 @@ export function middleware(req) {
   const refreshToken = req.cookies.get("refresh_token");
   const { pathname } = req.nextUrl;
 
+  // Dejamos la redirección desde / a /inicio por si alguien accede directamente a la raíz
   if (accessToken && pathname === "/") {
     return NextResponse.redirect(new URL("/inicio", req.url));
   }
+
+  // Si tiene token, permitir acceso
   if (accessToken) {
     return NextResponse.next();
   }
 
-  // Si no hay access_token pero sí refresh_token, permite que el usuario siga para que refresque el token
+  // Si tiene refresh token, permitir para refrescar
   if (refreshToken) {
     return NextResponse.next();
   }
 
-  // Si no hay ninguno de los dos, redirige a autenticación
-  return NextResponse.redirect(new URL("/autenticacion", req.url));
+  // Si no está en /autenticacion y no tiene tokens, redirigir a autenticación
+  if (!pathname.includes("/autenticacion")) {
+    return NextResponse.redirect(new URL("/autenticacion", req.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
