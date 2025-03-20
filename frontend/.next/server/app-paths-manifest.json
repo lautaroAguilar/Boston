@@ -1,8 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/(panel)/inicio/page": "app/(panel)/inicio/page.js",
-  "/(panel)/empresas/page": "app/(panel)/empresas/page.js",
-  "/(panel)/empresas/[id]/page": "app/(panel)/empresas/[id]/page.js",
-  "/(panel)/estudiantes/page": "app/(panel)/estudiantes/page.js"
-}
