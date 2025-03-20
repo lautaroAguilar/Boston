@@ -1,6 +1,6 @@
 const cors = require('cors')
 const ACCEPTED_ORIGINS = [
-  'https://sistema-test.bostoncelop.com.ar/',
+  'https://sistema-test.bostoncelop.com.ar',
   'http://localhost:1234',
   'http://localhost:3000'
 ]
