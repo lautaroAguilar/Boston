@@ -12,6 +12,9 @@
     "test:imports": "node -e \"try { require('./app.js'); console.log('✅ Importaciones correctas'); } catch(e) { console.error('❌ Error en importaciones:', e); process.exit(1); }\"",
     "verify": "npm run test:syntax && npm run test:imports"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

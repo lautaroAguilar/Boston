@@ -49,7 +49,7 @@ model languages {
 
 model modules {
   id   Int    @id @default(autoincrement())
-  name String @unique(map: "name") @db.VarChar(10)
+  name String @unique(map: "name") @db.VarChar(100)
   progress             student_progress[]
 }
 
