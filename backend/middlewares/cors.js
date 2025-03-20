@@ -3,8 +3,7 @@ const ACCEPTED_ORIGINS = [
   'https://sistema-test.bostoncelop.com.ar',
   'http://localhost:1234',
   'http://localhost:3000',
-  'boston-test.vercel.app
-'
+  'https://boston-test.vercel.app'
 ]
 
 function corsMiddleware({ acceptedOrigins = ACCEPTED_ORIGINS } = {}) {
