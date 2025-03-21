@@ -82,10 +82,10 @@ class UserAuthController {
       if (isProduction) {
         // En producción: configuración para subdominios
         refreshTokenOptions.sameSite = 'Lax'
-        refreshTokenOptions.domain = '.bostoncelop.com.ar'
+        refreshTokenOptions.domain = 'boston-test.vercel.app'
 
         accessTokenOptions.sameSite = 'Lax'
-        accessTokenOptions.domain = '.bostoncelop.com.ar'
+        accessTokenOptions.domain = 'boston-test.vercel.app'
       } else {
         // En desarrollo: configuración para localhost
         refreshTokenOptions.sameSite = 'Lax'
@@ -145,14 +145,20 @@ class UserAuthController {
         process.env.JWT_SECRET,
         { expiresIn: '15m' }
       )
-
+      const isProduction = process.env.NODE_ENV === 'production'
+      const accessTokenOptions = {
+        httpOnly: true,
+        secure: isProduction, 
+        maxAge: 1000 * 60 * 15 
+      }
+      if (isProduction) {
+        accessTokenOptions.sameSite = 'Lax'
+        accessTokenOptions.domain = 'boston-test.vercel.app'
+      } else {
+        accessTokenOptions.sameSite = 'Lax'
+      }
       res
-        .cookie('access_token', newAccessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'Strict',
-          maxAge: 1000 * 60 * 15
-        })
+        .cookie('access_token', newAccessToken, accessTokenOptions)
         .status(200)
         .json({ message: 'Tienes un nuevo token, felicidades.' })
     } catch (error) {

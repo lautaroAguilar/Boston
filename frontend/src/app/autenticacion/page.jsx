@@ -54,9 +54,7 @@ export default function page() {
       }
       const data = await response.json();
       setSuccessMessage(data.message);
-      console.log("redireccionando a inico");
       router.push("/inicio");
-      console.log("¿Se ejecutó esta línea?")
       return true;
     } catch (err) {
       setErrorMessage(err.message);
