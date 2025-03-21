@@ -71,21 +71,23 @@ class UserAuthController {
       const refreshTokenOptions = {
         httpOnly: true,
         secure: isProduction, // true en producción, false en desarrollo
-        maxAge: 1000 * 60 * 60 * 24 * 7 // 7 días
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
+        path: '/'
       }
 
       const accessTokenOptions = {
         httpOnly: true,
         secure: isProduction, // true en producción, false en desarrollo
-        maxAge: 1000 * 60 * 15 // 15 minutos
+        maxAge: 1000 * 60 * 15, // 15 minutos
+        path: '/'
       }
       if (isProduction) {
-        // En producción: configuración para subdominios
-        refreshTokenOptions.sameSite = 'Lax'
-        refreshTokenOptions.domain = 'boston-test.vercel.app'
-
-        accessTokenOptions.sameSite = 'Lax'
-        accessTokenOptions.domain = 'boston-test.vercel.app'
+        // En producción: configuración para cross-site
+        refreshTokenOptions.sameSite = 'None'
+        // Omitir domain para permitir que la cookie funcione en cualquier dominio que acceda al backend
+        
+        accessTokenOptions.sameSite = 'None'
+        // Omitir domain para permitir que la cookie funcione en cualquier dominio que acceda al backend
       } else {
         // En desarrollo: configuración para localhost
         refreshTokenOptions.sameSite = 'Lax'
@@ -116,20 +118,18 @@ class UserAuthController {
     }
   }
   logout = async (req, res) => {
-    res.clearCookie('refresh_token', {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = {
       httpOnly: true,
-      sameSite: 'None',
-      secure: true,
-      path: '/'
-    })
+      secure: isProduction,
+      path: '/',
+      sameSite: isProduction ? 'None' : 'Lax'
+    };
 
-    res.clearCookie('access_token', {
-      httpOnly: true,
-      sameSite: 'None',
-      secure: true,
-      path: '/'
-    })
-    return res.status(200).json({ message: 'Logout exitoso' })
+    res.clearCookie('refresh_token', cookieOptions);
+    res.clearCookie('access_token', cookieOptions);
+    
+    return res.status(200).json({ message: 'Logout exitoso' });
   }
   refreshToken = (req, res) => {
     const refreshToken = req.cookies.refresh_token
@@ -149,11 +149,11 @@ class UserAuthController {
       const accessTokenOptions = {
         httpOnly: true,
         secure: isProduction, 
-        maxAge: 1000 * 60 * 15 
+        maxAge: 1000 * 60 * 15,
+        path: '/'
       }
       if (isProduction) {
-        accessTokenOptions.sameSite = 'Lax'
-        accessTokenOptions.domain = 'boston-test.vercel.app'
+        accessTokenOptions.sameSite = 'None'
       } else {
         accessTokenOptions.sameSite = 'Lax'
       }
