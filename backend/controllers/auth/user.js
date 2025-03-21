@@ -67,6 +67,31 @@ class UserAuthController {
           .json([{ path: ['password'], message: 'Contraseña incorrecta' }])
       }
       // Se genera el token de acceso y el de refresco, y lo guardamos en las cookies
+      const isProduction = process.env.NODE_ENV === 'production'
+      const refreshTokenOptions = {
+        httpOnly: true,
+        secure: isProduction, // true en producción, false en desarrollo
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 7 días
+      }
+
+      const accessTokenOptions = {
+        httpOnly: true,
+        secure: isProduction, // true en producción, false en desarrollo
+        maxAge: 1000 * 60 * 15 // 15 minutos
+      }
+      if (isProduction) {
+        // En producción: configuración para subdominios
+        refreshTokenOptions.sameSite = 'Lax'
+        refreshTokenOptions.domain = '.bostoncelop.com.ar'
+
+        accessTokenOptions.sameSite = 'Lax'
+        accessTokenOptions.domain = '.bostoncelop.com.ar'
+      } else {
+        // En desarrollo: configuración para localhost
+        refreshTokenOptions.sameSite = 'Lax'
+        accessTokenOptions.sameSite = 'Lax'
+      }
+
       const accessToken = jwt.sign(
         {
           id: user.id
@@ -81,19 +106,9 @@ class UserAuthController {
         process.env.JWT_REFRESH_SECRET,
         { expiresIn: '7d' }
       )
-      res.cookie('refresh_token', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
-        maxAge: 1000 * 60 * 60 * 24 * 7
-      })
+      res.cookie('refresh_token', refreshToken, refreshTokenOptions)
       res
-        .cookie('access_token', accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'Strict',
-          maxAge: 1000 * 60 * 15
-        })
+        .cookie('access_token', accessToken, accessTokenOptions)
         .status(200)
         .json({ message: 'Login exitoso' })
     } catch (error) {

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation.js";
+import { useRouter } from "next/navigation";
 import MyForm from "../../components/Form.jsx";
 import { Paper, Stack, Typography, Button } from "@mui/material";
 import CONFIG from "../../../config/api.js";
@@ -54,13 +54,16 @@ export default function page() {
       }
       const data = await response.json();
       setSuccessMessage(data.message);
+      console.log("redireccionando a inico");
       router.push("/inicio");
+      console.log("¿Se ejecutó esta línea?")
+      return true;
     } catch (err) {
       setErrorMessage(err.message);
       console.error("Error al loguear: ", err);
     }
   };
-  
+
   return (
     <Stack
       sx={{
