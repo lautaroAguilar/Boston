@@ -57,7 +57,7 @@ export default function page() {
       required: true,
       component: "select",
       options: roles
-        ? roles.map((role) => ({ id: role.id, label: role.name }))
+        ? roles?.map((role) => ({ id: role.id, label: role.name }))
         : [{ id: 0, label: "No se encontraron roles" }],
     },
     {
@@ -142,7 +142,7 @@ export default function page() {
       minWidth: 150,
       flex: 1,
       renderCell: (params) => {
-        const role = roles.find((role) => role.id === params.value);
+        const role = roles?.find((role) => role.id === params.value);
         return role ? role.name : "Desconocido";
       },
     },
