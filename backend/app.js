@@ -33,6 +33,7 @@ app.use('/api/settings', settingsRouter)
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`)
+  console.log('NODE_ENV:', process.env.NODE_ENV)
 })
 
 module.exports = app

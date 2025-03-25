@@ -67,33 +67,6 @@ class UserAuthController {
           .json([{ path: ['password'], message: 'Contraseña incorrecta' }])
       }
       // Se genera el token de acceso y el de refresco, y lo guardamos en las cookies
-      const isProduction = process.env.NODE_ENV === 'production'
-      const refreshTokenOptions = {
-        httpOnly: true,
-        secure: isProduction, // true en producción, false en desarrollo
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
-        path: '/'
-      }
-
-      const accessTokenOptions = {
-        httpOnly: true,
-        secure: isProduction, // true en producción, false en desarrollo
-        maxAge: 1000 * 60 * 15, // 15 minutos
-        path: '/'
-      }
-      if (isProduction) {
-        // En producción: configuración para cross-site
-        refreshTokenOptions.sameSite = 'None'
-        // Omitir domain para permitir que la cookie funcione en cualquier dominio que acceda al backend
-        
-        accessTokenOptions.sameSite = 'None'
-        // Omitir domain para permitir que la cookie funcione en cualquier dominio que acceda al backend
-      } else {
-        // En desarrollo: configuración para localhost
-        refreshTokenOptions.sameSite = 'Lax'
-        accessTokenOptions.sameSite = 'Lax'
-      }
-
       const accessToken = jwt.sign(
         {
           id: user.id
@@ -108,9 +81,21 @@ class UserAuthController {
         process.env.JWT_REFRESH_SECRET,
         { expiresIn: '7d' }
       )
-      res.cookie('refresh_token', refreshToken, refreshTokenOptions)
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'None',
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        path: '/'
+      })
       res
-        .cookie('access_token', accessToken, accessTokenOptions)
+        .cookie('access_token', accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'None',
+          maxAge: 1000 * 60 * 15,
+          path: '/'
+        })
         .status(200)
         .json({ message: 'Login exitoso' })
     } catch (error) {
@@ -118,20 +103,22 @@ class UserAuthController {
     }
   }
   logout = async (req, res) => {
-    const isProduction = process.env.NODE_ENV === 'production';
-    const cookieOptions = {
+    res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: isProduction,
-      path: '/',
-      sameSite: isProduction ? 'None' : 'Lax'
-    };
+      sameSite: 'None',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/'
+    })
 
-    res.clearCookie('refresh_token', cookieOptions);
-    res.clearCookie('access_token', cookieOptions);
-    
-    return res.status(200).json({ message: 'Logout exitoso' });
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      sameSite: 'None',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/'
+    })
+    return res.status(200).json({ message: 'Logout exitoso' })
   }
-  refreshToken = (req, res) => {
+  refreshToken = async (req, res) => {
     const refreshToken = req.cookies.refresh_token
 
     if (!refreshToken) {
@@ -145,20 +132,14 @@ class UserAuthController {
         process.env.JWT_SECRET,
         { expiresIn: '15m' }
       )
-      const isProduction = process.env.NODE_ENV === 'production'
-      const accessTokenOptions = {
-        httpOnly: true,
-        secure: isProduction, 
-        maxAge: 1000 * 60 * 15,
-        path: '/'
-      }
-      if (isProduction) {
-        accessTokenOptions.sameSite = 'None'
-      } else {
-        accessTokenOptions.sameSite = 'Lax'
-      }
       res
-        .cookie('access_token', newAccessToken, accessTokenOptions)
+        .cookie('access_token', newAccessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'None',
+          maxAge: 1000 * 60 * 15,
+          path: '/'
+        })
         .status(200)
         .json({ message: 'Tienes un nuevo token, felicidades.' })
     } catch (error) {

@@ -27,7 +27,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   const NAVIGATION = [
     {
-      segment: "",
+      segment: "inicio",
       title: "Inicio",
       icon: <HomeRounded />,
     },
