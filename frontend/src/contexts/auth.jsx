@@ -21,18 +21,31 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (res.status === 401) {
-        return await refreshToken();
+        // Si recibimos 401, intentamos refrescar el token
+        const refreshResult = await refreshToken();
+        if (!refreshResult) {
+          // Si el refresh falló, redirigimos a autenticación
+          const currentPath = window.location.pathname;
+          if (currentPath !== "/autenticacion") {
+            router.push("/autenticacion");
+          }
+          return null;
+        }
+        
+        return refreshResult;
       }
+
       const data = await res.json();
       setUser(data);
       
-
       if (data && data.userId) {
         await fetchUserInfo(data.userId);
       }
+      return data;
     } catch (error) {
       console.log("Error comprobando sesión:", error);
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -47,22 +60,11 @@ export const AuthProvider = ({ children }) => {
 
       if (res.status === 401 || res.status === 403) {
         setUser(null);
-        
-        router.push("/autenticacion");
         return null;
       }
 
       const data = await res.json();
-      
-
-      // Redirige a /inicio después de obtener el nuevo access_token
-      const currentPath = window.location.pathname;
-
-      // 🔹 Si el usuario está en autenticación o en "/", lo mandamos a inicio
-      if (currentPath === "/autenticacion" || currentPath === "/") {
-        router.push("/inicio");
-      }
-      return await checkUserSession();
+      return data;
     } catch (error) {
       console.log("Error al refrescar token:", error);
       return null;
