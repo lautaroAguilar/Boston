@@ -32,8 +32,8 @@ class StudentsModel {
       return { id: studentId, ...studentData }
     } catch (err) {
       await connection.rollback()
-      console.log(err)
-      throw new Error('Error al crear el estudiante')
+      console.error('Error al crear el estudiante', err)
+      throw err
     } finally {
       connection.release()
     }
@@ -78,8 +78,8 @@ class StudentsModel {
       const [rows] = await connection.query(query, params)
       return rows
     } catch (err) {
-      console.log(err)
-      throw new Error('Error al obtener estudiantes')
+      console.error('Error al obtener estudiantes', err)
+      throw err
     } finally {
       connection.release()
     }
@@ -109,8 +109,8 @@ class StudentsModel {
       )
       return student[0]
     } catch (err) {
-      console.log(err)
-      throw new Error('Error al obtener el estudiante')
+      console.error('Error al obtener el estudiante', err)
+      throw err
     } finally {
       connection.release()
     }
@@ -128,9 +128,9 @@ class StudentsModel {
       await connection.commit()
       return result.affectedRows
     } catch (err) {
-      console.log(err)
       await connection.rollback()
-      throw new Error('Error al eliminar el estudiante')
+      console.error('Error al eliminar el estudiante', err)
+      throw err
     } finally {
       connection.release()
     }
@@ -156,9 +156,9 @@ class StudentsModel {
       await connection.commit()
       return result.affectedRows
     } catch (err) {
-      console.log(err)
       await connection.rollback()
-      throw new Error('Error al actualizar el estudiante')
+      console.error('Error al actualizar el estudiante', err)
+      throw err
     } finally {
       connection.release()
     }

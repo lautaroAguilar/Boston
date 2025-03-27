@@ -20,8 +20,12 @@ class CompanyController {
       const newCompany = await this.companyModel.create(result.data)
       res.status(201).json(newCompany)
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ error: error.message })
+      console.error('Error completo al crear empresa:', error)
+      res.status(500).json({
+        error: 'Error al crear la empresa',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
   createFullCompany = async (req, res) => {
@@ -53,8 +57,12 @@ class CompanyController {
       )
       res.status(201).json(newCompany)
     } catch (error) {
-      console.error('Error al crear empresa y sus relaciones:', error)
-      res.status(500).json({ error: error.message })
+      console.error('Error completo al crear empresa y sus relaciones:', error)
+      res.status(500).json({
+        error: 'Error al crear la empresa y sus relaciones',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
   getAll = async (req, res) => {
@@ -70,10 +78,11 @@ class CompanyController {
 
       res.status(200).json(companies)
     } catch (error) {
+      console.error('Error completo al buscar empresas:', error)
       res.status(500).json({
-        success: false,
-        message: 'Error al buscar empresas',
-        error
+        error: 'Error al buscar empresas',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -86,7 +95,12 @@ class CompanyController {
       }
       return res.json(companyData)
     } catch (error) {
-      return res.status(500).json({ error: 'Error al buscar la empresa' })
+      console.error('Error completo al buscar la empresa:', error)
+      res.status(500).json({
+        error: 'Error al buscar la empresa',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
   deleteById = async (req, res) => {
@@ -100,10 +114,12 @@ class CompanyController {
       }
       return res.json({ message: 'Empresa eliminada correctamente' })
     } catch (error) {
-      console.error(error)
-      return res
-        .status(500)
-        .json({ error: 'Hubo un error al eliminar la empresa' })
+      console.error('Error completo al eliminar la empresa:', error)
+      res.status(500).json({
+        error: 'Hubo un error al eliminar la empresa',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
   updateById = async (req, res) => {
@@ -128,10 +144,12 @@ class CompanyController {
       }
       return res.json({ message: 'Empresa actualizada correctamente' })
     } catch (error) {
-      console.error(error)
-      return res
-        .status(500)
-        .json({ error: 'Hubo un error al actualizar la empresa' })
+      console.error('Error completo al actualizar la empresa:', error)
+      res.status(500).json({
+        error: 'Hubo un error al actualizar la empresa',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
 }

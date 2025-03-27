@@ -7,7 +7,8 @@ class SettingsModel {
       const [rows] = await connection.query(`SELECT id, name FROM modules`)
       return rows
     } catch (error) {
-      throw new Error('Error al obtener módulos')
+      console.error('Error al obtener módulos', error)
+      throw error
     } finally {
       connection.release()
     }
@@ -18,7 +19,8 @@ class SettingsModel {
       const [rows] = await connection.query(`SELECT id, name FROM languages`)
       return rows
     } catch (error) {
-      throw new Error('Error al obtener idiomas')
+      console.error('Error al obtener idiomas', error)
+      throw error
     } finally {
       connection.release()
     }
@@ -29,7 +31,8 @@ class SettingsModel {
       const [rows] = await connection.query(`SELECT id, name FROM roles`)
       return rows
     } catch (error) {
-      throw new Error('Error al obtener los roles')
+      console.error('Error al obtener los roles', error)
+      throw error
     } finally {
       connection.release()
     }

@@ -23,8 +23,8 @@ class SectorModel {
         await conn.rollback()
         conn.release()
       }
-      console.log('Error al crear el sector', error)
-      throw new Error('Hubo un error al crear el sector de la empresa')
+      console.error('Error detallado al crear sector:', error)
+      throw error // Propagamos el error original
     }
   }
   static async getAll(companyId) {
@@ -43,8 +43,8 @@ class SectorModel {
       )
       return result[0]
     } catch (error) {
-      console.log('Error al obtener los sectores', error)
-      throw new Error('Hubo un error al buscar los sectores de la empresa')
+      console.error('Error detallado al obtener sectores:', error)
+      throw error
     } finally {
       connection.release()
     }
@@ -65,8 +65,8 @@ class SectorModel {
       )
       return result[0]
     } catch (error) {
-      console.log('Error al obtener el sector', error)
-      throw new Error('Hubo un error al buscar el sector de la empresa')
+      console.error('Error detallado al obtener sector por ID:', error)
+      throw error
     } finally {
       connection.release()
     }
@@ -83,8 +83,8 @@ class SectorModel {
       return result.affectedRows
     } catch (error) {
       await connection.rollback()
-      console.log('Error al eliminar el sector', error)
-      throw new Error('Hubo un error al eliminar el sector de la empresa')
+      console.error('Error detallado al eliminar sector:', error)
+      throw error
     } finally {
       connection.release()
     }
@@ -116,8 +116,8 @@ class SectorModel {
       return result.affectedRows
     } catch (error) {
       await connection.rollback()
-      console.error('Error actualizando el sector', error)
-      throw new Error('Hubo un error al el sector de la empresa')
+      console.error('Error detallado al actualizar sector:', error)
+      throw error
     } finally {
       connection.release()
     }

@@ -10,7 +10,7 @@ class UserModel {
       return users
     } catch (error) {
       console.error('Error al buscar los usuarios:', error)
-      throw new Error(`Hubo un error al buscar los usuarios`)
+      throw error
     } finally {
       connection.release()
     }
@@ -30,7 +30,7 @@ class UserModel {
       return user[0]
     } catch (error) {
       console.error('Error al buscar el usuario:', error)
-      throw new Error(`Hubo un error al buscar el usuario`)
+      throw error
     } finally {
       connection.release()
     }
@@ -47,8 +47,8 @@ class UserModel {
       return result.affectedRows
     } catch (error) {
       await connection.rollback()
-      console.error('Error deleting user:', error)
-      throw new Error(`Hubo un error al eliminar el usuario`)
+      console.error('Error eliminando el usuario:', error)
+      throw error
     } finally {
       connection.release()
     }
@@ -73,7 +73,7 @@ class UserModel {
     } catch (error) {
       console.error('Error al actualizar el usuario:', error)
       await connection.rollback()
-      throw new Error('Hubo un error al actualizar el usuario')
+      throw error
     } finally {
       connection.release()
     }

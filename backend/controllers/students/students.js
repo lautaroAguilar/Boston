@@ -11,13 +11,20 @@ class StudentsController {
     try {
       const result = validateStudents(req.body)
       if (!result.success) {
+        console.error('Error de validación al crear estudiante:', {
+          issues: result.error.issues,
+          body: req.body
+        })
         return res.status(400).json(result.error.issues)
       }
       const newStudent = await this.studentsModel.create(result.data)
       res.status(201).json(newStudent)
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ error: error.message })
+      console.error('Error completo al crear estudiante:', error)
+      res.status(500).json({ 
+        error: 'Error al crear el estudiante',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
   getAll = async (req, res) => {
@@ -31,8 +38,10 @@ class StudentsController {
       }
       res.status(200).json(students)
     } catch (error) {
+      console.error('Error completo al obtener estudiantes:', error)
       res.status(500).json({
-        error: 'Error al buscar estudiantes'
+        error: 'Error al buscar estudiantes',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -45,7 +54,11 @@ class StudentsController {
       }
       return res.json(studentData)
     } catch (error) {
-      return res.status(500).json({ error: 'Error al buscar el estudiante' })
+      console.error('Error completo al obtener estudiante por ID:', error)
+      return res.status(500).json({ 
+        error: 'Error al buscar el estudiante',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
   deleteById = async (req, res) => {
@@ -57,31 +70,40 @@ class StudentsController {
           .status(404)
           .json({ error: 'No se encontró al estudiante que deseas eliminar' })
       }
-      return res.json(affectedRows)
+      return res.json({ message: 'Estudiante eliminado correctamente' })
     } catch (error) {
-      return res.status(500).json({ error: 'Error al eliminar el estudiante' })
+      console.error('Error completo al eliminar estudiante:', error)
+      return res.status(500).json({ 
+        error: 'Error al eliminar el estudiante',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
   updateById = async (req, res) => {
-    const result = validatePartialStudents(req.body)
-    if (!result.success) {
-      return res.status(400).json(result.error.issues)
-    }
     try {
+      const result = validatePartialStudents(req.body)
+      if (!result.success) {
+        console.error('Error de validación al actualizar estudiante:', {
+          issues: result.error.issues,
+          body: req.body
+        })
+        return res.status(400).json(result.error.issues)
+      }
+
       const { id } = req.params
       const affectedRows = await this.studentsModel.updateById(id, result.data)
       if (affectedRows === 0) {
         return res
           .status(404)
-          .json({ error: 'No se encontró al estudiante que deseas eliminar' })
+          .json({ error: 'No se encontró al estudiante que deseas actualizar' })
       }
-      res
-        .status(201)
-        .json({ message: 'Se actualizo correctamente al estudiante' })
+      res.status(201).json({ message: 'Estudiante actualizado correctamente' })
     } catch (error) {
-      return res
-        .status(500)
-        .json({ error: 'Error al actualizar el estudiante' })
+      console.error('Error completo al actualizar estudiante:', error)
+      return res.status(500).json({ 
+        error: 'Error al actualizar el estudiante',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
 }

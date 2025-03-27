@@ -16,6 +16,7 @@ class UserAuthModel {
       return rows[0]
     } catch (err) {
       console.error('Error al buscar usuario:', err)
+      throw err
     } finally {
       connection.release()
     }
@@ -38,9 +39,9 @@ class UserAuthModel {
       await connection.commit()
       return { userId: result.insertId }
     } catch (err) {
-      console.log(err)
       await connection.rollback()
-      throw new Error(`Hubo un error al crear el usuario `)
+      console.error('Error al registrar el usuario', err)
+      throw err
     } finally {
       connection.release()
     }

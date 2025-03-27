@@ -22,10 +22,11 @@ class ContactsModel {
         await conn.rollback()
         conn.release()
       }
-      console.log('Error al crear los contactos', error)
-      throw new Error('Hubo un error al crear los contactos de la empresa')
+      console.error('Error detallado al crear contacto:', error)
+      throw error // Propagamos el error original
     }
   }
+
   static async getAll(companyId) {
     const connection = await pool.getConnection()
     try {
@@ -44,12 +45,13 @@ class ContactsModel {
       )
       return result[0]
     } catch (error) {
-      console.log('Error al obtener los contactos', error)
-      throw new Error('Hubo un error al buscar los contactos de las empresas')
+      console.error('Error detallado al obtener contactos:', error)
+      throw error
     } finally {
       connection.release()
     }
   }
+
   static async getById(contactId) {
     const connection = await pool.getConnection()
     try {
@@ -68,12 +70,13 @@ class ContactsModel {
       )
       return result[0]
     } catch (error) {
-      console.log('Error al obtener el contacto', error)
-      throw new Error('Hubo un error al buscar el contacto de la empresa')
+      console.error('Error detallado al obtener contacto por ID:', error)
+      throw error
     } finally {
       connection.release()
     }
   }
+
   static async deleteById(contactId) {
     const connection = await pool.getConnection()
     try {
@@ -86,12 +89,13 @@ class ContactsModel {
       return result.affectedRows
     } catch (error) {
       await connection.rollback()
-      console.log('Error al eliminar el contacto', error)
-      throw new Error('Hubo un error al buscar los contactos de las empresas')
+      console.error('Error detallado al eliminar contacto:', error)
+      throw error
     } finally {
       connection.release()
     }
   }
+
   static async updateById(contactId, contactData) {
     const connection = await pool.getConnection()
     try {
@@ -127,11 +131,12 @@ class ContactsModel {
       return result.affectedRows
     } catch (error) {
       await connection.rollback()
-      console.error('Error actualizando el contacto de la empresa', error)
-      throw new Error('Hubo un error al actualizar el contacto de la empresa')
+      console.error('Error detallado al actualizar contacto:', error)
+      throw error
     } finally {
       connection.release()
     }
   }
 }
+
 module.exports = { ContactsModel }

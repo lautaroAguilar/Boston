@@ -21,8 +21,11 @@ class CostCenterController {
       )
       res.status(201).json(newCostCenter)
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al crear centro de costo:', error)
+      res.status(500).json({ 
+        error: 'Error al crear el centro de costo',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
 
@@ -31,20 +34,20 @@ class CostCenterController {
       const { companyId } = req.params
       const costCenters = await this.costCenterModel.getAll(companyId)
 
-      // Si no hay compañías, devuelve array vacío
       if (!costCenters.length) {
         return res.status(200).json({
           success: true,
           data: [],
-          message: 'No se encontraron los centros de costos'
+          message: 'No se encontraron centros de costo'
         })
       }
 
       res.status(200).json(costCenters)
     } catch (error) {
+      console.error('Error completo al obtener centros de costo:', error)
       res.status(500).json({
-        success: false,
-        message: error.message
+        error: 'Error al obtener los centros de costo',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -54,13 +57,15 @@ class CostCenterController {
       const { costCenterId } = req.params
       const costCenterData = await this.costCenterModel.getById(costCenterId)
       if (!costCenterData) {
-        return res
-          .status(404)
-          .json({ error: 'No se encontró el centro de costo' })
+        return res.status(404).json({ error: 'No se encontró el centro de costo' })
       }
       return res.json(costCenterData)
     } catch (error) {
-      return res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al obtener centro de costo por ID:', error)
+      return res.status(500).json({ 
+        error: 'Error al obtener el centro de costo',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
 
@@ -75,8 +80,11 @@ class CostCenterController {
       }
       return res.json({ message: 'Centro de costo eliminado correctamente' })
     } catch (error) {
-      console.error(error)
-      return res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al eliminar centro de costo:', error)
+      return res.status(500).json({ 
+        error: 'Error al eliminar el centro de costo',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
 
@@ -84,10 +92,7 @@ class CostCenterController {
     try {
       const result = validatePartialCostCenter(req.body)
       if (!result.success) {
-        console.log(
-          'Error al validar parcialmente el centro de costo',
-          result.error.message
-        )
+        console.error('Error al validar parcialmente el centro de costo:', result.error.message)
         return res.status(400).json(result.error.issues)
       }
       const { costCenterId } = req.params
@@ -100,11 +105,15 @@ class CostCenterController {
           .status(404)
           .json({ error: 'No se pudo actualizar el centro de costo' })
       }
-      return res.json({ message: 'Centro de costo actualizada correctamente' })
+      return res.json({ message: 'Centro de costo actualizado correctamente' })
     } catch (error) {
-      console.error(error)
-      return res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al actualizar centro de costo:', error)
+      return res.status(500).json({ 
+        error: 'Error al actualizar el centro de costo',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
 }
+
 module.exports = { CostCenterController }

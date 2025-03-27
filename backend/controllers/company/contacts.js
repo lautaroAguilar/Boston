@@ -2,6 +2,7 @@ const {
   validateContact,
   validatePartialContact
 } = require('../../schemas/company/contacts.js')
+
 class ContactController {
   constructor({ contactModel }) {
     this.contactModel = contactModel
@@ -17,16 +18,20 @@ class ContactController {
       const newContact = await this.contactModel.create(companyId, result.data)
       res.status(201).json(newContact)
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al crear contacto:', error)
+      res.status(500).json({
+        error: 'Error al crear el contacto',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
+
   getAll = async (req, res) => {
     try {
       const { companyId } = req.params
       const contacts = await this.contactModel.getAll(companyId)
 
-      // Si no hay compañías, devuelve array vacío
       if (!contacts.length) {
         return res.status(200).json({
           success: true,
@@ -37,12 +42,15 @@ class ContactController {
 
       res.status(200).json(contacts)
     } catch (error) {
+      console.error('Error completo al obtener contactos:', error)
       res.status(500).json({
-        success: false,
-        message: error.message
+        error: 'Error al obtener los contactos',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
+
   getById = async (req, res) => {
     try {
       const { contactId } = req.params
@@ -52,9 +60,15 @@ class ContactController {
       }
       return res.json(contactData)
     } catch (error) {
-      return res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al obtener contacto por ID:', error)
+      return res.status(500).json({
+        error: 'Error al obtener el contacto',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
+
   deleteById = async (req, res) => {
     try {
       const { contactId } = req.params
@@ -66,16 +80,21 @@ class ContactController {
       }
       return res.json({ message: 'Contacto eliminado correctamente' })
     } catch (error) {
-      console.error(error)
-      return res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al eliminar contacto:', error)
+      return res.status(500).json({
+        error: 'Error al eliminar el contacto',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
+
   updateById = async (req, res) => {
     try {
       const result = validatePartialContact(req.body)
       if (!result.success) {
-        console.log(
-          'Error al validar parcialmente el contacto',
+        console.error(
+          'Error al validar parcialmente el contacto:',
           result.error.message
         )
         return res.status(400).json(result.error.issues)
@@ -92,9 +111,14 @@ class ContactController {
       }
       return res.json({ message: 'Contacto actualizado correctamente' })
     } catch (error) {
-      console.error(error)
-      return res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al actualizar contacto:', error)
+      return res.status(500).json({
+        error: 'Error al actualizar el contacto',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
 }
+
 module.exports = { ContactController }

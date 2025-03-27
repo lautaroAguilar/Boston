@@ -33,9 +33,8 @@ class CompanyModel {
     } catch (error) {
       await connection.rollback()
       connection.release()
-      throw new Error(
-        `Hubo un error al crear la empresa`
-      )
+      console.error('Error detallado al crear empresa y relaciones:', error)
+      throw error // Propagamos el error original
     }
   }
   static async create(companyData, connection = null) {
@@ -72,7 +71,8 @@ class CompanyModel {
         await conn.rollback()
         conn.release()
       }
-      throw new Error(`Hubo un error al crear la empresa `)
+      console.error('Error detallado al crear empresa:', error)
+      throw error // Propagamos el error original
     }
   }
 
@@ -91,7 +91,8 @@ class CompanyModel {
       `)
       return companies
     } catch (error) {
-      throw new Error(`Hubo un error al buscar las empresas`)
+      console.error(`Hubo un error al buscar las empresas`, error)
+      throw error
     } finally {
       connection.release()
     }
@@ -121,7 +122,7 @@ class CompanyModel {
       return company[0]
     } catch (error) {
       console.error('Error al buscar la empresa por ID:', error)
-      throw new Error(`Hubo un error al buscar la empresa`)
+      throw error
     } finally {
       connection.release()
     }
@@ -139,7 +140,7 @@ class CompanyModel {
     } catch (error) {
       await connection.rollback()
       console.error('Error deleting company:', error)
-      throw new Error(`Hubo un error al eliminar la empresa`)
+      throw error
     } finally {
       connection.release()
     }
@@ -185,8 +186,8 @@ class CompanyModel {
       return result.affectedRows
     } catch (error) {
       await connection.rollback()
-      console.error('Error updating company', error)
-      throw new Error('Hubo un error al actualizar la empresa')
+      console.error('Error al actualizar la empresa', error)
+      throw error
     } finally {
       connection.release()
     }

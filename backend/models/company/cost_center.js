@@ -18,14 +18,12 @@ class CostCenterModel {
       }
       return result[0]
     } catch (error) {
-      console.log('Error al crear los centros de costo', error)
       if (!connection) {
         await conn.rollback()
         conn.release()
       }
-      throw new Error(
-        'Hubo un error al crear los centros de costo de la empresa'
-      )
+      console.error('Error detallado al crear centro de costo:', error)
+      throw error // Propagamos el error original
     }
   }
   static async getAll(companyId) {
@@ -44,10 +42,8 @@ class CostCenterModel {
       )
       return result[0]
     } catch (error) {
-      console.log('Error al obtener los centros de costo', error)
-      throw new Error(
-        'Hubo un error al buscar los centros de costo de la empresa'
-      )
+      console.error('Error detallado al obtener centros de costo:', error)
+      throw error
     } finally {
       connection.release()
     }
@@ -68,10 +64,8 @@ class CostCenterModel {
       )
       return result[0]
     } catch (error) {
-      console.log('Error al obtener el centro de costo', error)
-      throw new Error(
-        'Hubo un error al buscar el centro de costo de la empresa'
-      )
+      console.error('Error detallado al obtener centro de costo por ID:', error)
+      throw error
     } finally {
       connection.release()
     }
@@ -88,10 +82,8 @@ class CostCenterModel {
       return result.affectedRows
     } catch (error) {
       await connection.rollback()
-      console.log('Error al eliminar el centro de costo', error)
-      throw new Error(
-        'Hubo un error al eliminar el centro de costo de la empresa'
-      )
+      console.error('Error detallado al eliminar centro de costo:', error)
+      throw error
     } finally {
       connection.release()
     }
@@ -124,8 +116,8 @@ class CostCenterModel {
       return result.affectedRows
     } catch (error) {
       await connection.rollback()
-      console.error('Error actualizando el centro de costo', error)
-      throw new Error('Hubo un error al el centro de costo de la empresa')
+      console.error('Error detallado al actualizar centro de costo:', error)
+      throw error
     } finally {
       connection.release()
     }

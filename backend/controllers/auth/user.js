@@ -41,9 +41,12 @@ class UserAuthController {
         user: newUser
       })
     } catch (error) {
-      return res
-        .status(500)
-        .json({ message: 'Hubo un error al registrar el usuario' })
+      console.error('Error completo al registrar usuario:', error)
+      return res.status(500).json({
+        error: 'Hubo un error al registrar el usuario',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
   login = async (req, res) => {
@@ -99,24 +102,38 @@ class UserAuthController {
         .status(200)
         .json({ message: 'Login exitoso' })
     } catch (error) {
-      return res.status(500).json({ message: 'Error al iniciar sesión', error })
+      console.error('Error completo al iniciar sesión:', error)
+      return res.status(500).json({
+        error: 'Error al iniciar sesión',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
   logout = async (req, res) => {
-    res.clearCookie('refresh_token', {
-      httpOnly: true,
-      sameSite: 'None',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/'
-    })
+    try {
+      res.clearCookie('refresh_token', {
+        httpOnly: true,
+        sameSite: 'None',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/'
+      })
 
-    res.clearCookie('access_token', {
-      httpOnly: true,
-      sameSite: 'None',
-      secure: process.env.NODE_ENV === 'production',
-      path: '/'
-    })
-    return res.status(200).json({ message: 'Logout exitoso' })
+      res.clearCookie('access_token', {
+        httpOnly: true,
+        sameSite: 'None',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/'
+      })
+      return res.status(200).json({ message: 'Logout exitoso' })
+    } catch (error) {
+      console.error('Error completo al cerrar sesión:', error)
+      return res.status(500).json({
+        error: 'Error al cerrar sesión',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
+    }
   }
   refreshToken = async (req, res) => {
     const refreshToken = req.cookies.refresh_token

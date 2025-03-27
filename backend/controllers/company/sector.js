@@ -18,16 +18,19 @@ class SectorController {
       const newSector = await this.sectorModel.create(companyId, result.data)
       res.status(201).json(newSector)
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al crear sector:', error)
+      res.status(500).json({ 
+        error: 'Error al crear el sector',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
+
   getAll = async (req, res) => {
     try {
       const { companyId } = req.params
       const sectors = await this.sectorModel.getAll(companyId)
 
-      // Si no hay compañías, devuelve array vacío
       if (!sectors.length) {
         return res.status(200).json({
           success: true,
@@ -38,12 +41,14 @@ class SectorController {
 
       res.status(200).json(sectors)
     } catch (error) {
+      console.error('Error completo al obtener sectores:', error)
       res.status(500).json({
-        success: false,
-        message: error.message
+        error: 'Error al obtener los sectores',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
+
   getById = async (req, res) => {
     try {
       const { sectorId } = req.params
@@ -53,9 +58,14 @@ class SectorController {
       }
       return res.json(sectorData)
     } catch (error) {
-      return res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al obtener sector por ID:', error)
+      return res.status(500).json({ 
+        error: 'Error al obtener el sector',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
+
   deleteById = async (req, res) => {
     try {
       const { sectorId } = req.params
@@ -67,18 +77,19 @@ class SectorController {
       }
       return res.json({ message: 'Sector eliminado correctamente' })
     } catch (error) {
-      console.error(error)
-      return res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al eliminar sector:', error)
+      return res.status(500).json({ 
+        error: 'Error al eliminar el sector',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
+
   updateById = async (req, res) => {
     try {
       const result = validatePartialSector(req.body)
       if (!result.success) {
-        console.log(
-          'Error al validar parcialmente el sector',
-          result.error.message
-        )
+        console.error('Error al validar parcialmente el sector:', result.error.message)
         return res.status(400).json(result.error.issues)
       }
       const { sectorId } = req.params
@@ -93,9 +104,13 @@ class SectorController {
       }
       return res.json({ message: 'Sector actualizado correctamente' })
     } catch (error) {
-      console.error(error)
-      return res.status(500).json({ success: false, error: error.message })
+      console.error('Error completo al actualizar sector:', error)
+      return res.status(500).json({ 
+        error: 'Error al actualizar el sector',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
     }
   }
 }
+
 module.exports = { SectorController }
