@@ -3,8 +3,6 @@ const { ContactsModel } = require('./contacts.js')
 const { CostCenterModel } = require('./cost_center.js')
 const { SectorModel } = require('./sector.js')
 
-const { randomUUID } = require('node:crypto')
-
 class CompanyModel {
   static async createWithRelations(
     companyData,
@@ -34,23 +32,22 @@ class CompanyModel {
       await connection.rollback()
       connection.release()
       console.error('Error detallado al crear empresa y relaciones:', error)
-      throw error // Propagamos el error original
+      throw error
     }
   }
+
   static async create(companyData, connection = null) {
     const conn = connection || (await pool.getConnection())
-    const myUUID = randomUUID()
     try {
       if (!connection) await conn.beginTransaction()
 
       // Se inserta la empresa
-      await conn.query(
+      const [result] = await conn.query(
         `
-        INSERT INTO company (id, name, cuit, business_name, first_survey_link, second_survey_link)
-        VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?)
+        INSERT INTO company (name, cuit, business_name, first_survey_link, second_survey_link)
+        VALUES (?, ?, ?, ?, ?)
       `,
         [
-          myUUID,
           companyData.name,
           companyData.cuit,
           companyData.business_name,
@@ -58,12 +55,14 @@ class CompanyModel {
           companyData.second_survey_link
         ]
       )
+
       if (!connection) {
         await conn.commit()
         conn.release()
       }
+
       return {
-        id: myUUID,
+        id: result.insertId,
         ...companyData
       }
     } catch (error) {
@@ -72,7 +71,7 @@ class CompanyModel {
         conn.release()
       }
       console.error('Error detallado al crear empresa:', error)
-      throw error // Propagamos el error original
+      throw error
     }
   }
 
@@ -81,7 +80,7 @@ class CompanyModel {
     try {
       const [companies] = await connection.query(`
         SELECT 
-          BIN_TO_UUID(id) AS id,
+          id,
           name,
           cuit,
           business_name,
@@ -104,14 +103,14 @@ class CompanyModel {
       const [company] = await connection.query(
         `
         SELECT 
-          BIN_TO_UUID(c.id) AS id,
+          c.id,
           c.name,
           c.cuit,
           c.business_name,
           c.first_survey_link,
           c.second_survey_link
         FROM company c
-        WHERE c.id = UUID_TO_BIN(?)
+        WHERE c.id = ?
       `,
         [companyId]
       )
@@ -127,12 +126,13 @@ class CompanyModel {
       connection.release()
     }
   }
+
   static async deleteById(companyId) {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
       const [result] = await connection.query(
-        `DELETE FROM company WHERE id = UUID_TO_BIN(?)`,
+        `DELETE FROM company WHERE id = ?`,
         [companyId]
       )
       await connection.commit()
@@ -145,6 +145,7 @@ class CompanyModel {
       connection.release()
     }
   }
+
   static async updateById(companyId, companyData) {
     const connection = await pool.getConnection()
     try {
@@ -178,7 +179,7 @@ class CompanyModel {
       const sql = `
           UPDATE company
           SET ${setClauses.join(', ')}
-          WHERE id = UUID_TO_BIN(?)
+          WHERE id = ?
         `
       values.push(companyId)
       const [result] = await connection.query(sql, values)

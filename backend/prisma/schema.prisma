@@ -8,7 +8,7 @@ datasource db {
 }
 
 model company {
-  id                 Bytes     @id @db.Binary(16)
+  id                 Int       @id @default(autoincrement())
   name               String    @db.VarChar(100)
   cuit               String    @unique(map: "cuit") @db.VarChar(20)
   business_name      String    @unique(map: "business_name") @db.VarChar(150)
@@ -20,7 +20,7 @@ model company {
 
 model company_contact {
   id         Int       @id @default(autoincrement())
-  company_id Bytes     @db.Binary(16)
+  company_id Int
   name       String    @db.VarChar(100)
   email      String    @unique(map: "email") @db.VarChar(100)
   notes      String?   @db.Text
@@ -32,7 +32,7 @@ model company_contact {
 
 model cost_center {
   id         Int       @id @default(autoincrement())
-  company_id Bytes     @db.Binary(16)
+  company_id Int
   name       String    @db.VarChar(100)
   created_at DateTime? @default(now()) @db.Timestamp(0)
   updated_at DateTime? @default(now()) @db.Timestamp(0)
@@ -60,7 +60,7 @@ model roles {
 
 model sector {
   id         Int       @id @default(autoincrement())
-  company_id Bytes     @db.Binary(16)
+  company_id Int
   name       String    @db.VarChar(100)
   created_at DateTime? @default(now()) @db.Timestamp(0)
   updated_at DateTime? @default(now()) @db.Timestamp(0)
@@ -93,7 +93,7 @@ model students {
   email                 String           @unique(map: "email") @db.VarChar(100)
   initial_leveling_date DateTime?        @db.Date
   sid                   String?          @db.VarChar(50)
-  company_id            Bytes            @db.Binary(16)
+  company_id            Int
   cost_center_id        Int
   sector_id             Int
   active                Boolean?         @default(true)

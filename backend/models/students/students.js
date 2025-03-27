@@ -8,7 +8,7 @@ class StudentsModel {
       await connection.beginTransaction()
 
       const [studentResult] = await connection.query(
-        `INSERT INTO students (first_name, last_name, email, sid, initial_leveling_date, company_id, cost_center_id, sector_id) VALUES (?, ?, ?, ?, ?, UUID_TO_BIN(?), ?, ?)`,
+        `INSERT INTO students (first_name, last_name, email, sid, initial_leveling_date, company_id, cost_center_id, sector_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           studentData.first_name,
           studentData.last_name,
@@ -49,7 +49,7 @@ class StudentsModel {
           s.email,
           s.initial_leveling_date,
           s.sid,
-          BIN_TO_UUID(c.id) AS company_id,
+          c.id AS company_id,
           c.name AS company_name,
           cc.id AS cost_center_id,
           cc.name AS cost_center_name,
@@ -69,7 +69,7 @@ class StudentsModel {
       // Si hay companyId, filtramos por empresa
       if (companyId) {
         // Convertimos el ID a binario para comparar
-        query += ` AND s.company_id = UUID_TO_BIN(?)`
+        query += ` AND s.company_id = ?`
         params.push(companyId)
       }
 
@@ -142,7 +142,7 @@ class StudentsModel {
       /* se arman las clausulas para la query, el company_id se pasa a binario si está */
       const clauses = Object.keys(studentData)
         .map((key) =>
-          key === 'company_id' ? `${key} = UUID_TO_BIN(?)` : `${key} = ?`
+          key === 'company_id' ? `${key} = ?` : `${key} = ?`
         )
         .join(', ')
 

@@ -23,9 +23,8 @@ const studentsSchema = z.object({
     })
     .transform((val) => new Date(val)),
   company_id: z
-    .string({ required_error: 'El ID de la empresa es requerido' })
-    .trim()
-    .uuid({ required_error: 'El ID de la empresa debe ser un UUID válido' }),
+    .number({ required_error: 'El ID de la empresa es requerido' })
+    .int('El ID de la empresa debe ser un número entero'),
   cost_center_id: z
     .number({ required_error: 'El ID del centro de costo es requerido' })
     .int('El ID del centro de costo debe ser un número entero'),

@@ -8,7 +8,7 @@ class ContactsModel {
       const result = await conn.query(
         `
             INSERT INTO company_contact (company_id, name, email, notes)
-            VALUES (UUID_TO_BIN(?), ?, ?, ?)
+            VALUES (?, ?, ?, ?)
           `,
         [companyId, contactsData.name, contactsData.email, contactsData.notes]
       )
@@ -34,12 +34,12 @@ class ContactsModel {
         `
             SELECT
                 c.id AS contact_id,
-                BIN_TO_UUID(c.company_id) AS company_id,
+                c.company_id AS company_id,
                 c.name AS contact_name,
                 c.email AS contact_email,
                 c.notes AS contact_notes
             FROM company_contact c
-            WHERE BIN_TO_UUID(c.company_id) = ?
+            WHERE c.company_id = ?
           `,
         [companyId]
       )
@@ -59,7 +59,7 @@ class ContactsModel {
         `
             SELECT
                 c.id AS contact_id,
-                BIN_TO_UUID(c.company_id) AS company_id,
+                c.company_id AS company_id,
                 c.name AS contact_name,
                 c.email AS contact_email,
                 c.notes AS contact_notes

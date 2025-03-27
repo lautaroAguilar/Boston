@@ -9,7 +9,7 @@ class SectorModel {
       const result = await conn.query(
         `
             INSERT INTO sector (company_id, name)
-            VALUES (UUID_TO_BIN(?), ?)
+            VALUES (?, ?)
           `,
         [companyId, sectorData.name]
       )
@@ -34,10 +34,10 @@ class SectorModel {
         `
             SELECT
                 s.id AS sector_id,
-                BIN_TO_UUID(s.company_id) AS company_id,
+                s.company_id AS company_id,
                 s.name AS sector_name
             FROM sector s
-            WHERE BIN_TO_UUID(s.company_id) = ?
+            WHERE s.company_id = ?
           `,
         [companyId]
       )
@@ -56,7 +56,7 @@ class SectorModel {
         `
             SELECT
                 s.id AS sector_id,
-                BIN_TO_UUID(s.company_id) AS company_id,
+                s.company_id AS company_id,
                 s.name AS sector_name
             FROM sector s
             WHERE s.id = ?

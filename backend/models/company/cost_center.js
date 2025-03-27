@@ -8,7 +8,7 @@ class CostCenterModel {
       const result = await conn.query(
         `
             INSERT INTO cost_center (company_id, name)
-            VALUES (UUID_TO_BIN(?), ?)
+            VALUES (?, ?)
           `,
         [companyId, costCenterData.name]
       )
@@ -33,10 +33,10 @@ class CostCenterModel {
         `
             SELECT
               c.id AS cost_center_id,
-              BIN_TO_UUID(c.company_id) AS company_id,
+              c.company_id AS company_id,
               c.name AS cost_center_name
             FROM cost_center c
-            WHERE BIN_TO_UUID(c.company_id) = ?
+            WHERE c.company_id = ?
           `,
         [companyId]
       )
@@ -55,7 +55,7 @@ class CostCenterModel {
         `
             SELECT
                 c.id AS cost_center_id,
-                BIN_TO_UUID(c.company_id) AS company_id,
+                c.company_id AS company_id,
                 c.name AS cost_center_name
             FROM cost_center c
             WHERE c.id = ?
