@@ -20,7 +20,6 @@ class CompanyController {
       const newCompany = await this.companyModel.create(result.data)
       res.status(201).json(newCompany)
     } catch (error) {
-      console.error('Error completo al crear empresa:', error)
       res.status(500).json({
         error: 'Error al crear la empresa',
         details:
@@ -57,7 +56,6 @@ class CompanyController {
       )
       res.status(201).json(newCompany)
     } catch (error) {
-      console.error('Error completo al crear empresa y sus relaciones:', error)
       res.status(500).json({
         error: 'Error al crear la empresa y sus relaciones',
         details:
@@ -78,7 +76,6 @@ class CompanyController {
 
       res.status(200).json(companies)
     } catch (error) {
-      console.error('Error completo al buscar empresas:', error)
       res.status(500).json({
         error: 'Error al buscar empresas',
         details:
@@ -95,7 +92,6 @@ class CompanyController {
       }
       return res.json(companyData)
     } catch (error) {
-      console.error('Error completo al buscar la empresa:', error)
       res.status(500).json({
         error: 'Error al buscar la empresa',
         details:
@@ -114,7 +110,6 @@ class CompanyController {
       }
       return res.json({ message: 'Empresa eliminada correctamente' })
     } catch (error) {
-      console.error('Error completo al eliminar la empresa:', error)
       res.status(500).json({
         error: 'Hubo un error al eliminar la empresa',
         details:
@@ -126,7 +121,7 @@ class CompanyController {
     try {
       const result = validatePartialCompany(req.body)
       if (!result.success) {
-        console.log(
+        console.error(
           'Error al validar parcialmente la empresa',
           result.error.message
         )
@@ -144,7 +139,6 @@ class CompanyController {
       }
       return res.json({ message: 'Empresa actualizada correctamente' })
     } catch (error) {
-      console.error('Error completo al actualizar la empresa:', error)
       res.status(500).json({
         error: 'Hubo un error al actualizar la empresa',
         details:

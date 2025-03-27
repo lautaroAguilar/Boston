@@ -20,10 +20,10 @@ class StudentsController {
       const newStudent = await this.studentsModel.create(result.data)
       res.status(201).json(newStudent)
     } catch (error) {
-      console.error('Error completo al crear estudiante:', error)
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Error al crear el estudiante',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -38,10 +38,10 @@ class StudentsController {
       }
       res.status(200).json(students)
     } catch (error) {
-      console.error('Error completo al obtener estudiantes:', error)
       res.status(500).json({
         error: 'Error al buscar estudiantes',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -54,10 +54,10 @@ class StudentsController {
       }
       return res.json(studentData)
     } catch (error) {
-      console.error('Error completo al obtener estudiante por ID:', error)
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Error al buscar el estudiante',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -72,10 +72,10 @@ class StudentsController {
       }
       return res.json({ message: 'Estudiante eliminado correctamente' })
     } catch (error) {
-      console.error('Error completo al eliminar estudiante:', error)
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Error al eliminar el estudiante',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -99,10 +99,10 @@ class StudentsController {
       }
       res.status(201).json({ message: 'Estudiante actualizado correctamente' })
     } catch (error) {
-      console.error('Error completo al actualizar estudiante:', error)
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Error al actualizar el estudiante',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }

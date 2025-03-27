@@ -18,7 +18,6 @@ class SectorController {
       const newSector = await this.sectorModel.create(companyId, result.data)
       res.status(201).json(newSector)
     } catch (error) {
-      console.error('Error completo al crear sector:', error)
       res.status(500).json({ 
         error: 'Error al crear el sector',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -41,7 +40,6 @@ class SectorController {
 
       res.status(200).json(sectors)
     } catch (error) {
-      console.error('Error completo al obtener sectores:', error)
       res.status(500).json({
         error: 'Error al obtener los sectores',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -58,7 +56,6 @@ class SectorController {
       }
       return res.json(sectorData)
     } catch (error) {
-      console.error('Error completo al obtener sector por ID:', error)
       return res.status(500).json({ 
         error: 'Error al obtener el sector',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -77,7 +74,6 @@ class SectorController {
       }
       return res.json({ message: 'Sector eliminado correctamente' })
     } catch (error) {
-      console.error('Error completo al eliminar sector:', error)
       return res.status(500).json({ 
         error: 'Error al eliminar el sector',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -104,7 +100,6 @@ class SectorController {
       }
       return res.json({ message: 'Sector actualizado correctamente' })
     } catch (error) {
-      console.error('Error completo al actualizar sector:', error)
       return res.status(500).json({ 
         error: 'Error al actualizar el sector',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined

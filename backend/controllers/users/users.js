@@ -14,10 +14,10 @@ class UserController {
       }
       res.status(200).json(users)
     } catch (error) {
-      console.error('Error completo al obtener usuarios:', error)
       res.status(500).json({
         error: 'Error al buscar usuarios',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -30,10 +30,10 @@ class UserController {
       }
       return res.json(userData)
     } catch (error) {
-      console.error('Error completo al obtener usuario por ID:', error)
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Error al buscar el usuario',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -48,10 +48,10 @@ class UserController {
       }
       return res.json({ message: 'Usuario eliminado correctamente' })
     } catch (error) {
-      console.error('Error completo al eliminar usuario:', error)
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Error al eliminar el usuario',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }
@@ -75,10 +75,10 @@ class UserController {
       }
       res.status(201).json({ message: 'Usuario actualizado correctamente' })
     } catch (error) {
-      console.error('Error completo al actualizar usuario:', error)
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Error al actualizar el usuario',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
   }

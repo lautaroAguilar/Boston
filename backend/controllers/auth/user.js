@@ -41,7 +41,6 @@ class UserAuthController {
         user: newUser
       })
     } catch (error) {
-      console.error('Error completo al registrar usuario:', error)
       return res.status(500).json({
         error: 'Hubo un error al registrar el usuario',
         details:
@@ -102,7 +101,6 @@ class UserAuthController {
         .status(200)
         .json({ message: 'Login exitoso' })
     } catch (error) {
-      console.error('Error completo al iniciar sesión:', error)
       return res.status(500).json({
         error: 'Error al iniciar sesión',
         details:
@@ -127,7 +125,6 @@ class UserAuthController {
       })
       return res.status(200).json({ message: 'Logout exitoso' })
     } catch (error) {
-      console.error('Error completo al cerrar sesión:', error)
       return res.status(500).json({
         error: 'Error al cerrar sesión',
         details:
@@ -172,7 +169,6 @@ class UserAuthController {
       }
       return res.status(200).json(userInfo)
     } catch (error) {
-      console.error(error)
       return res.status(500).json({
         message:
           'Error interno del servidor al intentar buscar el usuario activo'

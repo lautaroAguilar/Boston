@@ -46,7 +46,7 @@ class CompanyModel {
       // Se inserta la empresa
       await conn.query(
         `
-        INSERT INTO COMPANY (id, name, cuit, business_name, first_survey_link, second_survey_link)
+        INSERT INTO company (id, name, cuit, business_name, first_survey_link, second_survey_link)
         VALUES (UUID_TO_BIN(?), ?, ?, ?, ?, ?)
       `,
         [

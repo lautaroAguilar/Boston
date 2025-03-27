@@ -18,7 +18,6 @@ class ContactController {
       const newContact = await this.contactModel.create(companyId, result.data)
       res.status(201).json(newContact)
     } catch (error) {
-      console.error('Error completo al crear contacto:', error)
       res.status(500).json({
         error: 'Error al crear el contacto',
         details:
@@ -42,7 +41,6 @@ class ContactController {
 
       res.status(200).json(contacts)
     } catch (error) {
-      console.error('Error completo al obtener contactos:', error)
       res.status(500).json({
         error: 'Error al obtener los contactos',
         details:
@@ -60,7 +58,6 @@ class ContactController {
       }
       return res.json(contactData)
     } catch (error) {
-      console.error('Error completo al obtener contacto por ID:', error)
       return res.status(500).json({
         error: 'Error al obtener el contacto',
         details:
@@ -80,7 +77,6 @@ class ContactController {
       }
       return res.json({ message: 'Contacto eliminado correctamente' })
     } catch (error) {
-      console.error('Error completo al eliminar contacto:', error)
       return res.status(500).json({
         error: 'Error al eliminar el contacto',
         details:
@@ -111,7 +107,6 @@ class ContactController {
       }
       return res.json({ message: 'Contacto actualizado correctamente' })
     } catch (error) {
-      console.error('Error completo al actualizar contacto:', error)
       return res.status(500).json({
         error: 'Error al actualizar el contacto',
         details:
