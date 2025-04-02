@@ -98,8 +98,7 @@ class TeacherModel {
           observations: teacherData.observations,
           userId: teacherData.userId,
           languages: {
-            deleteMany: {},
-            create: teacherData.languages?.map(languageId => ({
+            connect: teacherData.languages?.map(languageId => ({
               languageId: languageId
             })) || []
           }
