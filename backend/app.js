@@ -7,6 +7,7 @@ const { userAuthRouter } = require('./routes/auth/user.js')
 const { userRouter } = require('./routes/users/users.js')
 const { studentsRouter } = require('./routes/students/students.js')
 const { settingsRouter } = require('./routes/settings/settings.js')
+const { teacherRouter } = require('./routes/teacher/teacher.js')
 dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -27,6 +28,7 @@ app.use('/api/user', userRouter)
 app.use('/api/auth', userAuthRouter)
 app.use('/api/students', studentsRouter)
 app.use('/api/settings', settingsRouter)
+app.use('/api/teachers', teacherRouter)
 /* 
   app.use('/api/course', Router)
   app.use('/api/education', Router) */
