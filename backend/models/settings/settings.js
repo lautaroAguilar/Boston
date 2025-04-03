@@ -37,5 +37,19 @@ class SettingsModel {
       connection.release()
     }
   }
+  static async getAllProfessionalCategories() {
+    const connection = await pool.getConnection()
+    try {
+      const [rows] = await connection.query(
+        `SELECT id, name FROM ProfessionalCategory`
+      )
+      return rows
+    } catch (error) {
+      console.error('Error al obtener las categorías profesionales', error)
+      throw error
+    } finally {
+      connection.release()
+    }
+  }
 }
 module.exports = { SettingsModel }

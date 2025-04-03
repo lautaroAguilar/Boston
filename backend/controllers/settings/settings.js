@@ -50,5 +50,21 @@ class SettingsController {
       })
     }
   }
+  getAllProfessionalCategories = async (req, res) => {
+    try {
+      const professionalCategories = await this.settingsModel.getAllProfessionalCategories()
+      if (!professionalCategories.length) {
+        return res
+          .status(200)
+          .json({ data: [], message: 'No se encontraron categorías profesionales' })
+      }
+      res.status(200).json(professionalCategories)
+    } catch (error) {
+      res.status(500).json({
+        error: 'Error al obtener las categorías profesionales',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
+    }
+  }
 }
 module.exports = { SettingsController }

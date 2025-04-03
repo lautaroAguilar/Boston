@@ -10,5 +10,6 @@ const settingsController = new SettingsController({
 settingsRouter.get('/modules', settingsController.getAllModules)
 settingsRouter.get('/languages', settingsController.getAllLanguages)
 settingsRouter.get('/roles', settingsController.getAllRoles)
+settingsRouter.get('/professional-categories', settingsController.getAllProfessionalCategories)
 
 module.exports = { settingsRouter }
