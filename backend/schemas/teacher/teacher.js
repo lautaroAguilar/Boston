@@ -31,8 +31,7 @@ const teacherSchema = z.object({
     .max(11, 'El CUIT debe tener 11 dígitos')
     .optional(),
   professionalCategoryId: z
-    .number({ required_error: 'La categoría profesional es requerida' })
-    .int('La categoría profesional debe ser un número entero'),
+    .number({ required_error: 'La categoría profesional es requerida', invalid_type_error: 'Elija una categoría profesional' }),
   fictitiousSeniority: z
     .number({ required_error: 'La antigüedad ficticia es requerida' })
     .int('La antigüedad ficticia debe ser un número entero')
@@ -49,10 +48,6 @@ const teacherSchema = z.object({
     .array(z.number().int())
     .min(1, 'Debe seleccionar al menos un idioma')
     .optional(),
-  userId: z
-    .number()
-    .int()
-    .optional()
 })
 
 function validateTeacher(teacher) {

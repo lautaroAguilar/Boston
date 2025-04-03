@@ -2,39 +2,59 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 class TeacherModel {
-  static async create(teacherData) {
+  static async createWithUser(teacherData, hashedPassword) {
     try {
-      const teacher = await prisma.teacher.create({
-        data: {
-          firstName: teacherData.firstName,
-          lastName: teacherData.lastName,
-          email: teacherData.email,
-          phone: teacherData.phone,
-          CBU: teacherData.CBU,
-          CUIT: teacherData.CUIT,
-          professionalCategoryId: teacherData.professionalCategoryId,
-          fictitiousSeniority: teacherData.fictitiousSeniority,
-          bostonSeniority: teacherData.bostonSeniority,
-          observations: teacherData.observations,
-          userId: teacherData.userId,
-          languages: {
-            create: teacherData.languages?.map(languageId => ({
-              languageId: languageId
-            })) || []
+      const createdData = await prisma.$transaction(async (tx) => {
+        // 1. Crear el usuario
+        const user = await tx.users.create({
+          data: {
+            first_name: teacherData.firstName,
+            last_name: teacherData.lastName,
+            email: teacherData.email,
+            password: hashedPassword,
+            role_id: 2, // ID del rol "docente"
+            active: true
           }
-        },
-        include: {
-          languages: {
-            include: {
-              language: true
+        })
+
+        // 2. Crear el profesor
+        const teacher = await tx.teacher.create({
+          data: {
+            firstName: teacherData.firstName,
+            lastName: teacherData.lastName,
+            email: teacherData.email,
+            phone: teacherData.phone,
+            CBU: teacherData.CBU,
+            CUIT: teacherData.CUIT,
+            professionalCategoryId: teacherData.professionalCategoryId,
+            fictitiousSeniority: teacherData.fictitiousSeniority,
+            bostonSeniority: teacherData.bostonSeniority,
+            observations: teacherData.observations,
+            userId: user.id,
+            languages: {
+              create: teacherData.languages?.map(langId => ({
+                language: {
+                  connect: { id: langId }
+                }
+              })) || []
             }
           },
-          professionalCategory: true
-        }
+          include: {
+            languages: {
+              include: {
+                language: true
+              }
+            },
+            professionalCategory: true
+          }
+        })
+
+        return { teacher, user }
       })
-      return teacher
+
+      return createdData
     } catch (error) {
-      console.error('Error al crear el docente:', error)
+      console.error('Error al crear el docente con usuario:', error)
       throw error
     }
   }
@@ -48,7 +68,13 @@ class TeacherModel {
               language: true
             }
           },
-          professionalCategory: true
+          professionalCategory: true,
+          user: {
+            select: {
+              active: true,
+              last_login: true
+            }
+          }
         },
         orderBy: {
           id: 'asc'
@@ -71,7 +97,13 @@ class TeacherModel {
               language: true
             }
           },
-          professionalCategory: true
+          professionalCategory: true,
+          user: {
+            select: {
+              active: true,
+              last_login: true
+            }
+          }
         }
       })
       return teacher
@@ -96,10 +128,12 @@ class TeacherModel {
           fictitiousSeniority: teacherData.fictitiousSeniority,
           bostonSeniority: teacherData.bostonSeniority,
           observations: teacherData.observations,
-          userId: teacherData.userId,
           languages: {
-            connect: teacherData.languages?.map(languageId => ({
-              languageId: languageId
+            deleteMany: {},
+            create: teacherData.languages?.map(langId => ({
+              language: {
+                connect: { id: langId }
+              }
             })) || []
           }
         },
@@ -109,7 +143,13 @@ class TeacherModel {
               language: true
             }
           },
-          professionalCategory: true
+          professionalCategory: true,
+          user: {
+            select: {
+              active: true,
+              last_login: true
+            }
+          }
         }
       })
       return teacher
@@ -121,10 +161,36 @@ class TeacherModel {
 
   static async deleteById(teacherId) {
     try {
-      const teacher = await prisma.teacher.delete({
-        where: { id: parseInt(teacherId) }
+      // Primero obtenemos el userId
+      const teacher = await prisma.teacher.findUnique({
+        where: { id: parseInt(teacherId) },
+        select: { userId: true }
       })
-      return teacher
+
+      if (!teacher) {
+        throw new Error('Docente no encontrado')
+      }
+
+      await prisma.$transaction(async (tx) => {
+        // Eliminar las relaciones con idiomas
+        await tx.teacherLanguages.deleteMany({
+          where: { teacherId: parseInt(teacherId) }
+        })
+
+        // Eliminar el profesor
+        await tx.teacher.delete({
+          where: { id: parseInt(teacherId) }
+        })
+
+        // Si existe un usuario asociado, lo eliminamos
+        if (teacher.userId) {
+          await tx.users.delete({
+            where: { id: teacher.userId }
+          })
+        }
+      })
+
+      return true
     } catch (error) {
       console.error('Error al eliminar el docente:', error)
       throw error

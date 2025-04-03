@@ -1,5 +1,7 @@
-const { TeacherModel } = require('../../models/teacher/teacher.js')
 const { validateTeacher } = require('../../schemas/teacher/teacher.js')
+const { generateTemporaryPassword } = require('../../utils/passwordGenerator.js')
+const emailService = require('../../services/emailService.js')
+const bcrypt = require('bcryptjs')
 
 class TeacherController {
   constructor({ teacherModel }) {
@@ -18,12 +20,35 @@ class TeacherController {
         })
       }
 
-      const teacher = await this.teacherModel.create(result.data)
-      res.status(201).json({
+      const saltRounds =
+        process.env.NODE_ENV === 'production'
+          ? parseInt(process.env.SALT_ROUNDS)
+          : 1
+      const temporaryPassword = generateTemporaryPassword()
+      const hashedPassword = await bcrypt.hash(temporaryPassword, saltRounds)
+
+      const createdData = await this.teacherModel.createWithUser(result.data, hashedPassword)
+
+      // Enviar email con credenciales
+      /* await emailService.sendWelcomeEmail({
+        to: createdData.teacher.email,
+        temporaryPassword,
+        teacherName: createdData.teacher.firstName
+      }) */
+
+      // En desarrollo, devolvemos la contraseña temporal
+      const response = {
         error: false,
         message: 'Docente creado exitosamente',
-        data: teacher
-      })
+        data: createdData.teacher
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        response.temporaryPassword = temporaryPassword
+        response.message += '. IMPORTANTE: Guarda esta contraseña temporal ya que no se volverá a mostrar'
+      }
+
+      res.status(201).json(response)
     } catch (error) {
       console.error('Error en el controlador de creación de docente:', error)
       res.status(500).json({
@@ -119,21 +144,20 @@ class TeacherController {
   deleteById = async (req, res) => {
     try {
       const { id } = req.params
-      const teacher = await this.teacherModel.deleteById(id)
+      await this.teacherModel.deleteById(id)
 
-      if (!teacher) {
+      res.json({
+        error: false,
+        message: 'Docente eliminado exitosamente'
+      })
+    } catch (error) {
+      if (error.message === 'Docente no encontrado') {
         return res.status(404).json({
           error: true,
           message: 'Docente no encontrado'
         })
       }
 
-      res.json({
-        error: false,
-        message: 'Docente eliminado exitosamente',
-        data: teacher
-      })
-    } catch (error) {
       console.error('Error en el controlador de eliminación de docente:', error)
       res.status(500).json({
         error: true,
