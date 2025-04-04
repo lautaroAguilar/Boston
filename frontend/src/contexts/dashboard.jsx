@@ -13,6 +13,7 @@ export function DashboardProvider({ children }) {
   const [languages, setLanguages] = useState([]);
   const [levels, setLevels] = useState([]);
   const [modules, setModules] = useState([]);
+  const [professionalCategories, setProfessionalCategories] = useState([]);
   async function fetchModules() {
     try {
       const res = await fetch(`${CONFIG.API_URL}/settings/modules`, {
@@ -61,6 +62,26 @@ export function DashboardProvider({ children }) {
       console.log("error al buscar los niveles", error);
     }
   }
+  async function fetchProfessionalCategories() {
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/settings/professional-categories`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setSnackbarErrorMessage(data.message);
+      }
+      setProfessionalCategories(data);
+      return data;
+    } catch (error) {
+      console.log("error al buscar las categorías profesionales", error);
+    }
+  }
+
   return (
     <DashboardContext.Provider
       value={{
@@ -78,9 +99,11 @@ export function DashboardProvider({ children }) {
         fetchModules,
         fetchLanguages,
         fetchLevels,
+        fetchProfessionalCategories,
         languages,
         levels,
         modules,
+        professionalCategories,
       }}
     >
       {children}

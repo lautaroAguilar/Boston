@@ -28,7 +28,7 @@ export default function MyForm({
     <Box
       component="form"
       sx={{
-        height: "100%",
+        height: "auto",
         width: "100%",
         margin: "0 auto",
         display: "flex",
@@ -36,7 +36,7 @@ export default function MyForm({
         justifyContent: "space-between",
       }}
     >
-      <Stack spacing={2} sx={{ mt: 2 }}>
+      <Stack spacing={2} sx={{ height: "100%", mt: 2 }}>
         {fields.map((field, index) => (
           <Stack key={field.name ?? index}>
             {(() => {
@@ -48,9 +48,18 @@ export default function MyForm({
                       <Select
                         name={field.name}
                         label={field.label}
-                        value={values[field.name] || ""}
+                        value={values[field.name] || (field.multiple ? [] : "")}
                         onChange={(e) => onChange(field.name, e.target.value)}
                         required={field.required ?? false}
+                        multiple={field.multiple ?? false}
+                        renderValue={(selected) => {
+                          if (field.multiple) {
+                            return selected.map(id => 
+                              field.options.find(opt => opt.id === id)?.label
+                            ).join(", ");
+                          }
+                          return field.options.find(opt => opt.id === selected)?.label;
+                        }}
                       >
                         {field.options?.map((opt, i) => (
                           <MenuItem key={opt.id ?? i} value={opt.id}>
