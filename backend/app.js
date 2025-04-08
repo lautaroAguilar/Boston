@@ -8,6 +8,8 @@ const { userRouter } = require('./routes/users/users.js')
 const { studentsRouter } = require('./routes/students/students.js')
 const { settingsRouter } = require('./routes/settings/settings.js')
 const { teacherRouter } = require('./routes/teacher/teacher.js')
+const { groupRouter } = require('./routes/group/group.js')
+const { scheduleRouter } = require('./routes/schedule/schedule.js')
 dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -15,7 +17,6 @@ app.use(express.json())
 app.use(corsMiddleware())
 app.use(cookieParser())
 app.disable('x-powered-by')
-
 
 app.get('/', (req, res) => {
   res.redirect('/api/test')
@@ -29,6 +30,8 @@ app.use('/api/auth', userAuthRouter)
 app.use('/api/students', studentsRouter)
 app.use('/api/settings', settingsRouter)
 app.use('/api/teachers', teacherRouter)
+app.use('/api/groups', groupRouter)
+app.use('/api/schedules', scheduleRouter)
 /* 
   app.use('/api/course', Router)
   app.use('/api/education', Router) */
