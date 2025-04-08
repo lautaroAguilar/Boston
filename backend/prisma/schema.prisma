@@ -41,18 +41,20 @@ model cost_center {
 }
 
 model languages {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique(map: "name") @db.VarChar(50)
+  id               Int              @id @default(autoincrement())
+  name             String           @unique(map: "name") @db.VarChar(50)
   teacherLanguages TeacherLanguages[]
-  progress student_progress[]
-  enrollments    CourseEnrollment[]
+  progress         student_progress[]
+  enrollments      CourseEnrollment[]
+  groups           Group[]
 }
 
 model modules {
-  id   Int    @id @default(autoincrement())
-  name String @unique(map: "name") @db.VarChar(100)
-  progress             student_progress[]
-  enrollments          CourseEnrollment[]
+  id               Int              @id @default(autoincrement())
+  name             String           @unique(map: "name") @db.VarChar(100)
+  progress         student_progress[]
+  enrollments      CourseEnrollment[]
+  groups           Group[]
 }
 
 model roles {
@@ -101,10 +103,11 @@ model students {
   active                Boolean?         @default(true)
   created_at            DateTime?        @default(now()) @db.Timestamp(0)
   updated_at            DateTime?        @default(now()) @db.Timestamp(0)
-  progress             student_progress[]
+  progress              student_progress[]
   attendance           Attendance[]
   examResults          ExamResult[]
   enrollments          CourseEnrollment[]
+  groups               GroupStudent[]
 
   @@index([company_id], map: "company_id")
   @@index([cost_center_id], map: "cost_center_id")
@@ -149,7 +152,7 @@ model Teacher {
   observations          String?              @db.Text
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
-  courses               Course[]             
+  groups               Group[]             
   classes               Class[]              
   user                  users?               @relation(fields: [userId], references: [id])
   userId                Int?                 @unique
@@ -166,52 +169,105 @@ model TeacherLanguages {
   @@id([teacherId, languageId])
 }
 
-model Course {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(100)
-  description String?   @db.Text
-  startDate   DateTime  @db.Date
-  endDate     DateTime  @db.Date
-  status      String    @db.VarChar(20) // active, completed, cancelled
-  teacherId   Int
-  teacher     Teacher   @relation(fields: [teacherId], references: [id])
-  classes     Class[]
-  exams       Exam[]
-  enrollments CourseEnrollment[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([teacherId])
+model GroupStatus {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  groups      Group[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-model Class {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(100)
-  description String?   @db.Text
-  courseId    Int
-  course      Course    @relation(fields: [courseId], references: [id])
-  teacherId   Int
-  teacher     Teacher   @relation(fields: [teacherId], references: [id])
-  schedules   Schedule[]
-  attendance  Attendance[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+model StudentStatus {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  students    GroupStudent[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
 
-  @@index([courseId])
+model Modality {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  groups      Group[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Group {
+  id           Int         @id @default(autoincrement())
+  name         String      @db.VarChar(100)
+  teacherId    Int
+  teacher      Teacher     @relation(fields: [teacherId], references: [id])
+  languageId   Int
+  language     languages   @relation(fields: [languageId], references: [id])
+  moduleId     Int
+  module       modules     @relation(fields: [moduleId], references: [id])
+  modalityId   Int
+  modality     Modality   @relation(fields: [modalityId], references: [id])
+  statusId     Int
+  status       GroupStatus @relation(fields: [statusId], references: [id])
+  startDate    DateTime    @db.Date
+  endDate      DateTime    @db.Date
+  students     GroupStudent[]
+  schedule     Schedule?
+  classes      Class[]
+  exams        Exam[]
+  enrollments  CourseEnrollment[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
   @@index([teacherId])
+  @@index([languageId])
+  @@index([moduleId])
+  @@index([modalityId])
+  @@index([statusId])
+}
+
+model GroupStudent {
+  id          Int           @id @default(autoincrement())
+  groupId     Int
+  group       Group         @relation(fields: [groupId], references: [id])
+  studentId   Int
+  student     students      @relation(fields: [studentId], references: [id])
+  statusId    Int
+  status      StudentStatus @relation(fields: [statusId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([groupId])
+  @@index([studentId])
+  @@index([statusId])
 }
 
 model Schedule {
-  id        Int       @id @default(autoincrement())
-  classId   Int
-  class     Class     @relation(fields: [classId], references: [id])
-  dayOfWeek Int       // 0-6 (Domingo-Sábado)
-  startTime DateTime  @db.Time
-  endTime   DateTime  @db.Time
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         Int      @id @default(autoincrement())
+  groupId    Int      @unique // One-to-one relation with Group
+  group      Group    @relation(fields: [groupId], references: [id])
+  days       Json     // MariaDB soporta JSON desde la versión 10.2.7
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  @@index([classId])
+  @@index([groupId])
+}
+
+model Class {
+  id          Int         @id @default(autoincrement())
+  groupId     Int
+  group       Group       @relation(fields: [groupId], references: [id])
+  teacherId   Int
+  teacher     Teacher     @relation(fields: [teacherId], references: [id])
+  date        DateTime    @db.Date
+  startTime   DateTime    @db.Time
+  endTime     DateTime    @db.Time
+  attendance  Attendance[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([groupId])
+  @@index([teacherId])
 }
 
 model Attendance {
@@ -234,13 +290,13 @@ model Exam {
   name        String    @db.VarChar(100)
   description String?   @db.Text
   date        DateTime  @db.Date
-  courseId    Int
-  course      Course    @relation(fields: [courseId], references: [id])
+  groupId    Int
+  group      Group    @relation(fields: [groupId], references: [id])
   results     ExamResult[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@index([courseId])
+  @@index([groupId])
 }
 
 model ExamResult {
@@ -262,8 +318,8 @@ model CourseEnrollment {
   id              Int       @id @default(autoincrement())
   studentId       Int
   student         students  @relation(fields: [studentId], references: [id])
-  courseId        Int
-  course          Course    @relation(fields: [courseId], references: [id])
+  groupId        Int
+  group          Group    @relation(fields: [groupId], references: [id])
   languageId      Int
   language        languages @relation(fields: [languageId], references: [id])
   moduleId        Int
@@ -278,7 +334,7 @@ model CourseEnrollment {
   updatedAt       DateTime  @updatedAt
 
   @@index([studentId])
-  @@index([courseId])
+  @@index([groupId])
   @@index([languageId])
   @@index([moduleId])
 }
