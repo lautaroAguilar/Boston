@@ -66,5 +66,16 @@ class SettingsController {
       })
     }
   }
+  getAllModality = async (req, res) => {
+    try {
+      const modality = await this.settingsModel.getAllModality()
+      res.status(200).json(modality)
+    } catch (error) {
+      res.status(500).json({
+        error: 'Error al obtener las modalidades',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
+    }
+  }
 }
 module.exports = { SettingsController }

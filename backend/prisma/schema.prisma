@@ -16,6 +16,12 @@ model company {
   second_survey_link String?   @db.Text
   created_at         DateTime? @default(now()) @db.Timestamp(0)
   updated_at         DateTime? @default(now()) @db.Timestamp(0)
+  contacts           company_contact[]
+  cost_centers       cost_center[]
+  sectors            sector[]
+  students           students[]
+  groups             Group[]
+  schedules          Schedule[]
 }
 
 model company_contact {
@@ -26,6 +32,7 @@ model company_contact {
   notes      String?   @db.Text
   created_at DateTime? @default(now()) @db.Timestamp(0)
   updated_at DateTime? @default(now()) @db.Timestamp(0)
+  company    company   @relation(fields: [company_id], references: [id])
 
   @@index([company_id], map: "company_id")
 }
@@ -36,6 +43,7 @@ model cost_center {
   name       String    @db.VarChar(100)
   created_at DateTime? @default(now()) @db.Timestamp(0)
   updated_at DateTime? @default(now()) @db.Timestamp(0)
+  company    company   @relation(fields: [company_id], references: [id])
 
   @@index([company_id], map: "company_id")
 }
@@ -68,6 +76,7 @@ model sector {
   name       String    @db.VarChar(100)
   created_at DateTime? @default(now()) @db.Timestamp(0)
   updated_at DateTime? @default(now()) @db.Timestamp(0)
+  company    company   @relation(fields: [company_id], references: [id])
 
   @@index([company_id], map: "company_id")
 }
@@ -100,7 +109,6 @@ model students {
   company_id            Int
   cost_center_id        Int
   sector_id             Int
-  active                Boolean?         @default(true)
   created_at            DateTime?        @default(now()) @db.Timestamp(0)
   updated_at            DateTime?        @default(now()) @db.Timestamp(0)
   progress              student_progress[]
@@ -108,6 +116,7 @@ model students {
   examResults          ExamResult[]
   enrollments          CourseEnrollment[]
   groups               GroupStudent[]
+  company              company          @relation(fields: [company_id], references: [id])
 
   @@index([company_id], map: "company_id")
   @@index([cost_center_id], map: "cost_center_id")
@@ -173,6 +182,7 @@ model GroupStatus {
   id          Int      @id @default(autoincrement())
   name        String   @unique @db.VarChar(50)
   description String?  @db.Text
+  isDefault   Boolean  @default(false)
   groups      Group[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -182,6 +192,7 @@ model StudentStatus {
   id          Int      @id @default(autoincrement())
   name        String   @unique @db.VarChar(50)
   description String?  @db.Text
+  isDefault   Boolean  @default(false)
   students    GroupStudent[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -200,15 +211,17 @@ model Group {
   id           Int         @id @default(autoincrement())
   name         String      @db.VarChar(100)
   teacherId    Int
-  teacher      Teacher     @relation(fields: [teacherId], references: [id])
   languageId   Int
-  language     languages   @relation(fields: [languageId], references: [id])
   moduleId     Int
-  module       modules     @relation(fields: [moduleId], references: [id])
   modalityId   Int
-  modality     Modality   @relation(fields: [modalityId], references: [id])
   statusId     Int
+  companyId    Int
+  teacher      Teacher     @relation(fields: [teacherId], references: [id])
+  language     languages   @relation(fields: [languageId], references: [id])
+  module       modules     @relation(fields: [moduleId], references: [id])
+  modality     Modality   @relation(fields: [modalityId], references: [id])
   status       GroupStatus @relation(fields: [statusId], references: [id])
+  company      company     @relation(fields: [companyId], references: [id])
   startDate    DateTime    @db.Date
   endDate      DateTime    @db.Date
   students     GroupStudent[]
@@ -224,6 +237,7 @@ model Group {
   @@index([moduleId])
   @@index([modalityId])
   @@index([statusId])
+  @@index([companyId])
 }
 
 model GroupStudent {
@@ -246,11 +260,14 @@ model Schedule {
   id         Int      @id @default(autoincrement())
   groupId    Int      @unique // One-to-one relation with Group
   group      Group    @relation(fields: [groupId], references: [id])
+  companyId  Int
+  company    company  @relation(fields: [companyId], references: [id])
   days       Json     // MariaDB soporta JSON desde la versión 10.2.7
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@index([groupId])
+  @@index([companyId])
 }
 
 model Class {

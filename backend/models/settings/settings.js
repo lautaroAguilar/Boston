@@ -51,5 +51,17 @@ class SettingsModel {
       connection.release()
     }
   }
+  static async getAllModality() {
+    const connection = await pool.getConnection()
+    try {
+      const [rows] = await connection.query(`SELECT id, name FROM Modality`)
+      return rows
+    } catch (error) {
+      console.error('Error al obtener las modalidades', error)
+      throw error
+    } finally {
+      connection.release()
+    }
+  }
 }
 module.exports = { SettingsModel }
