@@ -55,6 +55,7 @@ model languages {
   progress         student_progress[]
   enrollments      CourseEnrollment[]
   groups           Group[]
+  students         StudentLanguages[]
 }
 
 model modules {
@@ -117,6 +118,7 @@ model students {
   enrollments          CourseEnrollment[]
   groups               GroupStudent[]
   company              company          @relation(fields: [company_id], references: [id])
+  languages            StudentLanguages[]
 
   @@index([company_id], map: "company_id")
   @@index([cost_center_id], map: "cost_center_id")
@@ -354,4 +356,15 @@ model CourseEnrollment {
   @@index([groupId])
   @@index([languageId])
   @@index([moduleId])
+}
+
+model StudentLanguages {
+  student    students  @relation(fields: [studentId], references: [id])
+  studentId  Int
+  language   languages @relation(fields: [languageId], references: [id])
+  languageId Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@id([studentId, languageId])
 }

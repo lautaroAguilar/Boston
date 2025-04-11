@@ -22,11 +22,20 @@ class StudentsModel {
       )
       const studentId = studentResult.insertId
 
-      await connection.query(
-        `INSERT INTO student_progress (student_id, language_id, module_id, start_date) 
-         VALUES (?, ?, ?, CURDATE())`,
-        [studentId, studentData.language_id, studentData.module_id]
-      )
+      // Insertar los idiomas del estudiante
+      for (const language of studentData.languages) {
+        await connection.query(
+          `INSERT INTO student_languages (student_id, language_id, created_at) 
+           VALUES (?, ?, NOW())`,
+          [studentId, language.language_id]
+        )
+
+        await connection.query(
+          `INSERT INTO student_progress (student_id, language_id, module_id, start_date) 
+           VALUES (?, ?, ?, CURDATE())`,
+          [studentId, language.language_id, language.module_id]
+        )
+      }
 
       await connection.commit()
       return { id: studentId, ...studentData }
@@ -55,12 +64,15 @@ class StudentsModel {
           cc.name AS cost_center_name,
           sec.id AS sector_id,
           sec.name AS sector_name,
+          GROUP_CONCAT(DISTINCT l.name) AS languages,
           s.created_at,
           s.updated_at
         FROM students s
         JOIN company c ON s.company_id = c.id
         JOIN cost_center cc ON s.cost_center_id = cc.id
         JOIN sector sec ON s.sector_id = sec.id
+        LEFT JOIN student_languages sl ON s.id = sl.student_id
+        LEFT JOIN languages l ON sl.language_id = l.id
         WHERE 1=1
       `
 
@@ -73,7 +85,7 @@ class StudentsModel {
         params.push(companyId)
       }
 
-      query += ` ORDER BY s.id ASC`
+      query += ` GROUP BY s.id ORDER BY s.id ASC`
 
       const [rows] = await connection.query(query, params)
       return rows
@@ -98,13 +110,17 @@ class StudentsModel {
           c.name AS company_name,
           cc.name AS cost_center_name,
           sec.name AS sector_name,
+          GROUP_CONCAT(DISTINCT l.name) AS languages,
           s.created_at,
           s.updated_at
         FROM students s
         JOIN company c ON s.company_id = c.id
         JOIN cost_center cc ON s.cost_center_id = cc.id
         JOIN sector sec ON s.sector_id = sec.id
-        WHERE s.id = ?`,
+        LEFT JOIN student_languages sl ON s.id = sl.student_id
+        LEFT JOIN languages l ON sl.language_id = l.id
+        WHERE s.id = ?
+        GROUP BY s.id`,
         [studentId]
       )
       return student[0]
@@ -119,6 +135,12 @@ class StudentsModel {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
+
+      // Eliminar registros relacionados primero
+      await connection.query(
+        `DELETE FROM student_languages WHERE student_id = ?`,
+        [studentId]
+      )
 
       const [result] = await connection.query(
         `DELETE FROM students WHERE id = ?`,
@@ -139,22 +161,43 @@ class StudentsModel {
     const connection = await pool.getConnection()
     try {
       await connection.beginTransaction()
-      /* se arman las clausulas para la query, el company_id se pasa a binario si está */
+
+      // Actualizar datos básicos del estudiante
       const clauses = Object.keys(studentData)
-        .map((key) =>
-          key === 'company_id' ? `${key} = ?` : `${key} = ?`
-        )
+        .filter(key => !['languages'].includes(key))
+        .map(key => `${key} = ?`)
         .join(', ')
 
       const values = Object.values(studentData)
+        .filter((_, index) => !['languages'].includes(Object.keys(studentData)[index]))
 
-      const [result] = await connection.query(
-        `UPDATE students SET ${clauses} WHERE id = ?`,
-        [...values, studentId]
-      )
+      if (clauses) {
+        await connection.query(
+          `UPDATE students SET ${clauses} WHERE id = ?`,
+          [...values, studentId]
+        )
+      }
+
+      // Si hay idiomas para actualizar
+      if (studentData.languages) {
+        // Eliminar idiomas existentes
+        await connection.query(
+          `DELETE FROM student_languages WHERE student_id = ?`,
+          [studentId]
+        )
+
+        // Insertar nuevos idiomas
+        for (const language of studentData.languages) {
+          await connection.query(
+            `INSERT INTO student_languages (student_id, language_id, created_at) 
+             VALUES (?, ?, NOW())`,
+            [studentId, language.language_id]
+          )
+        }
+      }
 
       await connection.commit()
-      return result.affectedRows
+      return 1 // Indicamos que se realizó la actualización
     } catch (err) {
       await connection.rollback()
       console.error('Error al actualizar el estudiante', err)
