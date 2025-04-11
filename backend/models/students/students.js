@@ -25,7 +25,7 @@ class StudentsModel {
       // Insertar los idiomas del estudiante
       for (const language of studentData.languages) {
         await connection.query(
-          `INSERT INTO student_languages (student_id, language_id, created_at) 
+          `INSERT INTO StudentLanguages (studentId, languageId, createdAt) 
            VALUES (?, ?, NOW())`,
           [studentId, language.language_id]
         )
@@ -71,8 +71,8 @@ class StudentsModel {
         JOIN company c ON s.company_id = c.id
         JOIN cost_center cc ON s.cost_center_id = cc.id
         JOIN sector sec ON s.sector_id = sec.id
-        LEFT JOIN student_languages sl ON s.id = sl.student_id
-        LEFT JOIN languages l ON sl.language_id = l.id
+        LEFT JOIN StudentLanguages sl ON s.id = sl.studentId
+        LEFT JOIN languages l ON sl.languageId = l.id
         WHERE 1=1
       `
 
@@ -117,8 +117,8 @@ class StudentsModel {
         JOIN company c ON s.company_id = c.id
         JOIN cost_center cc ON s.cost_center_id = cc.id
         JOIN sector sec ON s.sector_id = sec.id
-        LEFT JOIN student_languages sl ON s.id = sl.student_id
-        LEFT JOIN languages l ON sl.language_id = l.id
+        LEFT JOIN StudentLanguages sl ON s.id = sl.student_id
+        LEFT JOIN languages l ON sl.languageId = l.id
         WHERE s.id = ?
         GROUP BY s.id`,
         [studentId]
@@ -138,7 +138,7 @@ class StudentsModel {
 
       // Eliminar registros relacionados primero
       await connection.query(
-        `DELETE FROM student_languages WHERE student_id = ?`,
+        `DELETE FROM StudentLanguages WHERE student_id = ?`,
         [studentId]
       )
 
@@ -182,14 +182,14 @@ class StudentsModel {
       if (studentData.languages) {
         // Eliminar idiomas existentes
         await connection.query(
-          `DELETE FROM student_languages WHERE student_id = ?`,
+          `DELETE FROM StudentLanguages WHERE student_id = ?`,
           [studentId]
         )
 
         // Insertar nuevos idiomas
         for (const language of studentData.languages) {
           await connection.query(
-            `INSERT INTO student_languages (student_id, language_id, created_at) 
+            `INSERT INTO StudentLanguages (studentId, languageId, created_at) 
              VALUES (?, ?, NOW())`,
             [studentId, language.language_id]
           )
