@@ -24,6 +24,7 @@ class GroupModel {
           module: true,
           modality: true,
           status: true,
+          company: true,
           students: {
             include: {
               student: true,
@@ -42,13 +43,14 @@ class GroupModel {
 
   static async getAll() {
     try {
-      return await prisma.group.findMany({
+      const groups = await prisma.group.findMany({
         include: {
           teacher: true,
           language: true,
           module: true,
           modality: true,
           status: true,
+          company: true,
           students: {
             include: {
               student: true,
@@ -57,6 +59,7 @@ class GroupModel {
           }
         }
       })
+      return groups
     } catch (error) {
       console.error('Error en GroupModel.getAll:', error)
       throw error
@@ -65,7 +68,7 @@ class GroupModel {
 
   static async getById(id) {
     try {
-      return await prisma.group.findUnique({
+      const group = await prisma.group.findUnique({
         where: { id },
         include: {
           teacher: true,
@@ -73,6 +76,7 @@ class GroupModel {
           module: true,
           modality: true,
           status: true,
+          company: true,
           students: {
             include: {
               student: true,
@@ -81,6 +85,7 @@ class GroupModel {
           }
         }
       })
+      return group
     } catch (error) {
       console.error('Error en GroupModel.getById:', error)
       throw error
@@ -91,7 +96,7 @@ class GroupModel {
     try {
       const { students, ...groupInfo } = groupData
 
-      return await prisma.group.update({
+      const group = await prisma.group.update({
         where: { id },
         data: groupInfo,
         include: {
@@ -100,6 +105,7 @@ class GroupModel {
           module: true,
           modality: true,
           status: true,
+          company: true,
           students: {
             include: {
               student: true,
@@ -108,6 +114,7 @@ class GroupModel {
           }
         }
       })
+      return group
     } catch (error) {
       console.error('Error en GroupModel.update:', error)
       throw error
@@ -122,9 +129,10 @@ class GroupModel {
       })
 
       // Luego eliminamos el grupo
-      return await prisma.group.delete({
+      const group = await prisma.group.delete({
         where: { id }
       })
+      return group
     } catch (error) {
       console.error('Error en GroupModel.delete:', error)
       throw error
@@ -138,7 +146,7 @@ class GroupModel {
         status: { connect: { id: 1 } } // Asumiendo que 1 es el ID para "Activo"
       }))
 
-      return await prisma.group.update({
+      const group = await prisma.group.update({
         where: { id: groupId },
         data: {
           students: {
@@ -154,6 +162,7 @@ class GroupModel {
           }
         }
       })
+      return group
     } catch (error) {
       console.error('Error en GroupModel.addStudents:', error)
       throw error
@@ -162,11 +171,12 @@ class GroupModel {
 
   static async removeStudent(groupId, studentId) {
     try {
-      return await prisma.groupStudent.deleteMany({
+      const group = await prisma.groupStudent.deleteMany({
         where: {
           AND: [{ groupId }, { studentId }]
         }
       })
+      return group
     } catch (error) {
       console.error('Error en GroupModel.removeStudent:', error)
       throw error
@@ -175,7 +185,7 @@ class GroupModel {
 
   static async updateStudentStatus(groupId, studentId, statusId) {
     try {
-      return await prisma.groupStudent.updateMany({
+      const group = await prisma.groupStudent.updateMany({
         where: {
           AND: [{ groupId }, { studentId }]
         },
@@ -183,6 +193,7 @@ class GroupModel {
           statusId
         }
       })
+      return group
     } catch (error) {
       console.error('Error en GroupModel.updateStudentStatus:', error)
       throw error

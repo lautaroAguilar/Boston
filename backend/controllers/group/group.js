@@ -1,7 +1,7 @@
 const {
   validateGroup,
   validatePartialGroup
-} = require('../../schemas/group/group')
+} = require('../../schemas/group/group.js')
 
 class GroupController {
   constructor({ groupModel }) {
@@ -9,7 +9,7 @@ class GroupController {
   }
   create = async (req, res) => {
     try {
-      const validatedData = await validateGroup(req.body)
+      const validatedData = validateGroup(req.body)
       const group = await this.groupModel.create(validatedData)
       res.status(201).json({
         message: 'Grupo creado exitosamente',
@@ -76,7 +76,7 @@ class GroupController {
   update = async (req, res) => {
     try {
       const { id } = req.params
-      const validatedData = await validatePartialGroup(req.body)
+      const validatedData = validatePartialGroup(req.body)
       const group = await this.groupModel.update(parseInt(id), validatedData)
 
       if (!group) {

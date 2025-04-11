@@ -32,10 +32,11 @@ const groupSchema = z.object({
       message: 'La fecha de fin debe ser válida'
     }),
   students: z
-    .array(
-      z.number().int('Los IDs de estudiantes deben ser números enteros')
-    )
-    .optional()
+    .array(z.number().int('Los IDs de estudiantes deben ser números enteros'))
+    .optional(),
+  companyId: z
+    .number({ required_error: 'La empresa es requerida' })
+    .int('El ID de la empresa debe ser un número entero')
 })
 
 // Validación adicional para fechas
@@ -63,4 +64,4 @@ function validatePartialGroup(group) {
 module.exports = {
   validateGroup,
   validatePartialGroup
-} 
+}
