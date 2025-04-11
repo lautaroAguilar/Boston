@@ -36,7 +36,9 @@ class StudentsController {
           .status(200)
           .json({ data: [], message: 'No se encontraron estudiantes' })
       }
-      res.status(200).json(students)
+      res
+        .status(200)
+        .json({ data: students, message: 'Estudiantes encontrados' })
     } catch (error) {
       res.status(500).json({
         error: 'Error al buscar estudiantes',
