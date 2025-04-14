@@ -14,6 +14,8 @@ export function DashboardProvider({ children }) {
   const [levels, setLevels] = useState([]);
   const [modules, setModules] = useState([]);
   const [professionalCategories, setProfessionalCategories] = useState([]);
+  const [modalities, setModalities] = useState([]);
+  const [statuses, setStatuses] = useState([]);
   async function fetchModules() {
     try {
       const res = await fetch(`${CONFIG.API_URL}/settings/modules`, {
@@ -81,7 +83,38 @@ export function DashboardProvider({ children }) {
       console.log("error al buscar las categorías profesionales", error);
     }
   }
-
+  async function fetchModalities() {
+    try {
+      const res = await fetch(`${CONFIG.API_URL}/settings/modalities`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSnackbarErrorMessage(data.message);
+      }
+      setModalities(data);
+      return data;
+    } catch (error) {
+      console.log("error al buscar las modalidades", error);
+    }
+  }
+  async function fetchStatuses() {
+    try {
+      const res = await fetch(`${CONFIG.API_URL}/settings/statuses`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSnackbarErrorMessage(data.message);
+      }
+      setStatuses(data);
+      return data;
+    } catch (error) {
+      console.log("error al buscar los estados", error);
+    }
+  }
   return (
     <DashboardContext.Provider
       value={{
@@ -100,10 +133,14 @@ export function DashboardProvider({ children }) {
         fetchLanguages,
         fetchLevels,
         fetchProfessionalCategories,
+        fetchModalities,
+        fetchStatuses,
         languages,
         levels,
         modules,
         professionalCategories,
+        modalities,
+        statuses,
       }}
     >
       {children}
