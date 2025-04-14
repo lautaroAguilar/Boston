@@ -32,20 +32,14 @@ export const studentStepTwoSchema = z.object({
   initial_leveling_date: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "La fecha debe ser válida",
   }),
-  language_id: z
-    .union([
-      z.number().int("El ID del idioma debe ser un número entero"),
-      z.literal(""),
-    ])
-    .refine((val) => val !== "", {
-      message: "Se debe seleccionar una opción para asignar el idioma",
-    }),
-  module_id: z
-    .union([
-      z.number().int("El ID del módulo debe ser un número entero"),
-      z.literal(""),
-    ])
-    .refine((val) => val !== "", {
-      message: "Se debe seleccionar una opción para asignar el módulo",
-    }),
+  languages: z
+    .array(
+      z.object({
+        language_id: z
+          .number()
+          .int("El ID del idioma debe ser un número entero"),
+        module_id: z.number().int("El ID del módulo debe ser un número entero"),
+      })
+    )
+    .min(1, "Debe seleccionar al menos un idioma"),
 });

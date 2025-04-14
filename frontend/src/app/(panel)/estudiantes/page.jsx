@@ -20,20 +20,21 @@ const studentColumns = [
   { field: "first_name", headerName: "Nombre", minWidth: 150, flex: 1 },
   { field: "last_name", headerName: "Apellido", minWidth: 150, flex: 1 },
   {
-    field: "module_name",
+    field: "module",
     headerName: "Módulo actual",
     minWidth: 150,
     flex: 1,
-    valueGetter: (params) => params.row.module_name || "Sin módulo asignado",
+    renderCell: (params) =>
+      params?.row?.current_module_name || "Sin módulo asignado",
   },
   {
-    field: "language_name",
+    field: "languages",
     headerName: "Idioma",
     minWidth: 150,
     flex: 1,
-    valueGetter: (params) => params.row.language_name || "Sin idioma asignado",
+    renderCell: (params) =>
+      params?.row?.current_language_name || "Sin idioma asignado",
   },
-  { field: "sid", headerName: "SID", minWidth: 150, flex: 1 },
   { field: "company_name", headerName: "Empresa", minWidth: 150, flex: 1 },
   {
     field: "cost_center_name",
@@ -42,6 +43,7 @@ const studentColumns = [
     flex: 1,
   },
   { field: "sector_name", headerName: "Sector", minWidth: 150, flex: 1 },
+  { field: "sid", headerName: "SID", minWidth: 150, flex: 1 },
 ];
 
 export default function Page() {
@@ -87,7 +89,6 @@ export default function Page() {
     {
       label: "Datos Personales",
       description: "Completa los datos personales del alumno",
-      schema: studentStepOneSchema,
       fields: [
         { name: "first_name", label: "Nombre", required: true },
         { name: "last_name", label: "Apellido", required: true },
@@ -97,7 +98,7 @@ export default function Page() {
           label: "Centro de Costo",
           component: "select",
           options: selectedCompany
-            ? costCenters.map((cc) => ({
+            ? costCenters?.map((cc) => ({
                 id: cc.cost_center_id,
                 label: cc.cost_center_name,
               }))
@@ -109,7 +110,7 @@ export default function Page() {
           label: "Sector",
           component: "select",
           options: selectedCompany
-            ? sectors.map((sector) => ({
+            ? sectors?.map((sector) => ({
                 id: sector.sector_id,
                 label: sector.sector_name,
               }))
@@ -123,7 +124,6 @@ export default function Page() {
     },
     {
       label: "Detalles de Nivelación",
-      schema: studentStepTwoSchema,
       fields: [
         {
           name: "initial_leveling_date",
@@ -135,14 +135,17 @@ export default function Page() {
           name: "language_id",
           label: "Idioma",
           component: "select",
-          options: languages.map((lang) => ({ id: lang.id, label: lang.name })),
+          options: languages?.map((lang) => ({
+            id: lang.id,
+            label: lang.name,
+          })),
           required: true,
         },
         {
           name: "module_id",
           label: "Módulo y Nivel",
           component: "select",
-          options: modules.map((mod) => ({ id: mod.id, label: mod.name })),
+          options: modules?.map((mod) => ({ id: mod.id, label: mod.name })),
           required: true,
         },
       ],
@@ -153,9 +156,16 @@ export default function Page() {
   const handleFinish = async () => {
     const studentData = {
       ...step1Values,
-      ...step2Values,
+      initial_leveling_date: step2Values.initial_leveling_date,
+      languages: [
+        {
+          language_id: step2Values.language_id,
+          module_id: step2Values.module_id,
+        },
+      ],
       company_id: selectedCompany,
     };
+
     await createStudent(studentData);
     setShowForm(false);
   };

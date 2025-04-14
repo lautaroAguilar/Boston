@@ -19,7 +19,7 @@ export const StudentProvider = ({ children }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(studentData),
       });
-      const data = res.json();
+      const data = await res.json();
 
       if (!res.ok) {
         if (Array.isArray(data)) {
@@ -54,7 +54,7 @@ export const StudentProvider = ({ children }) => {
       if (!res.ok) {
         setSnackbarErrorMessage(data.message);
       }
-      setStudents(data);
+      setStudents(data.data);
     } catch (error) {
       console.log("Error de red al buscar estudiantes:", error);
     }
