@@ -25,8 +25,8 @@ class StudentsModel {
       // Insertar los idiomas del estudiante
       for (const language of studentData.languages) {
         await connection.query(
-          `INSERT INTO StudentLanguages (studentId, languageId, createdAt) 
-           VALUES (?, ?, NOW())`,
+          `INSERT INTO StudentLanguages (studentId, languageId, createdAt, updatedAt) 
+           VALUES (?, ?, NOW(), NOW())`,
           [studentId, language.language_id]
         )
 
@@ -65,6 +65,10 @@ class StudentsModel {
           sec.id AS sector_id,
           sec.name AS sector_name,
           GROUP_CONCAT(DISTINCT l.name) AS languages,
+          sp.language_id AS current_language_id,
+          sp.module_id AS current_module_id,
+          lang.name AS current_language_name,
+          m.name AS current_module_name,
           s.created_at,
           s.updated_at
         FROM students s
@@ -73,14 +77,15 @@ class StudentsModel {
         JOIN sector sec ON s.sector_id = sec.id
         LEFT JOIN StudentLanguages sl ON s.id = sl.studentId
         LEFT JOIN languages l ON sl.languageId = l.id
+        LEFT JOIN student_progress sp ON s.id = sp.student_id AND sp.is_current = 1
+        LEFT JOIN languages lang ON sp.language_id = lang.id
+        LEFT JOIN modules m ON sp.module_id = m.id
         WHERE 1=1
       `
 
       const params = []
 
-      // Si hay companyId, filtramos por empresa
       if (companyId) {
-        // Convertimos el ID a binario para comparar
         query += ` AND s.company_id = ?`
         params.push(companyId)
       }
@@ -111,14 +116,21 @@ class StudentsModel {
           cc.name AS cost_center_name,
           sec.name AS sector_name,
           GROUP_CONCAT(DISTINCT l.name) AS languages,
+          sp.language_id AS current_language_id,
+          sp.module_id AS current_module_id,
+          lang.name AS current_language_name,
+          m.name AS current_module_name,
           s.created_at,
           s.updated_at
         FROM students s
         JOIN company c ON s.company_id = c.id
         JOIN cost_center cc ON s.cost_center_id = cc.id
         JOIN sector sec ON s.sector_id = sec.id
-        LEFT JOIN StudentLanguages sl ON s.id = sl.student_id
+        LEFT JOIN StudentLanguages sl ON s.id = sl.studentId
         LEFT JOIN languages l ON sl.languageId = l.id
+        LEFT JOIN student_progress sp ON s.id = sp.student_id AND sp.is_current = 1
+        LEFT JOIN languages lang ON sp.language_id = lang.id
+        LEFT JOIN modules m ON sp.module_id = m.id
         WHERE s.id = ?
         GROUP BY s.id`,
         [studentId]
@@ -189,8 +201,8 @@ class StudentsModel {
         // Insertar nuevos idiomas
         for (const language of studentData.languages) {
           await connection.query(
-            `INSERT INTO StudentLanguages (studentId, languageId, created_at) 
-             VALUES (?, ?, NOW())`,
+            `INSERT INTO StudentLanguages (studentId, languageId, createdAt, updatedAt) 
+             VALUES (?, ?, NOW(), NOW())`,
             [studentId, language.language_id]
           )
         }
