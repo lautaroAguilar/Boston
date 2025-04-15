@@ -224,8 +224,6 @@ model Group {
   modality     Modality   @relation(fields: [modalityId], references: [id])
   status       GroupStatus @relation(fields: [statusId], references: [id])
   company      company     @relation(fields: [companyId], references: [id])
-  startDate    DateTime    @db.Date
-  endDate      DateTime    @db.Date
   students     GroupStudent[]
   schedule     Schedule?
   classes      Class[]
@@ -260,11 +258,13 @@ model GroupStudent {
 
 model Schedule {
   id         Int      @id @default(autoincrement())
-  groupId    Int      @unique // One-to-one relation with Group
+  groupId    Int      @unique
   group      Group    @relation(fields: [groupId], references: [id])
   companyId  Int
   company    company  @relation(fields: [companyId], references: [id])
-  days       Json     // MariaDB soporta JSON desde la versión 10.2.7
+  days       Json
+  startDate  DateTime @db.Date
+  endDate    DateTime @db.Date
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 

@@ -4,8 +4,8 @@ const prisma = new PrismaClient()
 class ScheduleModel {
   static async generateClasses(groupId, scheduleData, group) {
     const classes = []
-    const startDate = new Date(group.startDate)
-    const endDate = new Date(group.endDate)
+    const startDate = new Date(scheduleData.startDate)
+    const endDate = new Date(scheduleData.endDate)
 
     // Iteramos por cada día entre startDate y endDate
     for (
@@ -44,7 +44,7 @@ class ScheduleModel {
     try {
       // Iniciamos una transacción
       return await prisma.$transaction(async (tx) => {
-        // Primero obtenemos el grupo para acceder a sus fechas
+        // Primero obtenemos el grupo para acceder a sus datos
         const group = await tx.group.findUnique({
           where: { id: parseInt(groupId) }
         })
@@ -57,7 +57,10 @@ class ScheduleModel {
         const schedule = await tx.schedule.create({
           data: {
             groupId: parseInt(groupId),
-            days: scheduleData.days
+            companyId: group.companyId,
+            days: scheduleData.days,
+            startDate: new Date(scheduleData.startDate),
+            endDate: new Date(scheduleData.endDate)
           },
           include: {
             group: true
@@ -81,6 +84,7 @@ class ScheduleModel {
       throw error
     }
   }
+
   static async getAll() {
     try {
       const schedules = await prisma.schedule.findMany({
@@ -94,6 +98,7 @@ class ScheduleModel {
       throw error
     }
   }
+
   static async getByGroupId(groupId) {
     try {
       const schedule = await prisma.schedule.findUnique({
@@ -139,7 +144,9 @@ class ScheduleModel {
         const schedule = await tx.schedule.update({
           where: { groupId: parseInt(groupId) },
           data: {
-            days: scheduleData.days
+            days: scheduleData.days,
+            startDate: new Date(scheduleData.startDate),
+            endDate: new Date(scheduleData.endDate)
           },
           include: {
             group: true

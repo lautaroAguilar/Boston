@@ -21,36 +21,12 @@ const groupSchema = z.object({
     .number()
     .int('El ID del estado debe ser un número entero')
     .optional(),
-  startDate: z
-    .string({ required_error: 'La fecha de inicio es requerida' })
-    .refine((val) => !isNaN(Date.parse(val)), {
-      message: 'La fecha de inicio debe ser válida'
-    }),
-  endDate: z
-    .string({ required_error: 'La fecha de fin es requerida' })
-    .refine((val) => !isNaN(Date.parse(val)), {
-      message: 'La fecha de fin debe ser válida'
-    }),
   students: z
     .array(z.number().int('Los IDs de estudiantes deben ser números enteros'))
     .optional(),
   companyId: z
     .number({ required_error: 'La empresa es requerida' })
     .int('El ID de la empresa debe ser un número entero')
-})
-
-// Validación adicional para fechas
-groupSchema.superRefine((data, ctx) => {
-  const startDate = new Date(data.startDate)
-  const endDate = new Date(data.endDate)
-
-  if (endDate <= startDate) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'La fecha de fin debe ser posterior a la fecha de inicio',
-      path: ['endDate']
-    })
-  }
 })
 
 function validateGroup(group) {

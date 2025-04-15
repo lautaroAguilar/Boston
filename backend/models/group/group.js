@@ -6,14 +6,6 @@ class GroupModel {
     try {
       const { students, ...groupInfo } = groupData
 
-      // Convertir las fechas a objetos Date
-      if (groupInfo.startDate) {
-        groupInfo.startDate = new Date(groupInfo.startDate)
-      }
-      if (groupInfo.endDate) {
-        groupInfo.endDate = new Date(groupInfo.endDate)
-      }
-
       // Buscar el estado por defecto si no se proporciona statusId
       if (!groupInfo.statusId) {
         const defaultStatus = await prisma.groupStatus.findFirst({
@@ -74,8 +66,6 @@ class GroupModel {
         select: {
           id: true,
           name: true,
-          startDate: true,
-          endDate: true,
           teacher: {
             select: {
               id: true,
@@ -137,17 +127,55 @@ class GroupModel {
     try {
       const group = await prisma.group.findUnique({
         where: { id },
-        include: {
-          teacher: true,
-          language: true,
-          module: true,
-          modality: true,
-          status: true,
-          company: true,
+        select: {
+          id: true,
+          name: true,
+          teacher: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          },
+          language: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          module: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          modality: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          status: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
           students: {
-            include: {
-              student: true,
-              status: true
+            select: {
+              student: {
+                select: {
+                  id: true,
+                  first_name: true,
+                  last_name: true
+                }
+              },
+              status: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
             }
           }
         }
