@@ -6,6 +6,7 @@ import { DashboardProvider } from "@/contexts/dashboard";
 import { StudentProvider } from "@/contexts/students";
 import { TeacherProvider } from "@/contexts/teachers";
 import { GroupProvider } from "@/contexts/groups";
+import { ScheduleProvider } from "@/contexts/schedules";
 import LocalizationWrapper from "./LocalizationWrapper";
 
 export default function ClientLayout({ children }) {
@@ -16,17 +17,19 @@ export default function ClientLayout({ children }) {
           <StudentProvider>
             <TeacherProvider>
               <GroupProvider>
-                <LocalizationWrapper>
-                  <Suspense
-                    fallback={
-                      <>
-                        <p>Cargando...</p>
-                      </>
-                    }
-                  >
-                    {children}
-                  </Suspense>
-                </LocalizationWrapper>
+                <ScheduleProvider>
+                  <LocalizationWrapper>
+                    <Suspense
+                      fallback={
+                        <>
+                          <p>Cargando...</p>
+                        </>
+                      }
+                    >
+                      {children}
+                    </Suspense>
+                  </LocalizationWrapper>
+                </ScheduleProvider>
               </GroupProvider>
             </TeacherProvider>
           </StudentProvider>

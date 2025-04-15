@@ -8,7 +8,11 @@ class ScheduleModel {
     const endDate = new Date(group.endDate)
 
     // Iteramos por cada día entre startDate y endDate
-    for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+    for (
+      let date = new Date(startDate);
+      date <= endDate;
+      date.setDate(date.getDate() + 1)
+    ) {
       // Para cada día en el cronograma
       for (const day of scheduleData.days) {
         // Si el día de la semana coincide (0 = Domingo, 6 = Sábado)
@@ -53,7 +57,7 @@ class ScheduleModel {
         const schedule = await tx.schedule.create({
           data: {
             groupId: parseInt(groupId),
-            days: scheduleData.days,
+            days: scheduleData.days
           },
           include: {
             group: true
@@ -61,7 +65,11 @@ class ScheduleModel {
         })
 
         // Generamos y creamos las clases
-        const classes = await this.generateClasses(parseInt(groupId), scheduleData, group)
+        const classes = await this.generateClasses(
+          parseInt(groupId),
+          scheduleData,
+          group
+        )
         await tx.class.createMany({
           data: classes
         })
@@ -73,7 +81,19 @@ class ScheduleModel {
       throw error
     }
   }
-
+  static async getAll() {
+    try {
+      const schedules = await prisma.schedule.findMany({
+        include: {
+          group: true
+        }
+      })
+      return schedules
+    } catch (error) {
+      console.error('Error en ScheduleModel.getAll:', error)
+      throw error
+    }
+  }
   static async getByGroupId(groupId) {
     try {
       const schedule = await prisma.schedule.findUnique({
@@ -105,7 +125,7 @@ class ScheduleModel {
         // Eliminamos todas las clases futuras del grupo
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        
+
         await tx.class.deleteMany({
           where: {
             groupId: parseInt(groupId),
@@ -119,7 +139,7 @@ class ScheduleModel {
         const schedule = await tx.schedule.update({
           where: { groupId: parseInt(groupId) },
           data: {
-            days: scheduleData.days,
+            days: scheduleData.days
           },
           include: {
             group: true
@@ -127,7 +147,11 @@ class ScheduleModel {
         })
 
         // Generamos y creamos las nuevas clases
-        const classes = await this.generateClasses(parseInt(groupId), scheduleData, group)
+        const classes = await this.generateClasses(
+          parseInt(groupId),
+          scheduleData,
+          group
+        )
         await tx.class.createMany({
           data: classes
         })
@@ -146,7 +170,7 @@ class ScheduleModel {
         // Eliminamos todas las clases futuras
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        
+
         await tx.class.deleteMany({
           where: {
             groupId: parseInt(groupId),
@@ -234,4 +258,4 @@ class ScheduleModel {
   }
 }
 
-module.exports = { ScheduleModel } 
+module.exports = { ScheduleModel }

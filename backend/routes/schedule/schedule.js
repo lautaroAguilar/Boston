@@ -10,6 +10,9 @@ const scheduleController = new ScheduleController({
 // Crear cronograma para un grupo
 scheduleRouter.post('/:groupId', authenticateToken, scheduleController.create)
 
+// Obtener todos los cronogramas
+scheduleRouter.get('/', authenticateToken, scheduleController.getAll)
+
 // Obtener cronograma de un grupo
 scheduleRouter.get(
   '/:groupId',

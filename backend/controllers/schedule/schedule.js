@@ -34,7 +34,21 @@ class ScheduleController {
       })
     }
   }
-
+  getAll = async (req, res) => {
+    try {
+      const schedules = await this.scheduleModel.getAll()
+      res.json({
+        message: 'Cronogramas obtenidos exitosamente',
+        data: schedules
+      })
+    } catch (error) {
+      res.status(500).json({
+        message: 'Error al obtener los cronogramas',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
+    }
+  }
   getByGroupId = async (req, res) => {
     try {
       const { groupId } = req.params
