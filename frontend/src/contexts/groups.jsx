@@ -6,7 +6,7 @@ import { useDashboard } from "./dashboard";
 const GroupContext = createContext();
 
 export const GroupProvider = ({ children }) => {
-  const { setSnackbarMessage, setSnackbarErrorMessage } = useDashboard();
+  const { setSnackbarMessage, setSnackbarErrorMessage, setSnackbarWarningMessage } = useDashboard();
   const [errorMessage, setErrorMessage] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [groupCreated, setGroupCreated] = useState(false);
@@ -49,7 +49,7 @@ export const GroupProvider = ({ children }) => {
 
           // Si hay un error de companyId, mostrar el mensaje en el snackbar
           if (errorData.some(error => error.path[0] === 'companyId')) {
-            setSnackbarErrorMessage("Selecciona una empresa por favor");
+            setSnackbarWarningMessage("Selecciona una empresa por favor");
           }
         } else {
           setSnackbarErrorMessage(errorData.message);

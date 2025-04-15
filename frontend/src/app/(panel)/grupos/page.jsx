@@ -24,6 +24,7 @@ export default function Page() {
     setToolbarButtonAction,
     snackbarMessage,
     snackbarErrorMessage,
+    snackbarWarningMessage,
     setOpenSnackbar,
     selectedCompany,
     languages,
@@ -207,10 +208,10 @@ export default function Page() {
   }, [setToolbarButtonAction]);
 
   useEffect(() => {
-    if (snackbarMessage || snackbarErrorMessage) {
+    if (snackbarMessage || snackbarErrorMessage || snackbarWarningMessage) {
       setOpenSnackbar(true);
     }
-  }, [snackbarMessage, snackbarErrorMessage]);
+  }, [snackbarMessage, snackbarErrorMessage, snackbarWarningMessage]);
 
   useEffect(() => {
     fetchGroups();

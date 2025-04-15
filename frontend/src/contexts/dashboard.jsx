@@ -10,6 +10,7 @@ export function DashboardProvider({ children }) {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarErrorMessage, setSnackbarErrorMessage] = useState("");
+  const [snackbarWarningMessage, setSnackbarWarningMessage] = useState("");
   const [languages, setLanguages] = useState([]);
   const [levels, setLevels] = useState([]);
   const [modules, setModules] = useState([]);
@@ -123,11 +124,13 @@ export function DashboardProvider({ children }) {
         openSnackbar,
         snackbarMessage,
         snackbarErrorMessage,
+        snackbarWarningMessage,
         setSelectedCompany,
         setToolbarButtonAction,
         setOpenSnackbar,
         setSnackbarMessage,
         setSnackbarErrorMessage,
+        setSnackbarWarningMessage,
 
         fetchModules,
         fetchLanguages,
