@@ -10,19 +10,16 @@ class GroupController {
   create = async (req, res) => {
     try {
       const validatedData = validateGroup(req.body)
-      const group = await this.groupModel.create(validatedData)
+      if (!validatedData.success) {
+        return res.status(400).json(validatedData.error.issues)
+      }
+      const group = await this.groupModel.create(validatedData.data)
       res.status(201).json({
         message: 'Grupo creado exitosamente',
         data: group
       })
     } catch (error) {
       console.error('Error en GroupController.create:', error)
-      if (error.name === 'ZodError') {
-        return res.status(400).json({
-          message: 'Datos de entrada inválidos',
-          errors: error.errors
-        })
-      }
       res.status(500).json({
         message: 'Error al crear el grupo',
         details:
@@ -77,7 +74,10 @@ class GroupController {
     try {
       const { id } = req.params
       const validatedData = validatePartialGroup(req.body)
-      const group = await this.groupModel.update(parseInt(id), validatedData)
+      if (!validatedData.success) {
+        return res.status(400).json(validatedData.error.issues)
+      }
+      const group = await this.groupModel.update(parseInt(id), validatedData.data)
 
       if (!group) {
         return res.status(404).json({
@@ -91,12 +91,6 @@ class GroupController {
       })
     } catch (error) {
       console.error('Error en GroupController.update:', error)
-      if (error.name === 'ZodError') {
-        return res.status(400).json({
-          message: 'Datos de entrada inválidos',
-          errors: error.errors
-        })
-      }
       res.status(500).json({
         message: 'Error al actualizar el grupo',
         details:

@@ -6,6 +6,33 @@ class GroupModel {
     try {
       const { students, ...groupInfo } = groupData
 
+      // Convertir las fechas a objetos Date
+      if (groupInfo.startDate) {
+        groupInfo.startDate = new Date(groupInfo.startDate)
+      }
+      if (groupInfo.endDate) {
+        groupInfo.endDate = new Date(groupInfo.endDate)
+      }
+
+      // Buscar el estado por defecto si no se proporciona statusId
+      if (!groupInfo.statusId) {
+        const defaultStatus = await prisma.groupStatus.findFirst({
+          where: { isDefault: true }
+        })
+        if (defaultStatus) {
+          groupInfo.statusId = defaultStatus.id
+        }
+      }
+
+      // Buscar el estado activo por defecto para estudiantes
+      const defaultStudentStatus = await prisma.studentStatus.findFirst({
+        where: { isDefault: true }
+      })
+
+      if (!defaultStudentStatus) {
+        throw new Error('No se encontró un estado por defecto para estudiantes')
+      }
+
       const group = await prisma.group.create({
         data: {
           ...groupInfo,
@@ -13,7 +40,7 @@ class GroupModel {
             ? {
                 create: students.map((studentId) => ({
                   student: { connect: { id: studentId } },
-                  status: { connect: { id: 1 } } // Asumiendo que 1 es el ID para "Activo"
+                  status: { connect: { id: defaultStudentStatus.id } }
                 }))
               }
             : undefined
@@ -44,17 +71,57 @@ class GroupModel {
   static async getAll() {
     try {
       const groups = await prisma.group.findMany({
-        include: {
-          teacher: true,
-          language: true,
-          module: true,
-          modality: true,
-          status: true,
-          company: true,
+        select: {
+          id: true,
+          name: true,
+          startDate: true,
+          endDate: true,
+          teacher: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          },
+          language: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          module: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          modality: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
+          status: {
+            select: {
+              id: true,
+              name: true
+            }
+          },
           students: {
-            include: {
-              student: true,
-              status: true
+            select: {
+              student: {
+                select: {
+                  id: true,
+                  first_name: true,
+                  last_name: true
+                }
+              },
+              status: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
             }
           }
         }
@@ -141,9 +208,18 @@ class GroupModel {
 
   static async addStudents(groupId, studentIds) {
     try {
+      // Buscar el estado activo por defecto para estudiantes
+      const defaultStudentStatus = await prisma.studentStatus.findFirst({
+        where: { isDefault: true }
+      })
+
+      if (!defaultStudentStatus) {
+        throw new Error('No se encontró un estado por defecto para estudiantes')
+      }
+
       const createStudents = studentIds.map((studentId) => ({
         student: { connect: { id: studentId } },
-        status: { connect: { id: 1 } } // Asumiendo que 1 es el ID para "Activo"
+        status: { connect: { id: defaultStudentStatus.id } }
       }))
 
       const group = await prisma.group.update({

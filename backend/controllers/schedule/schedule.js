@@ -15,10 +15,7 @@ class ScheduleController {
       const validatedData = validateSchedule(req.body)
 
       if (!validatedData.success) {
-        return res.status(400).json({
-          message: 'Datos de entrada inválidos',
-          errors: validatedData.error.errors
-        })
+        return res.status(400).json(validatedData.error.issues)
       }
 
       const schedule = await this.scheduleModel.create(
@@ -69,10 +66,7 @@ class ScheduleController {
       const validatedData = validatePartialSchedule(req.body)
 
       if (!validatedData.success) {
-        return res.status(400).json({
-          message: 'Datos de entrada inválidos',
-          errors: validatedData.error.errors
-        })
+        return res.status(400).json(validatedData.error.issues)
       }
 
       const schedule = await this.scheduleModel.update(
