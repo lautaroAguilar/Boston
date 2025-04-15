@@ -29,24 +29,30 @@ export const GroupProvider = ({ children }) => {
           languageId: Number(dataToSend.languageId),
           moduleId: Number(dataToSend.moduleId),
           modalityId: Number(dataToSend.modalityId),
-          statusId: Number(dataToSend.statusId),
           startDate: dataToSend.startDate,
           endDate: dataToSend.endDate,
+          students: dataToSend.students,
           companyId: companyId,
         }),
       });
       
-      if (res.status !== 201) {
+      if (!res.ok) {
         const errorData = await res.json();
-        if (Array.isArray(errorData.errors)) {
-          const errorObj = errorData.errors.reduce((acc, issue) => {
+        if (Array.isArray(errorData)) {
+          // Crear objeto de errores para el formulario
+          const errorObj = errorData.reduce((acc, issue) => {
             const fieldName = issue.path[0];
             acc[fieldName] = issue.message;
             return acc;
           }, {});
           setFormErrors(errorObj);
+
+          // Si hay un error de companyId, mostrar el mensaje en el snackbar
+          if (errorData.some(error => error.path[0] === 'companyId')) {
+            setSnackbarErrorMessage("Selecciona una empresa por favor");
+          }
         } else {
-          setSnackbarErrorMessage(errorData.error);
+          setSnackbarErrorMessage(errorData.message);
         }
         return;
       }
@@ -163,4 +169,4 @@ export const useGroup = () => {
     throw new Error("useGroup debe ser usado dentro de GroupProvider");
   }
   return context;
-}; 
+};

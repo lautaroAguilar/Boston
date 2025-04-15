@@ -47,9 +47,9 @@ export default function Page() {
     languageId: "",
     moduleId: "",
     modalityId: "",
-    statusId: "",
-    startDate: "",
-    endDate: "",
+    startDate: null,
+    endDate: null,
+    students: [],
   });
 
   function handleShowForm() {
@@ -69,12 +69,13 @@ export default function Page() {
       setShowForm(false);
       setFormRegisterValues({
         name: "",
-        description: "",
         teacherId: "",
-        startDate: "",
-        endDate: "",
-        maxStudents: "",
-        status: "active",
+        languageId: "",
+        moduleId: "",
+        modalityId: "",
+        startDate: null,
+        endDate: null,
+        students: [],
       });
     }
   };
@@ -83,32 +84,49 @@ export default function Page() {
     { field: "id", headerName: "ID", minWidth: 50 },
     { field: "name", headerName: "Nombre", minWidth: 150, flex: 1 },
     {
-      field: "teacherId",
+      field: "teacher",
       headerName: "Docente",
       minWidth: 150,
       flex: 1,
       renderCell: (params) => {
-        const teacher = teachers?.find((t) => t.id === params.value);
-        return teacher
-          ? `${teacher.firstName} ${teacher.lastName}`
-          : "Sin docente";
+        return `${params.value.firstName} ${params.value.lastName}`;
       },
     },
-    { field: "language", headerName: "Idioma", minWidth: 150, flex: 1 },
+    {
+      field: "language",
+      headerName: "Idioma",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params) => params.value.name,
+    },
     {
       field: "module",
       headerName: "Nivel y Módulo",
       minWidth: 120,
       flex: 1,
+      renderCell: (params) => params.value.name,
     },
-    { field: "modality", headerName: "Modalidad", minWidth: 150, flex: 1 },
+    {
+      field: "modality",
+      headerName: "Modalidad",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params) => params.value.name,
+    },
     {
       field: "status",
       headerName: "Estado",
       minWidth: 100,
       flex: 1,
+      renderCell: (params) => params.value.name,
+    },
+    {
+      field: "students",
+      headerName: "Estudiantes",
+      minWidth: 150,
+      flex: 1,
       renderCell: (params) => {
-        return params.value === "active" ? "Activo" : "Inactivo";
+        return params.value.map((s) => `${s.student.first_name} ${s.student.last_name}`).join(", ");
       },
     },
   ];
@@ -171,8 +189,9 @@ export default function Page() {
       label: "Estudiantes",
       type: "select",
       component: "select",
+      multiple: true,
       options: students?.map((student) => ({
-        id: student.id,
+        id: student.student_id,
         label: `${student.first_name} ${student.last_name}`,
       })),
       required: true,
