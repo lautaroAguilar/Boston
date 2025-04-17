@@ -7,18 +7,22 @@ import {
   useMediaQuery,
   Modal,
   Box,
-  Stack,
-  IconButton,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
   Chip,
+  TextField,
+  FormControl,
+  FormLabel,
+  FormHelperText,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import EditIcon from "@mui/icons-material/Edit";
 import { DataGrid } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import MyForm from "@/components/Form";
 import { useDashboard } from "@/contexts/dashboard";
 import { useSchedule } from "@/contexts/schedules";
 import { useGroup } from "@/contexts/groups";
@@ -32,16 +36,6 @@ const daysOfWeek = [
   { id: 5, label: "Viernes" },
   { id: 6, label: "Sábado" },
 ];
-
-const formatDays = (days) => {
-  if (!days || !Array.isArray(days)) return "";
-  return days
-    .map((day) => {
-      const dayName = daysOfWeek.find((d) => d.id === day.dayOfWeek)?.label;
-      return `${dayName}: ${day.startTime} (${day.duration} min)`;
-    })
-    .join(", ");
-};
 
 export default function Page() {
   const theme = createTheme(esES);
@@ -57,73 +51,75 @@ export default function Page() {
   const {
     schedules,
     createSchedule,
-    updateSchedule,
     fetchSchedules,
     formErrors,
     scheduleCreated,
+    setFormErrors,
   } = useSchedule();
 
   const [showForm, setShowForm] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [days, setDays] = useState([
-    { dayOfWeek: "", startTime: "", duration: 60 },
-  ]);
+  const [formValues, setFormValues] = useState({
+    startDate: "",
+    endDate: "",
+    startTime: "",
+    duration: 60,
+    weekDays: [],
+  });
 
   function handleShowForm() {
     setShowForm(true);
-    setIsEditing(false);
-    setDays([{ dayOfWeek: "", startTime: "", duration: 60 }]);
-    setSelectedGroup(null);
+    setFormErrors({});
+    setFormValues({
+      startDate: "",
+      endDate: "",
+      startTime: "",
+      duration: 60,
+      weekDays: [],
+    });
   }
 
-  const handleEdit = (schedule) => {
-    setSelectedGroup(schedule.groupId);
-    setDays(schedule.days);
-    setIsEditing(true);
-    setShowForm(true);
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setFormErrors({});
+    setFormValues({
+      startDate: "",
+      endDate: "",
+      startTime: "",
+      duration: 60,
+      weekDays: [],
+    });
+    setSelectedGroup(null);
   };
 
-  const handleAddDay = () => {
-    setDays([...days, { dayOfWeek: "", startTime: "", duration: 60 }]);
+  const handleFormChange = (field, value) => {
+    setFormValues((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  const handleRemoveDay = (index) => {
-    const newDays = days.filter((_, i) => i !== index);
-    setDays(newDays);
-  };
-
-  const handleDayChange = (index, field, value) => {
-    const newDays = [...days];
-    newDays[index] = {
-      ...newDays[index],
-      [field]:
-        field === "dayOfWeek" || field === "duration" ? Number(value) : value,
-    };
-    setDays(newDays);
+  const handleWeekDayToggle = (dayId) => {
+    setFormValues((prev) => ({
+      ...prev,
+      weekDays: prev.weekDays.includes(dayId)
+        ? prev.weekDays.filter((d) => d !== dayId)
+        : [...prev.weekDays, dayId],
+    }));
   };
 
   const handleSubmit = async () => {
+    console.log(selectedGroup, formValues);
     if (!selectedGroup) {
+      setFormErrors({ groupId: "Debe seleccionar un grupo" });
       return;
     }
 
-    const scheduleData = { days };
     try {
-      if (isEditing) {
-        await updateSchedule(selectedGroup, scheduleData);
-      } else {
-        await createSchedule(selectedGroup, scheduleData);
-      }
-
-      if (!formErrors || Object.keys(formErrors).length === 0) {
-        setShowForm(false);
-        setDays([{ dayOfWeek: "", startTime: "", duration: 60 }]);
-        setSelectedGroup(null);
-        setIsEditing(false);
-      }
+      await createSchedule(selectedGroup, formValues);
+      handleCloseForm();
     } catch (error) {
-      console.error("Error al gestionar el cronograma:", error);
+      console.error("Error al crear el cronograma:", error);
     }
   };
 
@@ -133,58 +129,54 @@ export default function Page() {
       field: "group",
       headerName: "Grupo",
       flex: 1,
-      valueGetter: (params) => params.row.group?.name || "N/A",
+      valueGetter: (params) => params.row.groups?.name || "N/A",
     },
     {
       field: "teacher",
       headerName: "Docente",
       flex: 1,
       valueGetter: (params) => {
-        const teacher = params.row.group?.teacher;
+        const teacher = params.row.groups?.teacher;
         return teacher ? `${teacher.firstName} ${teacher.lastName}` : "N/A";
       },
     },
     {
-      field: "language",
-      headerName: "Idioma",
+      field: "startDate",
+      headerName: "Inicio",
       flex: 1,
-      valueGetter: (params) => params.row.group?.language?.name || "N/A",
+      valueFormatter: (params) => new Date(params.value).toLocaleDateString(),
     },
     {
-      field: "module",
-      headerName: "Módulo",
+      field: "endDate",
+      headerName: "Fin",
       flex: 1,
-      valueGetter: (params) => params.row.group?.module?.name || "N/A",
+      valueFormatter: (params) => new Date(params.value).toLocaleDateString(),
+    },
+    {
+      field: "schedule",
+      headerName: "Horario",
+      flex: 1,
+      valueGetter: (params) => {
+        const firstDay = params.row.days[0];
+        return firstDay
+          ? `${firstDay.startTime} (${firstDay.duration} min)`
+          : "N/A";
+      },
     },
     {
       field: "days",
-      headerName: "Horarios",
+      headerName: "Días",
       flex: 2,
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-          {params.row.days.map((day, index) => (
+          {params.value.map((day, index) => (
             <Chip
               key={index}
-              label={`${daysOfWeek.find((d) => d.id === day.dayOfWeek)?.label}: ${day.startTime} (${day.duration} min)`}
+              label={daysOfWeek.find((d) => d.id === day.dayOfWeek)?.label}
               size="small"
             />
           ))}
         </Box>
-      ),
-    },
-    {
-      field: "actions",
-      headerName: "Acciones",
-      flex: 1,
-      renderCell: (params) => (
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<EditIcon />}
-          onClick={() => handleEdit(params.row)}
-        >
-          Editar
-        </Button>
       ),
     },
   ];
@@ -224,14 +216,7 @@ export default function Page() {
         />
       </ThemeProvider>
 
-      <Modal
-        open={showForm}
-        onClose={() => {
-          setShowForm(false);
-          setDays([{ dayOfWeek: "", startTime: "", duration: 60 }]);
-          setIsEditing(false);
-        }}
-      >
+      <Modal open={showForm} onClose={handleCloseForm} sx={{ height: "100%" }}>
         <Paper
           elevation={4}
           square={false}
@@ -243,115 +228,149 @@ export default function Page() {
             p: 2,
             gap: 2,
             maxWidth: 500,
+            maxHeight: 600,
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             overflowY: "auto",
+            scrollbarWidth: "thin",
           }}
         >
-          <Typography variant="h4">
-            {isEditing ? "Editar Cronograma" : "Crear Cronograma"}
+          <Typography variant="h6" component="h2" gutterBottom>
+            Nuevo Cronograma
           </Typography>
 
-          {!isEditing && (
-            <Box sx={{ mb: 2 }}>
-              <MyForm
-                fields={[
-                  {
-                    name: "groupId",
-                    label: "Grupo",
-                    component: "select",
-                    options: groups
-                      ?.filter(
-                        (group) =>
-                          !schedules.find((s) => s.groupId === group.id)
-                      )
-                      .map((group) => ({
-                        id: group.id,
-                        label: `${group.name} - ${group.teacher.firstName} ${group.teacher.lastName}`,
-                      })),
-                    required: true,
-                  },
-                ]}
-                values={{ groupId: selectedGroup }}
-                onChange={(field, value) => setSelectedGroup(value)}
-                errors={formErrors}
-              />
+          <Box
+            component="form"
+            noValidate
+            sx={{
+              height: "auto",
+              width: "100%",
+              margin: "0 auto",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            <FormControl fullWidth error={!!formErrors.groupId} margin="normal">
+              <InputLabel>Grupo</InputLabel>
+              <Select
+                value={selectedGroup || ""}
+                onChange={(e) => setSelectedGroup(e.target.value)}
+                label="Grupo"
+              >
+                {groups
+                  ?.filter(
+                    (group) => !schedules.find((s) => s.groupId === group.id)
+                  )
+                  .map((group) => (
+                    <MenuItem key={group.id} value={group.id}>
+                      {group.name} - {group.teacher.firstName}{" "}
+                      {group.teacher.lastName}
+                    </MenuItem>
+                  ))}
+              </Select>
+              {formErrors.groupId && (
+                <FormHelperText>{formErrors.groupId}</FormHelperText>
+              )}
+            </FormControl>
+
+            <TextField
+              fullWidth
+              type="date"
+              label="Fecha de inicio"
+              value={formValues.startDate}
+              onChange={(e) => handleFormChange("startDate", e.target.value)}
+              error={!!formErrors.startDate}
+              helperText={formErrors.startDate}
+              InputLabelProps={{ shrink: true }}
+              margin="normal"
+            />
+
+            <TextField
+              fullWidth
+              type="date"
+              label="Fecha de fin"
+              value={formValues.endDate}
+              onChange={(e) => handleFormChange("endDate", e.target.value)}
+              error={!!formErrors.endDate}
+              helperText={formErrors.endDate}
+              InputLabelProps={{ shrink: true }}
+              margin="normal"
+            />
+
+            <TextField
+              fullWidth
+              label="Horario de clases"
+              value={formValues.startTime}
+              onChange={(e) => handleFormChange("startTime", e.target.value)}
+              error={!!formErrors.startTime}
+              helperText={
+                formErrors.startTime || "Formato: HH:MM (ejemplo: 09:00)"
+              }
+              placeholder="09:00"
+              margin="normal"
+            />
+
+            <TextField
+              fullWidth
+              type="number"
+              label="Duración (minutos)"
+              value={formValues.duration}
+              onChange={(e) =>
+                handleFormChange("duration", parseInt(e.target.value))
+              }
+              error={!!formErrors.duration}
+              helperText={formErrors.duration || "Entre 30 y 240 minutos"}
+              inputProps={{ min: 30, max: 240 }}
+              margin="normal"
+            />
+
+            <FormControl
+              fullWidth
+              error={!!formErrors.weekDays}
+              margin="normal"
+            >
+              <FormLabel component="legend">Días de la semana</FormLabel>
+              <FormGroup row>
+                {daysOfWeek.map((day) => (
+                  <FormControlLabel
+                    key={day.id}
+                    control={
+                      <Checkbox
+                        checked={formValues.weekDays.includes(day.id)}
+                        onChange={() => handleWeekDayToggle(day.id)}
+                      />
+                    }
+                    label={day.label}
+                  />
+                ))}
+              </FormGroup>
+              {formErrors.weekDays && (
+                <FormHelperText>{formErrors.weekDays}</FormHelperText>
+              )}
+            </FormControl>
+
+            <Box
+              sx={{
+                mt: 3,
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+              }}
+            >
+              <Button onClick={handleCloseForm} color="inherit">
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                variant="contained"
+                color="primary"
+              >
+                Crear
+              </Button>
             </Box>
-          )}
-
-          <Box sx={{ flexGrow: 1 }}>
-            {days.map((day, index) => (
-              <Stack key={index} spacing={2} sx={{ mb: 3 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography variant="h6">Día {index + 1}</Typography>
-                  {index > 0 && (
-                    <IconButton
-                      onClick={() => handleRemoveDay(index)}
-                      color="error"
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                  )}
-                </Box>
-
-                <MyForm
-                  fields={[
-                    {
-                      name: `dayOfWeek`,
-                      label: "Día de la semana",
-                      component: "select",
-                      options: daysOfWeek,
-                      required: true,
-                    },
-                    {
-                      name: `startTime`,
-                      label: "Hora de inicio (HH:MM)",
-                      required: true,
-                    },
-                    {
-                      name: `duration`,
-                      label: "Duración (minutos)",
-                      type: "number",
-                      required: true,
-                    },
-                  ]}
-                  values={day}
-                  onChange={(field, value) =>
-                    handleDayChange(index, field, value)
-                  }
-                  errors={formErrors}
-                />
-              </Stack>
-            ))}
-
-            <Button
-              startIcon={<AddIcon />}
-              onClick={handleAddDay}
-              variant="outlined"
-              fullWidth
-              sx={{ mt: 2 }}
-            >
-              Agregar otro día
-            </Button>
-          </Box>
-
-          <Box sx={{ mt: "auto" }}>
-            <Button
-              variant="contained"
-              onClick={handleSubmit}
-              fullWidth
-              disabled={!selectedGroup}
-            >
-              {isEditing ? "Guardar cambios" : "Crear cronograma"}
-            </Button>
           </Box>
         </Paper>
       </Modal>
