@@ -48,8 +48,6 @@ export default function Page() {
     languageId: "",
     moduleId: "",
     modalityId: "",
-    startDate: null,
-    endDate: null,
     students: [],
   });
 
@@ -74,8 +72,6 @@ export default function Page() {
         languageId: "",
         moduleId: "",
         modalityId: "",
-        startDate: null,
-        endDate: null,
         students: [],
       });
     }
@@ -127,7 +123,9 @@ export default function Page() {
       minWidth: 150,
       flex: 1,
       renderCell: (params) => {
-        return params.value.map((s) => `${s.student.first_name} ${s.student.last_name}`).join(", ");
+        return params.value
+          .map((s) => `${s.student.first_name} ${s.student.last_name}`)
+          .join(", ");
       },
     },
   ];
@@ -179,13 +177,6 @@ export default function Page() {
       required: true,
     },
     {
-      name: "startDate",
-      label: "Fecha de Inicio",
-      type: "date",
-      required: true,
-    },
-    { name: "endDate", label: "Fecha de Fin", type: "date", required: true },
-    {
       name: "students",
       label: "Estudiantes",
       type: "select",
@@ -212,15 +203,16 @@ export default function Page() {
       setOpenSnackbar(true);
     }
   }, [snackbarMessage, snackbarErrorMessage, snackbarWarningMessage]);
-
   useEffect(() => {
     fetchGroups();
+  }, [groupCreated]);
+  useEffect(() => {
     fetchModalities();
     fetchModules();
     fetchLanguages();
     fetchTeachers();
     fetchStudents();
-  }, [groupCreated]);
+  }, []);
 
   return (
     <>

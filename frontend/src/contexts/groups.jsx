@@ -29,8 +29,6 @@ export const GroupProvider = ({ children }) => {
           languageId: Number(dataToSend.languageId),
           moduleId: Number(dataToSend.moduleId),
           modalityId: Number(dataToSend.modalityId),
-          startDate: dataToSend.startDate,
-          endDate: dataToSend.endDate,
           students: dataToSend.students,
           companyId: companyId,
         }),
