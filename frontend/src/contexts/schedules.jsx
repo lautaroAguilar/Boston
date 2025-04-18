@@ -10,6 +10,7 @@ export const ScheduleProvider = ({ children }) => {
   const [formErrors, setFormErrors] = useState({});
   const [scheduleCreated, setScheduleCreated] = useState(false);
   const [schedules, setSchedules] = useState([]);
+  const [classes, setClasses] = useState([]);
 
   async function fetchSchedules() {
     try {
@@ -30,7 +31,29 @@ export const ScheduleProvider = ({ children }) => {
       console.error("Error al obtener los cronogramas:", error);
     }
   }
+  async function fetchClassesByDateAndCompany(date, companyId) {
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/schedules/classes?date=${date}&companyId=${companyId}`,
+        {
+          credentials: "include",
+        }
+      );
 
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.message);
+        return;
+      }
+
+      const data = await res.json();
+      setClasses(data.data);
+      return data.data;
+    } catch (error) {
+      setSnackbarErrorMessage("Error al obtener las clases");
+      console.error("Error al obtener las clases:", error);
+    }
+  }
   async function createSchedule(groupId, scheduleData) {
     setFormErrors({});
     setErrorMessage("");
@@ -158,7 +181,10 @@ export const ScheduleProvider = ({ children }) => {
     getScheduleByGroupId,
     updateSchedule,
     fetchSchedules,
+    fetchClassesByDateAndCompany,
     errorMessage,
+    classes,
+    setClasses,
   };
 
   return (

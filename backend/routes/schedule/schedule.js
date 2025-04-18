@@ -13,6 +13,9 @@ scheduleRouter.post('/:groupId', authenticateToken, scheduleController.create)
 // Obtener todos los cronogramas
 scheduleRouter.get('/', authenticateToken, scheduleController.getAll)
 
+// Obtener clases por fecha y compañía
+scheduleRouter.get('/classes', authenticateToken, scheduleController.getClassesByDateAndCompany)
+
 // Obtener cronograma de un grupo
 scheduleRouter.get(
   '/:groupId',

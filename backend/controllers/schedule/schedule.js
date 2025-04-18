@@ -148,6 +148,35 @@ class ScheduleController {
       })
     }
   }
+
+  getClassesByDateAndCompany = async (req, res) => {
+    try {
+      const { date, companyId } = req.query
+      
+      if (!date || !companyId) {
+        return res.status(400).json({
+          message: 'Seleccione una empresa por favor'
+        })
+      }
+
+      const classes = await this.scheduleModel.getClassesByDateAndCompany(
+        date,
+        parseInt(companyId)
+      )
+
+      res.json({
+        message: 'Clases obtenidas exitosamente',
+        data: classes
+      })
+    } catch (error) {
+      console.error('Error en ScheduleController.getClassesByDateAndCompany:', error)
+      res.status(500).json({
+        message: 'Error al obtener las clases',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
+    }
+  }
 }
 
 module.exports = { ScheduleController }

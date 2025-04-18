@@ -88,8 +88,38 @@ class ScheduleModel {
   static async getAll() {
     try {
       const schedules = await prisma.schedule.findMany({
-        include: {
-          group: true
+        select: {
+          id: true,
+          companyId: true,
+          days: true,
+          startDate: true,
+          endDate: true,
+          group: {
+            select: {
+              id: true,
+              name: true,
+              module: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              },
+              language: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              },
+              
+              teacher: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true
+                }
+              }
+            }
+          }
         }
       })
       return schedules
@@ -260,6 +290,124 @@ class ScheduleModel {
       })
     } catch (error) {
       console.error('Error en ScheduleModel.addSingleClass:', error)
+      throw error
+    }
+  }
+
+  static async getClassesByDateAndCompany(date, companyId) {
+    try {
+      // Convertir la fecha a un objeto Date si viene como string
+      const classDate = date instanceof Date ? date : new Date(date)
+      
+      // Establecer la hora a 00:00:00 para comparar solo la fecha
+      classDate.setHours(0, 0, 0, 0)
+      
+      // Crear fecha de fin del día (23:59:59)
+      const endDate = new Date(classDate)
+      endDate.setHours(23, 59, 59, 999)
+      
+      // Buscar todas las clases para la fecha y compañía especificadas
+      const classes = await prisma.class.findMany({
+        where: {
+          date: {
+            gte: classDate,
+            lte: endDate
+          },
+          group: {
+            companyId: parseInt(companyId)
+          }
+        },
+        select: {
+          id: true,
+          date: true,
+          startTime: true,
+          endTime: true,
+          group: {
+            select: {
+              id: true,
+              name: true,
+              language: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              },
+              module: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              },
+              modality: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              },
+              status: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              },
+              company: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              },
+              students: {
+                select: {
+                  student: {
+                    select: {
+                      id: true,
+                      first_name: true,
+                      last_name: true
+                    }
+                  },
+                  status: {
+                    select: {
+                      id: true,
+                      name: true,
+                      description: true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          teacher: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true
+            }
+          }
+        },
+        orderBy: {
+          startTime: 'asc'
+        }
+      })
+      
+      // Calcular duración en horas para cada clase
+      const classesWithDuration = classes.map(cls => {
+        const start = new Date(cls.startTime)
+        const end = new Date(cls.endTime)
+        const durationMs = end - start
+        const durationHours = durationMs / (1000 * 60 * 60)
+        
+        return {
+          ...cls,
+          duration: parseFloat(durationHours.toFixed(1)), // Redondeado a 1 decimal
+          studentsCount: cls.group.students.length,
+          // Determinar nivel basado en el módulo o agregar un campo adicional si es necesario
+          level: cls.group.module.name // Este es un ejemplo, ajustar según la estructura real
+        }
+      })
+      
+      return classesWithDuration
+    } catch (error) {
+      console.error('Error en ScheduleModel.getClassesByDateAndCompany:', error)
       throw error
     }
   }

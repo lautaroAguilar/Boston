@@ -45,13 +45,15 @@ export default function Page() {
     snackbarMessage,
     snackbarErrorMessage,
     setOpenSnackbar,
+    selectedCompany,
   } = useDashboard();
 
   const { groups, fetchGroups } = useGroup();
   const {
     schedules,
+    classes,
     createSchedule,
-    fetchSchedules,
+    fetchClassesByDateAndCompany,
     formErrors,
     scheduleCreated,
     setFormErrors,
@@ -129,56 +131,36 @@ export default function Page() {
       field: "group",
       headerName: "Grupo",
       flex: 1,
-      valueGetter: (params) => params.row.groups?.name || "N/A",
+      renderCell: (params) => params.row.group?.name || "N/A",
     },
     {
       field: "teacher",
       headerName: "Docente",
       flex: 1,
-      valueGetter: (params) => {
-        const teacher = params.row.groups?.teacher;
-        return teacher ? `${teacher.firstName} ${teacher.lastName}` : "N/A";
-      },
+      renderCell: (params) =>
+        params.row.teacher?.firstName + " " + params.row.teacher?.lastName ||
+        "N/A",
     },
     {
-      field: "startDate",
-      headerName: "Inicio",
+      field: "date",
+      headerName: "Fecha",
       flex: 1,
-      valueFormatter: (params) => new Date(params.value).toLocaleDateString(),
     },
     {
-      field: "endDate",
-      headerName: "Fin",
+      field: "startTime",
+      headerName: "Horario de inicio",
       flex: 1,
-      valueFormatter: (params) => new Date(params.value).toLocaleDateString(),
     },
     {
-      field: "schedule",
-      headerName: "Horario",
+      field: "duration",
+      headerName: "Duracion (horas)",
       flex: 1,
-      valueGetter: (params) => {
-        const firstDay = params.row.days[0];
-        return firstDay
-          ? `${firstDay.startTime} (${firstDay.duration} min)`
-          : "N/A";
-      },
     },
-    {
+    /* {
       field: "days",
       headerName: "Días",
       flex: 2,
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-          {params.value.map((day, index) => (
-            <Chip
-              key={index}
-              label={daysOfWeek.find((d) => d.id === day.dayOfWeek)?.label}
-              size="small"
-            />
-          ))}
-        </Box>
-      ),
-    },
+    }, */
   ];
 
   useEffect(() => {
@@ -196,16 +178,17 @@ export default function Page() {
   }, [snackbarMessage, snackbarErrorMessage]);
 
   useEffect(() => {
-    fetchSchedules();
+    fetchClassesByDateAndCompany("2025-05-15", selectedCompany);
+  }, [scheduleCreated, selectedCompany]);
+  useEffect(() => {
     fetchGroups();
-  }, [scheduleCreated]);
-
+  }, []);
   return (
     <>
       <ThemeProvider theme={theme}>
         <DataGrid
           columns={columns}
-          rows={schedules || []}
+          rows={classes || []}
           getRowId={(row) => row.id}
           sx={{
             width: "100%",
