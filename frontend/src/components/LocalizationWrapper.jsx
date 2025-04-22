@@ -1,10 +1,13 @@
-"use client"
+"use client";
 import React from "react";
 import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import "moment/locale/es";
 
-export default function LocalizationWrapper({children}) {
+export default function LocalizationWrapper({ children }) {
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>{children}</LocalizationProvider>
+    <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale="es">
+      {children}
+    </LocalizationProvider>
   );
 }
