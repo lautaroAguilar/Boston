@@ -18,6 +18,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { DataGrid } from "@mui/x-data-grid";
@@ -26,6 +28,19 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useDashboard } from "@/contexts/dashboard";
 import { useSchedule } from "@/contexts/schedules";
 import { useGroup } from "@/contexts/groups";
+import {
+  formatDate,
+  formatTime,
+  formatDuration,
+  formatDateForAPI,
+} from "@/utils/dateUtils";
+import moment from "moment";
+import "moment/locale/es";
+import { DatePicker } from "@mui/x-date-pickers";
+import LocalizationWrapper from "@/components/LocalizationWrapper";
+
+// Configurar momento para usar español
+moment.locale("es");
 
 const daysOfWeek = [
   { id: 0, label: "Domingo" },
@@ -36,6 +51,23 @@ const daysOfWeek = [
   { id: 5, label: "Viernes" },
   { id: 6, label: "Sábado" },
 ];
+
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`tabpanel-${index}`}
+      aria-labelledby={`tab-${index}`}
+      {...other}
+      style={{ width: "100%" }}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
 
 export default function Page() {
   const theme = createTheme(esES);
@@ -54,13 +86,16 @@ export default function Page() {
     classes,
     createSchedule,
     fetchClassesByDateAndCompany,
+    fetchSchedules,
     formErrors,
     scheduleCreated,
     setFormErrors,
   } = useSchedule();
 
   const [showForm, setShowForm] = useState(false);
+  const [tabValue, setTabValue] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(moment());
   const [formValues, setFormValues] = useState({
     startDate: "",
     endDate: "",
@@ -68,6 +103,10 @@ export default function Page() {
     duration: 60,
     weekDays: [],
   });
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
 
   function handleShowForm() {
     setShowForm(true);
@@ -125,7 +164,12 @@ export default function Page() {
     }
   };
 
-  const columns = [
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
+  // Columnas para la pestaña de cronogramas
+  const scheduleColumns = [
     { field: "id", headerName: "ID", width: 90 },
     {
       field: "group",
@@ -138,29 +182,93 @@ export default function Page() {
       headerName: "Docente",
       flex: 1,
       renderCell: (params) =>
-        params.row.teacher?.firstName + " " + params.row.teacher?.lastName ||
-        "N/A",
+        params.row.group.teacher?.firstName +
+          " " +
+          params.row.group.teacher?.lastName || "N/A",
+    },
+    {
+      field: "startDate",
+      headerName: "Inicio",
+      flex: 1,
+      valueFormatter: (params) => formatDate(params),
+    },
+    {
+      field: "endDate",
+      headerName: "Fin",
+      flex: 1,
+      valueFormatter: (params) => formatDate(params),
+    },
+    {
+      field: "days",
+      headerName: "Días",
+      flex: 2,
+      renderCell: (params) => (
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          {params.value.map((day, index) => (
+            <Chip
+              key={index}
+              label={daysOfWeek.find((d) => d.id === day.dayOfWeek)?.label}
+              size="small"
+            />
+          ))}
+        </Box>
+      ),
+    },
+  ];
+
+  // Columnas para la pestaña de clases
+  const classesColumns = [
+    {
+      field: "group",
+      headerName: "Grupo",
+      flex: 1,
+      renderCell: (params) => params.row.group?.name || "N/A",
+    },
+    {
+      field: "idioma",
+      headerName: "Idioma",
+      flex: 1,
+      renderCell: (params) => params.row.group?.language?.name || "N/A",
+    },
+    {
+      field: "level",
+      headerName: "Nivel",
+      flex: 1,
+      renderCell: (params) => params.row.group?.module?.name || "N/A",
+    },
+    {
+      field: "docente",
+      headerName: "Docente",
+      flex: 1,
+      renderCell: (params) => {
+        const teacher = params.row.teacher;
+        return teacher ? `${teacher.firstName} ${teacher.lastName}` : "N/A";
+      },
+    },
+    {
+      field: "studentsCount",
+      headerName: "Cant. Alumnos",
+      width: 120,
+      renderCell: (params) => params.row.group?.students?.length || 0,
+    },
+    {
+      field: "duration",
+      headerName: "Duración",
+      width: 100,
+      valueFormatter: (params) => formatDuration(params),
+    },
+    {
+      field: "startTime",
+      headerName: "Inicio",
+      width: 120,
+      valueFormatter: (params) => formatTime(params),
     },
     {
       field: "date",
       headerName: "Fecha",
       flex: 1,
+      valueFormatter: (params) => formatDate(params),
     },
-    {
-      field: "startTime",
-      headerName: "Horario de inicio",
-      flex: 1,
-    },
-    {
-      field: "duration",
-      headerName: "Duracion (horas)",
-      flex: 1,
-    },
-    /* {
-      field: "days",
-      headerName: "Días",
-      flex: 2,
-    }, */
   ];
 
   useEffect(() => {
@@ -178,26 +286,134 @@ export default function Page() {
   }, [snackbarMessage, snackbarErrorMessage]);
 
   useEffect(() => {
-    fetchClassesByDateAndCompany("2025-05-15", selectedCompany);
-  }, [scheduleCreated, selectedCompany]);
+    if (selectedCompany) {
+      const formattedDate = formatDateForAPI(selectedDate);
+      fetchClassesByDateAndCompany(formattedDate, selectedCompany);
+    }
+  }, [selectedDate, selectedCompany, scheduleCreated]);
+
   useEffect(() => {
+    fetchSchedules();
     fetchGroups();
   }, []);
+
   return (
     <>
-      <ThemeProvider theme={theme}>
-        <DataGrid
-          columns={columns}
-          rows={classes || []}
-          getRowId={(row) => row.id}
+      <Box sx={{ width: "100%", mb: 2 }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            aria-label="cronogramas tabs"
+          >
+            <Tab label="Clases del día" />
+            <Tab label="Cronogramas" />
+          </Tabs>
+        </Box>
+      </Box>
+
+      <TabPanel value={tabValue} index={0}>
+        <Box
           sx={{
-            width: "100%",
-            "& .MuiDataGrid-cell": {
-              py: 2,
-            },
+            mb: 3,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
           }}
-        />
-      </ThemeProvider>
+        >
+          <Typography variant="h6">
+            Cronograma de clases {formatDate(selectedDate)}
+          </Typography>
+          <LocalizationWrapper>
+            <DatePicker
+              label="Seleccionar fecha"
+              value={selectedDate}
+              onChange={handleDateChange}
+              format="DD/MM/YYYY"
+              slotProps={{ textField: { size: "small" } }}
+            />
+          </LocalizationWrapper>
+        </Box>
+
+        {selectedCompany ? (
+          classes && classes.length > 0 ? (
+            <ThemeProvider theme={theme}>
+              <DataGrid
+                columns={classesColumns}
+                rows={classes}
+                getRowId={(row) => row.id}
+                getEstimatedRowHeight={() => 100}
+                getRowHeight={() => "auto"}
+                sx={{
+                  width: "100%",
+                  "&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell": {
+                    py: 1,
+                  },
+                  "&.MuiDataGrid-root--densityStandard .MuiDataGrid-cell": {
+                    py: "15px",
+                  },
+                  "&.MuiDataGrid-root--densityComfortable .MuiDataGrid-cell": {
+                    py: "22px",
+                  },
+                }}
+                pageSizeOptions={[5, 10, 25]}
+                initialState={{
+                  pagination: {
+                    paginationModel: { pageSize: 10, page: 0 },
+                  },
+                }}
+              />
+            </ThemeProvider>
+          ) : (
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{ textAlign: "center", my: 4 }}
+            >
+              No hay clases programadas para esta fecha
+            </Typography>
+          )
+        ) : (
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ textAlign: "center", my: 4 }}
+          >
+            Seleccione una empresa para ver las clases
+          </Typography>
+        )}
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={1}>
+        <ThemeProvider theme={theme}>
+          <DataGrid
+            columns={scheduleColumns}
+            rows={schedules || []}
+            getRowId={(row) => row.id}
+            getEstimatedRowHeight={() => 100}
+            getRowHeight={() => "auto"}
+            sx={{
+              width: "100%",
+              "&.MuiDataGrid-root--densityCompact .MuiDataGrid-cell": {
+                py: 1,
+              },
+              "&.MuiDataGrid-root--densityStandard .MuiDataGrid-cell": {
+                py: "15px",
+              },
+              "&.MuiDataGrid-root--densityComfortable .MuiDataGrid-cell": {
+                py: "22px",
+              },
+            }}
+            pageSizeOptions={[5, 10, 25]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10, page: 0 },
+              },
+            }}
+          />
+        </ThemeProvider>
+      </TabPanel>
 
       <Modal open={showForm} onClose={handleCloseForm} sx={{ height: "100%" }}>
         <Paper
