@@ -287,14 +287,21 @@ export default function Page() {
 
   useEffect(() => {
     if (selectedCompany) {
+      fetchGroups(selectedCompany);
       const formattedDate = formatDateForAPI(selectedDate);
       fetchClassesByDateAndCompany(formattedDate, selectedCompany);
     }
-  }, [selectedDate, selectedCompany, scheduleCreated]);
+  }, [selectedCompany]);
+
+  useEffect(() => {
+    if (selectedCompany) {
+      const formattedDate = formatDateForAPI(selectedDate);
+      fetchClassesByDateAndCompany(formattedDate, selectedCompany);
+    }
+  }, [selectedDate, scheduleCreated]);
 
   useEffect(() => {
     fetchSchedules();
-    fetchGroups();
   }, []);
 
   return (
@@ -459,7 +466,7 @@ export default function Page() {
                 onChange={(e) => setSelectedGroup(e.target.value)}
                 label="Grupo"
               >
-                {groups
+                {selectedCompany ? groups
                   ?.filter(
                     (group) => !schedules.find((s) => s.groupId === group.id)
                   )
@@ -468,7 +475,7 @@ export default function Page() {
                       {group.name} - {group.teacher.firstName}{" "}
                       {group.teacher.lastName}
                     </MenuItem>
-                  ))}
+                  )) : <MenuItem value="">Seleccione una empresa por favor</MenuItem>}
               </Select>
               {formErrors.groupId && (
                 <FormHelperText>{formErrors.groupId}</FormHelperText>

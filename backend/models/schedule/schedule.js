@@ -502,13 +502,7 @@ class ScheduleModel {
         ORDER BY c.date ASC, c.startTime ASC
       `;
       
-      // Para depuración, comentar en producción
-      console.log('Filtros recibidos:', filters);
-      console.log('Consulta SQL:', query);
-      console.log('Parámetros:', params);
-      
       const [classes] = await connection.query(query, params);
-      console.log(`Se encontraron ${classes.length} clases`);
       
       // Si no hay clases, devolver array vacío
       if (classes.length === 0) {
@@ -630,7 +624,6 @@ class ScheduleModel {
     const connection = await pool.getConnection()
     
     try {
-      console.log('Parámetros recibidos - fecha:', date, 'compañía:', companyId);
       const classes = await this._getClasses(connection, { 
         date, 
         companyId: parseInt(companyId) 

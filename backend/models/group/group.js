@@ -167,7 +167,8 @@ class GroupModel {
       let whereClause = '';
       const params = [];
       
-      if (filters.companyId) {
+      // Solo aplicar filtro si companyId es un número válido
+      if (filters.companyId && !isNaN(parseInt(filters.companyId))) {
         whereClause = 'WHERE g.companyId = ?';
         params.push(parseInt(filters.companyId));
       }
