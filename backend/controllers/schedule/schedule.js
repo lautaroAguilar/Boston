@@ -177,6 +177,23 @@ class ScheduleController {
       })
     }
   }
+  getClassesByGroup = async (req, res) => {
+    try {
+      const { groupId } = req.params
+      const classes = await this.scheduleModel.getClassesByGroup(parseInt(groupId))
+      res.json({
+        message: 'Clases obtenidas exitosamente',
+        data: classes
+      })
+    } catch (error) {
+      console.error('Error en ScheduleController.getClassesByGroup:', error)
+      res.status(500).json({
+        message: 'Error al obtener las clases',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
+    }
+  } 
 }
 
 module.exports = { ScheduleController }

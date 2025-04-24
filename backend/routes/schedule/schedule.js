@@ -14,7 +14,18 @@ scheduleRouter.post('/:groupId', authenticateToken, scheduleController.create)
 scheduleRouter.get('/', authenticateToken, scheduleController.getAll)
 
 // Obtener clases por fecha y compañía
-scheduleRouter.get('/classes', authenticateToken, scheduleController.getClassesByDateAndCompany)
+scheduleRouter.get(
+  '/classes',
+  authenticateToken,
+  scheduleController.getClassesByDateAndCompany
+)
+
+// Obtener clases por grupo
+scheduleRouter.get(
+  '/classes/:groupId',
+  authenticateToken,
+  scheduleController.getClassesByGroup
+)
 
 // Obtener cronograma de un grupo
 scheduleRouter.get(
@@ -30,6 +41,10 @@ scheduleRouter.put('/:groupId', authenticateToken, scheduleController.update)
 scheduleRouter.delete('/:groupId', authenticateToken, scheduleController.delete)
 
 // Agregar una clase individual al cronograma
-scheduleRouter.post('/:groupId/class', authenticateToken, scheduleController.addSingleClass)
+scheduleRouter.post(
+  '/:groupId/class',
+  authenticateToken,
+  scheduleController.addSingleClass
+)
 
 module.exports = { scheduleRouter }
