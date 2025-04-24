@@ -301,8 +301,12 @@ export default function Page() {
   }, [selectedDate, scheduleCreated]);
 
   useEffect(() => {
-    fetchSchedules();
-  }, []);
+    if (selectedCompany) {
+      fetchSchedules(selectedCompany);
+    } else {
+      fetchSchedules();
+    }
+  }, [selectedCompany, scheduleCreated]);
 
   return (
     <>

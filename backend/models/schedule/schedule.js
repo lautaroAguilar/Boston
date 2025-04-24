@@ -122,10 +122,20 @@ class ScheduleModel {
     }
   }
 
-  static async getAll() {
+  static async getAll(filters = {}) {
     const connection = await pool.getConnection()
     
     try {
+      // Construir la consulta con posible filtro por compañía
+      let whereClause = '';
+      const params = [];
+      
+      // Solo aplicar filtro si companyId es un número válido
+      if (filters.companyId && !isNaN(parseInt(filters.companyId))) {
+        whereClause = 'WHERE s.companyId = ?';
+        params.push(parseInt(filters.companyId));
+      }
+      
       const [schedules] = await connection.query(
         `SELECT 
           s.id, 
@@ -146,7 +156,9 @@ class ScheduleModel {
         JOIN \`Group\` g ON s.groupId = g.id
         LEFT JOIN modules m ON g.moduleId = m.id
         LEFT JOIN languages l ON g.languageId = l.id
-        LEFT JOIN Teacher t ON g.teacherId = t.id`
+        LEFT JOIN Teacher t ON g.teacherId = t.id
+        ${whereClause}`,
+        params
       )
       
       // Formatear los resultados

@@ -12,9 +12,14 @@ export const ScheduleProvider = ({ children }) => {
   const [schedules, setSchedules] = useState([]);
   const [classes, setClasses] = useState([]);
 
-  async function fetchSchedules() {
+  async function fetchSchedules(companyId) {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/schedules`, {
+      let url = `${CONFIG.API_URL}/schedules`;
+      if (companyId) {
+        url += `?companyId=${companyId}`;
+      }
+      
+      const res = await fetch(url, {
         credentials: "include",
       });
 

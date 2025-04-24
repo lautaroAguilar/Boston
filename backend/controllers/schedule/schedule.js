@@ -35,8 +35,14 @@ class ScheduleController {
     }
   }
   getAll = async (req, res) => {
+    const { companyId } = req.query
     try {
-      const schedules = await this.scheduleModel.getAll()
+      const filters = {}
+      if (companyId) {
+        filters.companyId = companyId
+      }
+      
+      const schedules = await this.scheduleModel.getAll(filters)
       res.json({
         message: 'Cronogramas obtenidos exitosamente',
         data: schedules
