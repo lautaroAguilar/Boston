@@ -65,9 +65,9 @@ export const GroupProvider = ({ children }) => {
   }
 
   /* OBTENER TODOS LOS GRUPOS */
-  const fetchGroups = async () => {
+  const fetchGroups = async (selectedCompany) => {
     try {
-      const response = await fetch(`${CONFIG.API_URL}/groups`, {
+      const response = await fetch(`${CONFIG.API_URL}/groups?companyId=${selectedCompany}`, {
         method: "GET",
         credentials: "include",
       });

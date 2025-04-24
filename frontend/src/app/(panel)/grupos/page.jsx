@@ -53,6 +53,10 @@ export default function Page() {
 
   function handleShowForm() {
     setShowForm(true);
+    fetchModalities();
+    fetchModules();
+    fetchLanguages();
+    fetchTeachers();
   }
 
   const handleChangeRegister = (fieldName, newValue) => {
@@ -203,17 +207,11 @@ export default function Page() {
       setOpenSnackbar(true);
     }
   }, [snackbarMessage, snackbarErrorMessage, snackbarWarningMessage]);
-  useEffect(() => {
-    fetchGroups();
-  }, [groupCreated]);
-  useEffect(() => {
-    fetchModalities();
-    fetchModules();
-    fetchLanguages();
-    fetchTeachers();
-    fetchStudents();
-  }, []);
 
+  useEffect(() => {
+    fetchGroups(selectedCompany);
+    fetchStudents();
+  }, [selectedCompany, groupCreated]);
   return (
     <>
       <ThemeProvider theme={theme}>

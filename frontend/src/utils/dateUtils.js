@@ -58,6 +58,22 @@ export const formatTime = (time) => {
     // Si estamos recibiendo un objeto params del DataGrid, extraer el valor
     const actualTime = time.value !== undefined ? time.value : time;
     
+    // Si es null o undefined, retornar N/A
+    if (actualTime === null || actualTime === undefined) return 'N/A';
+    
+    // Si ya viene en formato HH:mm o HH:mm:ss, simplemente extraer HH:mm
+    if (typeof actualTime === 'string') {
+      // Formato HH:mm:ss
+      if (/^\d{1,2}:\d{2}:\d{2}$/.test(actualTime)) {
+        return actualTime.substring(0, actualTime.lastIndexOf(':'));
+      }
+      // Formato HH:mm
+      if (/^\d{1,2}:\d{2}$/.test(actualTime)) {
+        return actualTime;
+      }
+    }
+    
+    // Intentar convertir con moment
     const momentTime = moment(actualTime);
     if (!momentTime.isValid()) return 'N/A';
 
@@ -88,7 +104,7 @@ export const formatDateForAPI = (date) => {
 };
 
 /**
- * Convierte duración en minutos a formato legible (X hs)
+ * Convierte duración en horas a formato legible (X hs o X hs Y min)
  * @param {number|Object} durationInHours - Duración en horas o params del DataGrid
  * @returns {string} Duración formateada
  */
@@ -99,5 +115,21 @@ export const formatDuration = (durationInHours) => {
     : durationInHours;
     
   if (actualDuration === undefined || actualDuration === null) return 'N/A';
+  
+  // Si es un número, formatearlo correctamente
+  if (typeof actualDuration === 'number') {
+    // Separar horas y minutos
+    const hours = Math.floor(actualDuration);
+    const minutes = Math.round((actualDuration - hours) * 60);
+    
+    if (minutes === 0) {
+      return `${hours} hs`;
+    } else if (hours === 0) {
+      return `${minutes} min`;
+    } else {
+      return `${hours} hs ${minutes} min`;
+    }
+  }
+  
   return `${actualDuration} hs`;
 }; 

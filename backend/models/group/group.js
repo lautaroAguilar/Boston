@@ -159,24 +159,38 @@ class GroupModel {
     }
   }
 
-  static async getAll() {
+  static async getAll(filters = {}) {
     const connection = await pool.getConnection()
     
     try {
-      // Obtener todos los grupos
+      // Construir la consulta con posible filtro por compañía
+      let whereClause = '';
+      const params = [];
+      
+      if (filters.companyId) {
+        whereClause = 'WHERE g.companyId = ?';
+        params.push(parseInt(filters.companyId));
+      }
+      
+      // Obtener todos los grupos con filtro opcional
       const [groups] = await connection.query(
         `SELECT g.id, g.name, 
           g.teacherId, t.firstName as teacherFirstName, t.lastName as teacherLastName,
           g.languageId, l.name as languageName,
           g.moduleId, m.name as moduleName,
           g.modalityId, md.name as modalityName,
-          g.statusId, s.name as statusName
+          g.statusId, s.name as statusName,
+          g.companyId, cp.name as companyName
         FROM \`Group\` g
         LEFT JOIN Teacher t ON g.teacherId = t.id
         LEFT JOIN languages l ON g.languageId = l.id
         LEFT JOIN modules m ON g.moduleId = m.id
         LEFT JOIN Modality md ON g.modalityId = md.id
-        LEFT JOIN GroupStatus s ON g.statusId = s.id`
+        LEFT JOIN GroupStatus s ON g.statusId = s.id
+        LEFT JOIN company cp ON g.companyId = cp.id
+        ${whereClause}
+        ORDER BY g.id ASC`,
+        params
       )
       
       // Para cada grupo, obtener sus estudiantes
@@ -219,6 +233,10 @@ class GroupModel {
           status: {
             id: group.statusId,
             name: group.statusName
+          },
+          company: {
+            id: group.companyId,
+            name: group.companyName
           },
           students: students.map(student => ({
             student: {

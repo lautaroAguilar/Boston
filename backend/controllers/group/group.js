@@ -30,7 +30,8 @@ class GroupController {
 
   getAll = async (req, res) => {
     try {
-      const groups = await this.groupModel.getAll()
+      const { companyId } = req.query;
+      const groups = await this.groupModel.getAll({ companyId });
       res.json({
         message: 'Grupos obtenidos exitosamente',
         data: groups
