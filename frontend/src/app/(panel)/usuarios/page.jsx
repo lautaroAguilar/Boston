@@ -23,8 +23,8 @@ export default function page() {
   } = useDashboard();
   const { companiesInfo } = useCompany();
   const [showForm, setShowForm] = useState(false);
-  const [users, setUsers] = useState(false);
-  const [roles, setRoles] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [created, setCreated] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [formRegisterValues, setFormRegisterValues] = useState({
@@ -142,8 +142,10 @@ export default function page() {
       minWidth: 150,
       flex: 1,
       renderCell: (params) => {
-        const role = roles?.find((role) => role.id === params.value);
-        return role ? role.name : "Desconocido";
+        const roleFound = Array.isArray(roles) 
+          ? roles.find((role) => role.id === params.value)
+          : null;
+        return roleFound ? roleFound.name : "Desconocido";
       },
     },
     { field: "belongs_to", headerName: "Empresa", minWidth: 150, flex: 1 },
