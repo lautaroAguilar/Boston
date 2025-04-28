@@ -64,8 +64,8 @@ export const ScheduleProvider = ({ children }) => {
     setErrorMessage("");
     try {
       const transformedData = {
-        startDate: scheduleData.startDate,
-        endDate: scheduleData.endDate,
+        startDate: scheduleData.startDate.format('YYYY-MM-DD'),
+        endDate: scheduleData.endDate.format('YYYY-MM-DD'),
         days: scheduleData.weekDays.map((dayId) => ({
           dayOfWeek: dayId,
           startTime: scheduleData.startTime,

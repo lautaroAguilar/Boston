@@ -36,7 +36,7 @@ import {
 } from "@/utils/dateUtils";
 import moment from "moment";
 import "moment/locale/es";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import LocalizationWrapper from "@/components/LocalizationWrapper";
 
 // Configurar momento para usar español
@@ -97,10 +97,10 @@ export default function Page() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedDate, setSelectedDate] = useState(moment());
   const [formValues, setFormValues] = useState({
-    startDate: "",
-    endDate: "",
+    startDate: moment(),
+    endDate: moment(),
     startTime: "",
-    duration: 60,
+    duration: null,
     weekDays: [],
   });
 
@@ -112,10 +112,10 @@ export default function Page() {
     setShowForm(true);
     setFormErrors({});
     setFormValues({
-      startDate: "",
-      endDate: "",
+      startDate: moment(),
+      endDate: moment(),
       startTime: "",
-      duration: 60,
+      duration: null,
       weekDays: [],
     });
   }
@@ -124,20 +124,29 @@ export default function Page() {
     setShowForm(false);
     setFormErrors({});
     setFormValues({
-      startDate: "",
-      endDate: "",
+      startDate: moment(),
+      endDate: moment(),
       startTime: "",
-      duration: 60,
+      duration: null,
       weekDays: [],
     });
     setSelectedGroup(null);
   };
 
   const handleFormChange = (field, value) => {
-    setFormValues((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    if (field === "duration") {
+      // Si el valor está vacío, establecer como null
+      const newValue = value === "" ? null : parseInt(value);
+      setFormValues((prev) => ({
+        ...prev,
+        [field]: newValue,
+      }));
+    } else {
+      setFormValues((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
   const handleWeekDayToggle = (dayId) => {
@@ -150,7 +159,6 @@ export default function Page() {
   };
 
   const handleSubmit = async () => {
-    console.log(selectedGroup, formValues);
     if (!selectedGroup) {
       setFormErrors({ groupId: "Debe seleccionar un grupo" });
       return;
@@ -470,46 +478,43 @@ export default function Page() {
                 onChange={(e) => setSelectedGroup(e.target.value)}
                 label="Grupo"
               >
-                {selectedCompany ? groups
-                  ?.filter(
-                    (group) => !schedules.find((s) => s.groupId === group.id)
-                  )
-                  .map((group) => (
-                    <MenuItem key={group.id} value={group.id}>
-                      {group.name} - {group.teacher.firstName}{" "}
-                      {group.teacher.lastName}
-                    </MenuItem>
-                  )) : <MenuItem value="">Seleccione una empresa por favor</MenuItem>}
+                {selectedCompany ? (
+                  groups
+                    ?.filter(
+                      (group) => !schedules.find((s) => s.groupId === group.id)
+                    )
+                    .map((group) => (
+                      <MenuItem key={group.id} value={group.id}>
+                        {group.name} - {group.teacher.firstName}{" "}
+                        {group.teacher.lastName}
+                      </MenuItem>
+                    ))
+                ) : (
+                  <MenuItem value="">Seleccione una empresa por favor</MenuItem>
+                )}
               </Select>
               {formErrors.groupId && (
                 <FormHelperText>{formErrors.groupId}</FormHelperText>
               )}
             </FormControl>
-
-            <TextField
-              fullWidth
-              type="date"
-              label="Fecha de inicio"
-              value={formValues.startDate}
-              onChange={(e) => handleFormChange("startDate", e.target.value)}
-              error={!!formErrors.startDate}
-              helperText={formErrors.startDate}
-              InputLabelProps={{ shrink: true }}
-              margin="normal"
-            />
-
-            <TextField
-              fullWidth
-              type="date"
-              label="Fecha de fin"
-              value={formValues.endDate}
-              onChange={(e) => handleFormChange("endDate", e.target.value)}
-              error={!!formErrors.endDate}
-              helperText={formErrors.endDate}
-              InputLabelProps={{ shrink: true }}
-              margin="normal"
-            />
-
+            <LocalizationWrapper>
+              <DatePicker
+                label="Fecha de inicio"
+                value={formValues.startDate}
+                onChange={(newValue) => handleFormChange("startDate", newValue)}
+                format="DD/MM/YYYY"
+                sx={{ marginTop: 2 }}
+              />
+            </LocalizationWrapper>
+            <LocalizationWrapper>
+              <DatePicker
+                label="Fecha de fin"
+                value={formValues.endDate}
+                onChange={(newValue) => handleFormChange("endDate", newValue)}
+                format="DD/MM/YYYY"
+                sx={{ marginTop: 2 }}
+              />
+            </LocalizationWrapper>
             <TextField
               fullWidth
               label="Horario de clases"
@@ -527,10 +532,8 @@ export default function Page() {
               fullWidth
               type="number"
               label="Duración (minutos)"
-              value={formValues.duration}
-              onChange={(e) =>
-                handleFormChange("duration", parseInt(e.target.value))
-              }
+              value={formValues.duration || ""}
+              onChange={(e) => handleFormChange("duration", e.target.value)}
               error={!!formErrors.duration}
               helperText={formErrors.duration || "Entre 30 y 240 minutos"}
               inputProps={{ min: 30, max: 240 }}

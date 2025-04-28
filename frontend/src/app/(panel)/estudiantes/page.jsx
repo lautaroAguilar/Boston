@@ -6,13 +6,10 @@ import { SchoolRounded } from "@mui/icons-material";
 import { useDashboard } from "@/contexts/dashboard";
 import { useStudent } from "@/contexts/students";
 import { useCompany } from "@/contexts/companies";
-import {
-  studentStepOneSchema,
-  studentStepTwoSchema,
-} from "../../../../schemas/students";
 import { DataGrid } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import moment from "moment";
 
 /* COLUMNAS PARA EL DATAGRID DE ESTUDIANTES */
 const studentColumns = [
@@ -64,7 +61,6 @@ export default function Page() {
   const isMobile = useMediaQuery("(max-width:600px)");
   /* ESTADOS */
   const [showForm, setShowForm] = useState(false);
-  const [studentCreated, setStudentCreated] = useState(false);
   const [step1Values, setStep1Values] = useState({
     first_name: "",
     last_name: "",
@@ -76,7 +72,7 @@ export default function Page() {
   });
 
   const [step2Values, setStep2Values] = useState({
-    initial_leveling_date: "",
+    initial_leveling_date: moment(),
     language_id: "",
     module_id: "",
   });
@@ -128,7 +124,7 @@ export default function Page() {
         {
           name: "initial_leveling_date",
           label: "Fecha de Nivelación",
-          type: "date",
+          component: "date",
           required: true,
         },
         {
@@ -167,7 +163,23 @@ export default function Page() {
     };
 
     await createStudent(studentData);
-    setShowForm(false);
+    if (snackbarMessage) {
+      setShowForm(false);
+      setStep1Values({
+        first_name: "",
+        last_name: "",
+        email: "",
+        company_id: "",
+        cost_center_id: "", 
+        sector_id: "",
+        sid: "",
+      });
+      setStep2Values({
+        initial_leveling_date: moment(),
+        language_id: "",
+        module_id: "",  
+      });
+    }
   };
   useEffect(() => {
     setToolbarButtonAction({

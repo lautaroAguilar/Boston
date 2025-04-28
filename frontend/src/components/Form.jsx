@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-
+import LocalizationWrapper from "./LocalizationWrapper";
 export default function MyForm({
   fields,
   values = {},
@@ -54,11 +54,17 @@ export default function MyForm({
                         multiple={field.multiple ?? false}
                         renderValue={(selected) => {
                           if (field.multiple) {
-                            return selected.map(id => 
-                              field.options.find(opt => opt.id === id)?.label
-                            ).join(", ");
+                            return selected
+                              .map(
+                                (id) =>
+                                  field.options.find((opt) => opt.id === id)
+                                    ?.label
+                              )
+                              .join(", ");
                           }
-                          return field.options.find(opt => opt.id === selected)?.label;
+                          return field.options.find(
+                            (opt) => opt.id === selected
+                          )?.label;
                         }}
                       >
                         {field.options?.map((opt, i) => (
@@ -74,23 +80,19 @@ export default function MyForm({
                   );
                 case "date":
                   return (
-                    <DatePicker
-                      label={field.label}
-                      value={values[field.name] ?? null}
-                      defaultValue={""}
-                      onChange={(newValue) =>
-                        onChange(
-                          field.name,
-                          newValue ? newValue.toString() : ""
-                        )
-                      }
-                      slotProps={{
-                        textField: {
-                          error: Boolean(errors[field.name]),
-                          helperText: errors[field.name] ?? "",
-                        },
-                      }}
-                    />
+                    <LocalizationWrapper>
+                      <DatePicker
+                        value={values[field.name] ?? null}
+                        onChange={(newValue) => onChange(field.name, newValue)}
+                        format="DD/MM/YYYY"
+                        slotProps={{
+                          textField: {
+                            error: Boolean(errors[field.name]),
+                            helperText: errors[field.name] ?? "",
+                          },
+                        }}
+                      />
+                    </LocalizationWrapper>
                   );
                 default:
                   return (
