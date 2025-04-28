@@ -8,6 +8,7 @@ export const StudentProvider = ({ children }) => {
   const { setSnackbarErrorMessage, setSnackbarMessage, selectedCompany } =
     useDashboard();
   const [students, setStudents] = useState([]);
+  const [student, setStudent] = useState(null);
   const [updated, setUpdated] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -59,10 +60,34 @@ export const StudentProvider = ({ children }) => {
       console.log("Error de red al buscar estudiantes:", error);
     }
   };
+  const fetchStudentById = async (id) => {
+    try {
+      const res = await fetch(`${CONFIG.API_URL}/students/${id}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSnackbarErrorMessage(data.message);
+      }
+      setSnackbarMessage("Estudiante encontrado correctamente");
+      setStudent(data);
+    } catch (error) {
+      console.log("Error de red al buscar estudiante por ID:", error);
+    }
+  };
 
   return (
     <StudentContext.Provider
-      value={{ students, errorMessage, updated, createStudent, fetchStudents }}
+      value={{
+        students,
+        errorMessage,
+        updated,
+        student,
+        createStudent,
+        fetchStudents,
+        fetchStudentById,
+      }}
     >
       {children}
     </StudentContext.Provider>

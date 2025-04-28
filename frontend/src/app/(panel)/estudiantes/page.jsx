@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import FormStepper from "@/components/Stepper";
 import { Modal, Paper, Typography, Stack, useMediaQuery } from "@mui/material";
-import { SchoolRounded } from "@mui/icons-material";
+import { SchoolRounded, Edit, Delete, Visibility } from "@mui/icons-material";
 import { useDashboard } from "@/contexts/dashboard";
 import { useStudent } from "@/contexts/students";
 import { useCompany } from "@/contexts/companies";
@@ -10,40 +10,11 @@ import { DataGrid } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import moment from "moment";
-
-/* COLUMNAS PARA EL DATAGRID DE ESTUDIANTES */
-const studentColumns = [
-  { field: "student_id", headerName: "ID", minWidth: 50 },
-  { field: "first_name", headerName: "Nombre", minWidth: 150, flex: 1 },
-  { field: "last_name", headerName: "Apellido", minWidth: 150, flex: 1 },
-  {
-    field: "module",
-    headerName: "Módulo actual",
-    minWidth: 150,
-    flex: 1,
-    renderCell: (params) =>
-      params?.row?.current_module_name || "Sin módulo asignado",
-  },
-  {
-    field: "languages",
-    headerName: "Idioma",
-    minWidth: 150,
-    flex: 1,
-    renderCell: (params) =>
-      params?.row?.current_language_name || "Sin idioma asignado",
-  },
-  { field: "company_name", headerName: "Empresa", minWidth: 150, flex: 1 },
-  {
-    field: "cost_center_name",
-    headerName: "Centro de Costo",
-    minWidth: 150,
-    flex: 1,
-  },
-  { field: "sector_name", headerName: "Sector", minWidth: 150, flex: 1 },
-  { field: "sid", headerName: "SID", minWidth: 150, flex: 1 },
-];
+import OptionsButton from "@/components/OptionsButton";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
+  const router = useRouter();
   const theme = createTheme(esES);
   const { fetchCostCenters, fetchSectors, sectors, costCenters } = useCompany();
   const {
@@ -70,12 +41,83 @@ export default function Page() {
     sector_id: "",
     sid: "",
   });
-
   const [step2Values, setStep2Values] = useState({
     initial_leveling_date: moment(),
     language_id: "",
     module_id: "",
   });
+
+  /* COLUMNAS PARA EL DATAGRID DE ESTUDIANTES */
+  const studentColumns = [
+    { field: "student_id", headerName: "ID", minWidth: 50 },
+    { field: "first_name", headerName: "Nombre", minWidth: 150, flex: 1 },
+    { field: "last_name", headerName: "Apellido", minWidth: 150, flex: 1 },
+    {
+      field: "module",
+      headerName: "Módulo actual",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params) =>
+        params?.row?.current_module_name || "Sin módulo asignado",
+    },
+    {
+      field: "languages",
+      headerName: "Idioma",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params) =>
+        params?.row?.current_language_name || "Sin idioma asignado",
+    },
+    { field: "company_name", headerName: "Empresa", minWidth: 150, flex: 1 },
+    {
+      field: "cost_center_name",
+      headerName: "Centro de Costo",
+      minWidth: 150,
+      flex: 1,
+    },
+    { field: "sector_name", headerName: "Sector", minWidth: 150, flex: 1 },
+    { field: "sid", headerName: "SID", minWidth: 150, flex: 1 },
+    {
+      field: "actions",
+      headerName: "",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => {
+        const handleView = (row) => {
+          router.push(`/estudiantes/${row.student_id}`);
+          // Implementar lógica para ver detalles
+        };
+
+        const handleEdit = (row) => {
+          // Falta implementar lógica para editar
+        };
+
+        const handleDelete = (row) => {
+          // Falta implementar lógica para eliminar
+        };
+
+        const options = [
+          {
+            label: "Ir a detalle",
+            onClick: handleView,
+          },
+          /* { 
+          label: "Editar", 
+          icon: <Edit fontSize="small" />, 
+          onClick: handleEdit 
+        },
+        { 
+          label: "Eliminar", 
+          icon: <Delete fontSize="small" />, 
+          onClick: handleDelete 
+        }, */
+        ];
+
+        return <OptionsButton options={options} row={params.row} />;
+      },
+    },
+  ];
 
   function handleShowForm() {
     setShowForm(true);
@@ -170,14 +212,14 @@ export default function Page() {
         last_name: "",
         email: "",
         company_id: "",
-        cost_center_id: "", 
+        cost_center_id: "",
         sector_id: "",
         sid: "",
       });
       setStep2Values({
         initial_leveling_date: moment(),
         language_id: "",
-        module_id: "",  
+        module_id: "",
       });
     }
   };
