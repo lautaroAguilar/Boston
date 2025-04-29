@@ -295,7 +295,8 @@ model Attendance {
   class     Class     @relation(fields: [classId], references: [id])
   studentId Int
   student   students  @relation(fields: [studentId], references: [id])
-  status    String    @db.VarChar(20) // present, absent, late
+  status    String    @db.VarChar(20) // present, Without notice, In advance, Business trip, Student vacation, National holiday
+  /* agregar el tiempo asistido */
   date      DateTime  @db.Date
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
