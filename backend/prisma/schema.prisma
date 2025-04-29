@@ -345,7 +345,7 @@ model CourseEnrollment {
   module          modules   @relation(fields: [moduleId], references: [id])
   attendance      Float     // Porcentaje de asistencia
   averageScore    Float     // Promedio de exámenes
-  status          String    @db.VarChar(20) // active, completed, dropped
+  status          String    @db.VarChar(20) // activo, completado, abandonado
   startDate       DateTime  @db.Date
   endDate         DateTime? @db.Date
   observations    String?   @db.Text

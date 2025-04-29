@@ -59,10 +59,52 @@ class GroupModel {
       // Insertar los estudiantes asociados al grupo
       if (students && students.length > 0) {
         for (const studentId of students) {
+          // 1. Añadir a GroupStudent
           await connection.query(
-            `INSERT INTO GroupStudent (groupId, studentId, statusId, updatedAt)
-             VALUES (?, ?, ?, NOW())`,
+            `INSERT INTO GroupStudent (groupId, studentId, statusId, createdAt, updatedAt)
+             VALUES (?, ?, ?, NOW(), NOW())`,
             [groupId, studentId, defaultStudentStatusId]
+          )
+          
+          // 2. Crear registro en CourseEnrollment
+          await connection.query(
+            `INSERT INTO CourseEnrollment (
+              studentId, groupId, languageId, moduleId,
+              attendance, averageScore, status,
+              startDate, endDate, observations,
+              createdAt, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NULL, NULL, NOW(), NOW())`,
+            [
+              studentId,
+              groupId,
+              groupInfo.languageId,
+              groupInfo.moduleId,
+              0, // attendance inicial
+              0, // averageScore inicial
+              'active' // status
+            ]
+          )
+          
+          // 3. Actualizar el progreso del estudiante
+          // Primero desactivamos cualquier progreso actual
+          await connection.query(
+            `UPDATE student_progress 
+             SET is_current = 0 
+             WHERE student_id = ? AND language_id = ? AND is_current = 1`,
+            [studentId, groupInfo.languageId]
+          )
+          
+          // Luego creamos el nuevo registro de progreso
+          await connection.query(
+            `INSERT INTO student_progress (
+              student_id, language_id, module_id, 
+              start_date, is_current
+            ) VALUES (?, ?, ?, NOW(), 1)`,
+            [
+              studentId,
+              groupInfo.languageId,
+              groupInfo.moduleId
+            ]
           )
         }
       }
@@ -361,13 +403,87 @@ class GroupModel {
       }
       const defaultStudentStatusId = defaultStudentStatus[0].id
       
+      // Obtener información del grupo para crear CourseEnrollment
+      const [groupInfo] = await connection.query(
+        `SELECT languageId, moduleId, companyId FROM \`Group\` WHERE id = ?`,
+        [groupId]
+      )
+      
+      if (!groupInfo || groupInfo.length === 0) {
+        throw new Error('No se encontró información del grupo')
+      }
+      
       // Agregar estudiantes al grupo
       for (const studentId of studentIds) {
+        // Verificar si el estudiante ya está en el grupo
+        const [existingStudent] = await connection.query(
+          `SELECT id FROM GroupStudent WHERE groupId = ? AND studentId = ?`,
+          [groupId, studentId]
+        )
+        
+        if (existingStudent && existingStudent.length > 0) {
+          console.log(`El estudiante ${studentId} ya está asignado al grupo ${groupId}. Se omitirá.`)
+          continue
+        }
+        
+        // 1. Añadir a GroupStudent
         await connection.query(
-          `INSERT INTO GroupStudent (groupId, studentId, statusId)
-           VALUES (?, ?, ?)`,
+          `INSERT INTO GroupStudent (groupId, studentId, statusId, createdAt, updatedAt)
+           VALUES (?, ?, ?, NOW(), NOW())`,
           [groupId, studentId, defaultStudentStatusId]
         )
+        
+        // 2. Verificar si ya existe un CourseEnrollment activo para este estudiante y grupo
+        const [existingEnrollment] = await connection.query(
+          `SELECT id FROM CourseEnrollment 
+           WHERE studentId = ? AND groupId = ? AND status = 'active'`,
+          [studentId, groupId]
+        )
+        
+        if (existingEnrollment && existingEnrollment.length > 0) {
+          console.log(`Ya existe una inscripción activa para el estudiante ${studentId} en el grupo ${groupId}.`)
+        } else {
+          // Crear registro en CourseEnrollment
+          await connection.query(
+            `INSERT INTO CourseEnrollment (
+              studentId, groupId, languageId, moduleId,
+              attendance, averageScore, status,
+              startDate, endDate, observations,
+              createdAt, updatedAt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NULL, NULL, NOW(), NOW())`,
+            [
+              studentId,
+              groupId,
+              groupInfo[0].languageId,
+              groupInfo[0].moduleId,
+              0, // attendance inicial
+              0, // averageScore inicial
+              'active' // status
+            ]
+          )
+          
+          // 3. Actualizar el progreso del estudiante
+          // Primero desactivamos cualquier progreso actual
+          await connection.query(
+            `UPDATE student_progress 
+             SET is_current = 0 
+             WHERE student_id = ? AND language_id = ? AND is_current = 1`,
+            [studentId, groupInfo[0].languageId]
+          )
+          
+          // Luego creamos el nuevo registro de progreso
+          await connection.query(
+            `INSERT INTO student_progress (
+              student_id, language_id, module_id, 
+              start_date, is_current
+            ) VALUES (?, ?, ?, NOW(), 1)`,
+            [
+              studentId,
+              groupInfo[0].languageId,
+              groupInfo[0].moduleId
+            ]
+          )
+        }
       }
       
       // Obtener el grupo actualizado
@@ -390,6 +506,24 @@ class GroupModel {
     try {
       await connection.beginTransaction()
       
+      // Actualizar el estado en CourseEnrollment a 'dropped' en lugar de eliminar
+      await connection.query(
+        `UPDATE CourseEnrollment 
+         SET status = 'dropped', endDate = NOW(), updatedAt = NOW() 
+         WHERE groupId = ? AND studentId = ? AND status = 'active'`,
+        [groupId, studentId]
+      )
+      
+      // Actualizar student_progress si existe un registro activo
+      await connection.query(
+        `UPDATE student_progress 
+         SET is_current = 0, end_date = NOW() 
+         WHERE student_id = ? AND is_current = 1 AND 
+         language_id = (SELECT languageId FROM \`Group\` WHERE id = ?)`,
+        [studentId, groupId]
+      )
+      
+      // Eliminar el registro de GroupStudent
       const [result] = await connection.query(
         `DELETE FROM GroupStudent 
          WHERE groupId = ? AND studentId = ?`,
