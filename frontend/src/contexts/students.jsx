@@ -261,7 +261,6 @@ export const StudentProvider = ({ children }) => {
         updateStudent,
         deleteStudent,
         fetchEnrollments,
-        createEnrollment,
         updateEnrollment,
         completeCourse
       }}
