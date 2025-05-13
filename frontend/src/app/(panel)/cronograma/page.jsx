@@ -38,6 +38,8 @@ import moment from "moment";
 import "moment/locale/es";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import LocalizationWrapper from "@/components/LocalizationWrapper";
+import OptionsButton from "@/components/OptionsButton";
+import { useRouter } from "next/navigation";
 
 // Configurar momento para usar español
 moment.locale("es");
@@ -70,6 +72,7 @@ function TabPanel(props) {
 }
 
 export default function Page() {
+  const router = useRouter();
   const theme = createTheme(esES);
   const isMobile = useMediaQuery("(max-width:600px)");
   const {
@@ -222,6 +225,26 @@ export default function Page() {
         </Box>
       ),
     },
+    {
+      field: "actions",
+      headerName: "",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => {
+        const handleView = (row) => {
+          router.push(`/cronograma/${row.id}?groupId=${row.group.id}`);
+          // Implementar lógica para ver detalles
+        };
+        const options = [
+          {
+            label: "Ver detalle",
+            onClick: handleView,
+          },
+        ];
+        return <OptionsButton options={options} row={params.row} />;
+      },
+    },
   ];
 
   // Columnas para la pestaña de clases
@@ -276,6 +299,26 @@ export default function Page() {
       headerName: "Fecha",
       flex: 1,
       valueFormatter: (params) => formatDate(params),
+    },
+    {
+      field: "actions",
+      headerName: "",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => {
+        const handleView = (row) => {
+          router.push(`/cronograma/${row.id}?groupId=${row.group.id}`);
+          // Implementar lógica para ver detalles
+        };
+        const options = [
+          {
+            label: "Ver detalle",
+            onClick: handleView,
+          },
+        ];
+        return <OptionsButton options={options} row={params.row} />;
+      },
     },
   ];
 

@@ -57,7 +57,7 @@ export default function page() {
       router.push("/inicio");
       return true;
     } catch (err) {
-      setErrorMessage(err.message);
+      setErrorMessage("Hubo un error al iniciar sesión");
       console.error("Error al loguear: ", err);
     }
   };

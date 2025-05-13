@@ -20,6 +20,7 @@ import {
 import { useCompany } from "@/contexts/companies";
 import { useDashboard } from "@/contexts/dashboard";
 import FormStepper from "@/components/Stepper";
+import OptionsButton from "@/components/OptionsButton";
 import {
   companySchema,
   contactSchema,
@@ -27,12 +28,13 @@ import {
   sectorSchema,
 } from "../../../../schemas/companies";
 import CONFIG from "../../../../config/api";
-
+import { useRouter } from "next/navigation";
 /**
  * ExpandableCell componente que permite expandir el campo si el texto es demasiado.
  *
  * @param {object} value - texto a renderizar obtenido desde la DDBB
  */
+
 function ExpandableCell({ value }) {
   const [expanded, setExpanded] = React.useState(false);
   return (
@@ -54,68 +56,9 @@ function ExpandableCell({ value }) {
     </Stack>
   );
 }
-/* COLUMNAS PARA EL DATAGRID */
-const columns = [
-  {
-    field: "id",
-    headerName: "ID",
-    minWidth: 150,
-    renderCell: (params) => <ExpandableCell {...params} />,
-  },
-  {
-    field: "name",
-    headerName: "Nombre",
-    minWidth: 150,
-    flex: 1,
-    renderCell: (params) => (
-      <Link
-        href={`/empresas/${params.row.id}`}
-        style={{
-          textDecoration: "none",
-          color: "inherit",
-          textTransform: "uppercase",
-        }}
-      >
-        {params.value}
-      </Link>
-    ),
-  },
-  {
-    field: "business_name",
-    headerName: "Razón social",
-    minWidth: 150,
-    flex: 1,
-  },
-  { field: "cuit", headerName: "CUIT", minWidth: 150, flex: 1 },
-  {
-    field: "costCenters",
-    headerName: "Centros de costo",
-    minWidth: 150,
-    flex: 1,
-    renderCell: (params) => {
-      const value =
-        params.value?.success === true && params.value?.data?.length === 0
-          ? params.value.message
-          : params.value?.map((cc) => `- ${cc.cost_center_name}`).join("\n");
 
-      return <ExpandableCell value={value} />;
-    },
-  },
-  {
-    field: "sectors",
-    headerName: "Sectores",
-    minWidth: 150,
-    flex: 1,
-    renderCell: (params) => {
-      const value =
-        params.value?.success === true && params.value?.data?.length === 0
-          ? params.value.message
-          : params.value?.map((s) => `- ${s.sector_name}`).join("\n");
-      return <ExpandableCell value={value} />;
-    },
-  },
-];
 export default function Page() {
+  const router = useRouter();
   const {
     companyCreated,
     setCompanyCreated,
@@ -279,6 +222,98 @@ export default function Page() {
   useEffect(() => {
     fetchCompaniesInfo();
   }, [companyCreated]);
+
+  /* COLUMNAS PARA EL DATAGRID */
+  const columns = [
+    {
+      field: "id",
+      headerName: "ID",
+      minWidth: 150,
+      renderCell: (params) => <ExpandableCell {...params} />,
+    },
+    {
+      field: "name",
+      headerName: "Nombre",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params) => (
+        <Link
+          href={`/empresas/${params.row.id}`}
+          style={{
+            textDecoration: "none",
+            color: "inherit",
+            textTransform: "uppercase",
+          }}
+        >
+          {params.value}
+        </Link>
+      ),
+    },
+    {
+      field: "business_name",
+      headerName: "Razón social",
+      minWidth: 150,
+      flex: 1,
+    },
+    { field: "cuit", headerName: "CUIT", minWidth: 150, flex: 1 },
+    {
+      field: "costCenters",
+      headerName: "Centros de costo",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params) => {
+        const value =
+          params.value?.success === true && params.value?.data?.length === 0
+            ? params.value.message
+            : params.value?.map((cc) => `- ${cc.cost_center_name}`).join("\n");
+
+        return <ExpandableCell value={value} />;
+      },
+    },
+    {
+      field: "sectors",
+      headerName: "Sectores",
+      minWidth: 150,
+      flex: 1,
+      renderCell: (params) => {
+        const value =
+          params.value?.success === true && params.value?.data?.length === 0
+            ? params.value.message
+            : params.value?.map((s) => `- ${s.sector_name}`).join("\n");
+        return <ExpandableCell value={value} />;
+      },
+    },
+    {
+      field: "actions",
+      headerName: "",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => {
+        const handleView = (row) => {
+          router.push(`/empresas/${row.id}`);
+          // Implementar lógica para ver detalles
+        };
+        const options = [
+          {
+            label: "Ver detalle",
+            onClick: handleView,
+          },
+          /* { 
+        label: "Editar", 
+        icon: <Edit fontSize="small" />, 
+        onClick: handleEdit 
+      },
+      { 
+        label: "Eliminar", 
+        icon: <Delete fontSize="small" />, 
+        onClick: handleDelete 
+      }, */
+        ];
+        return <OptionsButton options={options} row={params.row} />;
+      },
+    },
+  ];
   return (
     <Stack
       sx={{
