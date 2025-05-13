@@ -1,68 +1,6 @@
 const { pool } = require('../../config/database.js')
 
 class CourseEnrollmentModel {
-  static async create(enrollmentData) {
-    const connection = await pool.getConnection()
-
-    try {
-      await connection.beginTransaction()
-
-      const [enrollmentResult] = await connection.query(
-        `INSERT INTO CourseEnrollment (
-          studentId, groupId, languageId, moduleId, 
-          attendance, averageScore, status, 
-          startDate, endDate, observations
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          enrollmentData.studentId,
-          enrollmentData.groupId,
-          enrollmentData.languageId,
-          enrollmentData.moduleId,
-          enrollmentData.attendance || 0,
-          enrollmentData.averageScore || 0,
-          enrollmentData.status || 'active',
-          enrollmentData.startDate || new Date(),
-          enrollmentData.endDate || null,
-          enrollmentData.observations || null
-        ]
-      )
-      
-      // Si se está iniciando un nuevo curso, actualizamos también student_progress
-      if (enrollmentData.status === 'active') {
-        // Primero desactivamos cualquier progreso actual para este estudiante e idioma
-        await connection.query(
-          `UPDATE student_progress 
-           SET is_current = 0 
-           WHERE student_id = ? AND language_id = ? AND is_current = 1`,
-          [enrollmentData.studentId, enrollmentData.languageId]
-        )
-        
-        // Luego creamos el nuevo registro de progreso
-        await connection.query(
-          `INSERT INTO student_progress (
-            student_id, language_id, module_id, 
-            start_date, is_current
-          ) VALUES (?, ?, ?, ?, 1)`,
-          [
-            enrollmentData.studentId,
-            enrollmentData.languageId,
-            enrollmentData.moduleId,
-            enrollmentData.startDate || new Date()
-          ]
-        )
-      }
-
-      await connection.commit()
-      return { id: enrollmentResult.insertId, ...enrollmentData }
-    } catch (err) {
-      await connection.rollback()
-      console.error('Error al crear la inscripción', err)
-      throw err
-    } finally {
-      connection.release()
-    }
-  }
-
   static async getByStudentId(studentId) {
     const connection = await pool.getConnection()
     try {

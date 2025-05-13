@@ -131,38 +131,6 @@ class StudentsController {
     }
   }
   
-  createEnrollment = async (req, res) => {
-    try {
-      const { id } = req.params
-      const enrollmentData = {
-        ...req.body,
-        studentId: parseInt(id)
-      }
-      
-      // Validar datos de inscripción
-      const result = validateCourseEnrollment(enrollmentData)
-      if (!result.success) {
-        console.error('Error de validación al crear inscripción:', {
-          issues: result.error.issues,
-          body: req.body
-        })
-        return res.status(400).json(result.error.issues)
-      }
-      
-      const newEnrollment = await this.courseEnrollmentModel.create(result.data)
-      
-      return res.status(201).json({ 
-        data: newEnrollment, 
-        message: 'Inscripción creada correctamente' 
-      })
-    } catch (error) {
-      return res.status(500).json({
-        error: 'Error al crear inscripción',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      })
-    }
-  }
-  
   updateEnrollment = async (req, res) => {
     try {
       const { id, enrollmentId } = req.params

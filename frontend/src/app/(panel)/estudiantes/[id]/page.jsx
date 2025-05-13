@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Box, Paper, Typography, Divider, Stack, Button } from "@mui/material";
+import { Box, Paper, Typography, Divider, Stack, Button, Switch, FormControlLabel } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { FileDownloadOutlined } from "@mui/icons-material";
 import { useStudent } from "@/contexts/students";
@@ -18,7 +18,17 @@ export default function StudentDetail() {
     setOpenSnackbar,
     setToolbarButtonAction,
   } = useDashboard();
-  const [attendanceRate, setAttendanceRate] = useState(80);
+  const [enrollments, setEnrollments] = useState([]);
+  
+  // Estado local para manejar los cambios visuales de los certificados
+  const [certificateStates, setCertificateStates] = useState({});
+  
+  const handleCertificateChange = (enrollmentId, newValue) => {
+    setCertificateStates(prev => ({
+      ...prev,
+      [enrollmentId]: newValue
+    }));
+  };
 
   const handleExportExcel = () => {
     console.log("Exportando a Excel...");
@@ -29,6 +39,62 @@ export default function StudentDetail() {
     console.log("Agregando nuevo registro...");
     // Implementar lógica para agregar un nuevo registro
   };
+
+  const columns = [
+    {
+      field: "startDate",
+      headerName: "Fecha de inicio",
+      flex: 1,
+      renderCell: (params) => formatDate(params.row.startDate),
+    },
+    { field: "language_name", headerName: "Idioma", flex: 1 },
+    { field: "module_name", headerName: "Módulo", flex: 1 },
+    /* { field: "last_achieved", headerName: "Último alcanzado", flex: 1 }, */
+    {
+      field: "teacher_name",
+      headerName: "Docente",
+      flex: 1,
+      renderCell: (params) => {
+        if (params.row?.teacher_first_name && params.row?.teacher_last_name) {
+          return `${params.row?.teacher_first_name} ${params.row?.teacher_last_name}`;
+        }
+        return "Sin docente";
+      },
+    },
+    { 
+      field: "certificate_sent", 
+      headerName: "Certificado enviado", 
+      flex: 1,
+      renderCell: (params) => {
+        // Usar el estado local si existe, de lo contrario usar el valor original
+        const isChecked = certificateStates.hasOwnProperty(params.row.id) 
+          ? certificateStates[params.row.id] 
+          : Boolean(params.row.certificate_sent);
+        
+        return (
+          <FormControlLabel
+            control={
+              <Switch 
+                checked={isChecked} 
+                onChange={(e) => handleCertificateChange(params.row.id, e.target.checked)}
+                color="primary"
+              />
+            }
+            label={isChecked ? "Sí" : "No"}
+          />
+        );
+      }
+    },
+    {
+      field: "status",
+      headerName: "Estado",
+      flex: 1,
+      renderCell: (params) => {
+        return params.row.status === "active" ? "Activo" : "Inactivo";
+      },
+    },
+  ];
+
   useEffect(() => {
     if (snackbarMessage || snackbarErrorMessage || snackbarWarningMessage) {
       setOpenSnackbar(true);
@@ -40,6 +106,15 @@ export default function StudentDetail() {
   useEffect(() => {
     fetchStudentById(id);
   }, []);
+  useEffect(() => {
+    if (student) {
+      // Filtrar solo el enrollment activo
+      const activeEnrollment = student.enrollments?.find(
+        (e) => e.status === "active"
+      );
+      setEnrollments(activeEnrollment ? [activeEnrollment] : []);
+    }
+  }, [student]);
   return (
     <Box sx={{ p: 1 }}>
       <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
@@ -60,7 +135,11 @@ export default function StudentDetail() {
               Porcentaje de asistencia:
             </Typography>
             <Typography variant="h6" component="span">
-              {attendanceRate}%
+              {
+                student?.enrollments?.find((e) => e.status === "active")
+                  ?.attendance
+              }
+              %
             </Typography>
           </Box>
 
@@ -86,8 +165,8 @@ export default function StudentDetail() {
         <Divider sx={{ my: 2 }} />
 
         <DataGrid
-          rows={[]}
-          columns={[]}
+          rows={enrollments}
+          columns={columns}
           initialState={{
             pagination: {
               paginationModel: { page: 0, pageSize: 10 },
