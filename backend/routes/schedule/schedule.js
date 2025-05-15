@@ -7,11 +7,12 @@ const scheduleController = new ScheduleController({
   scheduleModel: ScheduleModel
 })
 
-// Crear cronograma para un grupo
-scheduleRouter.post('/:groupId', authenticateToken, scheduleController.create)
+/* CRONOGRAMAS */
 
 // Obtener todos los cronogramas
 scheduleRouter.get('/', authenticateToken, scheduleController.getAll)
+
+/* CLASES */
 
 // Obtener clases por fecha y compañía
 scheduleRouter.get(
@@ -26,6 +27,18 @@ scheduleRouter.get(
   authenticateToken,
   scheduleController.getClassesByGroup
 )
+
+// Actualizar una clase existente
+scheduleRouter.put(
+  '/classes/:classId',
+  authenticateToken,
+  scheduleController.updateClass
+)
+
+/* RUTAS CON PARÁMETROS GENÉRICOS */
+
+// Crear cronograma para un grupo
+scheduleRouter.post('/:groupId', authenticateToken, scheduleController.create)
 
 // Obtener cronograma de un grupo
 scheduleRouter.get(

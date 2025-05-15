@@ -2,7 +2,10 @@ const {
   validateSchedule,
   validatePartialSchedule
 } = require('../../schemas/schedule/schedule')
-const { validateClass } = require('../../schemas/class/class')
+const {
+  validateClass,
+  validatePartialClass
+} = require('../../schemas/class/class')
 
 class ScheduleController {
   constructor({ scheduleModel }) {
@@ -41,7 +44,7 @@ class ScheduleController {
       if (companyId) {
         filters.companyId = companyId
       }
-      
+
       const schedules = await this.scheduleModel.getAll(filters)
       res.json({
         message: 'Cronogramas obtenidos exitosamente',
@@ -158,7 +161,7 @@ class ScheduleController {
   getClassesByDateAndCompany = async (req, res) => {
     try {
       const { date, companyId } = req.query
-      
+
       if (!date || !companyId) {
         return res.status(400).json({
           message: 'Seleccione una empresa por favor'
@@ -175,7 +178,10 @@ class ScheduleController {
         data: classes
       })
     } catch (error) {
-      console.error('Error en ScheduleController.getClassesByDateAndCompany:', error)
+      console.error(
+        'Error en ScheduleController.getClassesByDateAndCompany:',
+        error
+      )
       res.status(500).json({
         message: 'Error al obtener las clases',
         details:
@@ -186,7 +192,9 @@ class ScheduleController {
   getClassesByGroup = async (req, res) => {
     try {
       const { groupId } = req.params
-      const classes = await this.scheduleModel.getClassesByGroup(parseInt(groupId))
+      const classes = await this.scheduleModel.getClassesByGroup(
+        parseInt(groupId)
+      )
       res.json({
         message: 'Clases obtenidas exitosamente',
         data: classes
@@ -199,7 +207,31 @@ class ScheduleController {
           process.env.NODE_ENV === 'development' ? error.message : undefined
       })
     }
-  } 
+  }
+
+  updateClass = async (req, res) => {
+    try {
+      const { classId } = req.params
+      const updateData = req.body
+      const validatedData = validatePartialClass(updateData)
+      if (!validatedData.success) {
+        return res.status(400).json({ message: 'Datos inválidos', errors: validatedData.error.issues })
+      }
+
+      if (!classId || Object.keys(validatedData.data).length === 0) {
+        return res.status(400).json({ message: 'Datos insuficientes para actualizar la clase' })
+      }
+      await this.scheduleModel.updateClass(parseInt(classId), validatedData.data)
+      res.json({ message: 'Clase actualizada exitosamente' })
+    } catch (error) {
+      console.error('Error en ScheduleController.updateClass:', error)
+      res.status(500).json({
+        message: 'Error al actualizar la clase',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
+    }
+  }
 }
 
 module.exports = { ScheduleController }

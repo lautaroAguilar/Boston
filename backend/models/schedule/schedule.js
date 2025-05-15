@@ -1,4 +1,6 @@
 const { pool } = require('../../config/database.js')
+const { validateClass } = require('../../schemas/class/class');
+const { AttendanceModel } = require('../attendance/attendance');
 
 class ScheduleModel {
   static async generateClasses(groupId, scheduleData, teacherId) {
@@ -80,6 +82,16 @@ class ScheduleModel {
       
       // Insertamos las clases
       for (const classItem of classes) {
+        // Validar la clase con zod antes de insertar
+        const validated = validateClass({
+          date: classItem.date instanceof Date ? classItem.date.toISOString().slice(0, 10) : classItem.date,
+          startTime: classItem.startTime instanceof Date ? classItem.startTime.toTimeString().slice(0, 5) : classItem.startTime,
+          endTime: classItem.endTime instanceof Date ? classItem.endTime.toTimeString().slice(0, 5) : classItem.endTime,
+          // otros campos opcionales si los tienes
+        });
+        if (!validated.success) {
+          throw new Error('Clase generada inválida: ' + JSON.stringify(validated.error.issues));
+        }
         await connection.query(
           `INSERT INTO Class (
             groupId, teacherId, date, startTime, endTime, updatedAt
@@ -209,12 +221,18 @@ class ScheduleModel {
     const connection = await pool.getConnection()
     
     try {
+      // Validar que groupId sea un número válido
+      const parsedGroupId = parseInt(groupId);
+      if (isNaN(parsedGroupId)) {
+        throw new Error(`ID de grupo inválido: ${groupId}`);
+      }
+      
       const [schedules] = await connection.query(
         `SELECT s.*, g.name as groupName 
          FROM Schedule s
          JOIN \`Group\` g ON s.groupId = g.id
          WHERE s.groupId = ?`,
-        [parseInt(groupId)]
+        [parsedGroupId]
       )
       
       if (schedules.length === 0) {
@@ -234,7 +252,7 @@ class ScheduleModel {
         ...schedules[0],
         days,
         group: {
-          id: parseInt(groupId),
+          id: parsedGroupId,
           name: schedules[0].groupName
         }
       }
@@ -296,10 +314,20 @@ class ScheduleModel {
       
       // Insertamos las clases nuevas
       for (const classItem of classes) {
+        // Validar la clase con zod antes de insertar
+        const validated = validateClass({
+          date: classItem.date instanceof Date ? classItem.date.toISOString().slice(0, 10) : classItem.date,
+          startTime: classItem.startTime instanceof Date ? classItem.startTime.toTimeString().slice(0, 5) : classItem.startTime,
+          endTime: classItem.endTime instanceof Date ? classItem.endTime.toTimeString().slice(0, 5) : classItem.endTime,
+          // otros campos opcionales si los tienes
+        });
+        if (!validated.success) {
+          throw new Error('Clase generada inválida: ' + JSON.stringify(validated.error.issues));
+        }
         await connection.query(
           `INSERT INTO Class (
-            groupId, teacherId, date, startTime, endTime
-          ) VALUES (?, ?, ?, ?, ?)`,
+            groupId, teacherId, date, startTime, endTime, updatedAt
+          ) VALUES (?, ?, ?, ?, ?, NOW())`,
           [
             classItem.groupId,
             classItem.teacherId,
@@ -676,6 +704,144 @@ class ScheduleModel {
       throw error
     } finally {
       connection.release()
+    }
+  }
+
+  static async updateClass(classId, updateData) {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // Construir dinámicamente el SET de la consulta para actualizar la clase
+      const fields = [];
+      const values = [];
+
+      if (updateData.date) {
+        fields.push('date = ?');
+        values.push(new Date(updateData.date));
+      }
+      if (updateData.startTime) {
+        fields.push('startTime = ?');
+        values.push(new Date(updateData.startTime));
+      }
+      if (updateData.endTime) {
+        fields.push('endTime = ?');
+        values.push(new Date(updateData.endTime));
+      }
+      if (updateData.teacherAttendance !== undefined) {
+        fields.push('teacherAttendance = ?');
+        values.push(updateData.teacherAttendance);
+      }
+      if (updateData.activities !== undefined) {
+        fields.push('activities = ?');
+        values.push(updateData.activities);
+      }
+      if (updateData.observations !== undefined) {
+        fields.push('observations = ?');
+        values.push(updateData.observations);
+      }
+      if (updateData.content !== undefined) {
+        fields.push('content = ?');
+        values.push(updateData.content);
+      }
+
+      // Si hay campos para actualizar en la clase
+      if (fields.length > 0) {
+        fields.push('updatedAt = NOW()');
+
+        const sql = `UPDATE Class SET ${fields.join(', ')} WHERE id = ?`;
+        values.push(classId);
+
+        await connection.query(sql, values);
+      }
+
+      // Si se recibieron datos de asistencia de alumnos, procesarlos
+      if (updateData.attendances && Array.isArray(updateData.attendances) && updateData.attendances.length > 0) {
+        // Obtener la fecha de la clase si no se está actualizando
+        let classDate;
+        if (!updateData.date) {
+          const [classInfo] = await connection.query(
+            `SELECT date FROM Class WHERE id = ?`,
+            [classId]
+          );
+          if (classInfo && classInfo.length > 0) {
+            classDate = classInfo[0].date;
+          } else {
+            throw new Error('Clase no encontrada');
+          }
+        } else {
+          classDate = new Date(updateData.date);
+        }
+
+        for (const attendance of updateData.attendances) {
+          // Verificar que la asistencia tenga los campos necesarios
+          if (!attendance.studentId) {
+            continue; // Saltar este registro si no tiene studentId
+          }
+
+          // Buscar si ya existe un registro de asistencia para este alumno y esta clase
+          const [existingAttendance] = await connection.query(
+            `SELECT id FROM Attendance WHERE classId = ? AND studentId = ?`,
+            [classId, attendance.studentId]
+          );
+
+          if (existingAttendance && existingAttendance.length > 0) {
+            // Actualizar el registro existente
+            await connection.query(
+              `UPDATE Attendance 
+               SET status = ?, timeAttendance = ?, updatedAt = NOW() 
+               WHERE id = ?`,
+              [
+                attendance.status || 'absent',
+                attendance.timeAttendance || 0,
+                existingAttendance[0].id
+              ]
+            );
+          } else {
+            // Crear un nuevo registro
+            await connection.query(
+              `INSERT INTO Attendance (
+                classId, studentId, status, timeAttendance, date, createdAt, updatedAt
+              ) VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+              [
+                classId,
+                attendance.studentId,
+                attendance.status || 'absent',
+                attendance.timeAttendance || 0,
+                classDate
+              ]
+            );
+          }
+        }
+
+        // Obtener información del grupo para actualizar el porcentaje de asistencia
+        const [classInfo] = await connection.query(
+          `SELECT groupId FROM Class WHERE id = ?`,
+          [classId]
+        );
+
+        if (classInfo && classInfo.length > 0) {
+          // Actualizar porcentajes de asistencia para todos los alumnos con asistencias actualizadas
+          for (const attendance of updateData.attendances) {
+            if (attendance.studentId) {
+              await AttendanceModel.updateAttendancePercentage(
+                connection,
+                attendance.studentId,
+                classInfo[0].groupId
+              );
+            }
+          }
+        }
+      }
+
+      await connection.commit();
+      return true;
+    } catch (error) {
+      await connection.rollback();
+      console.error('Error en ScheduleModel.updateClass:', error);
+      throw error;
+    } finally {
+      connection.release();
     }
   }
 }

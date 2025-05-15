@@ -282,6 +282,10 @@ model Class {
   startTime   DateTime    @db.Time
   endTime     DateTime    @db.Time
   attendance  Attendance[]
+  teacherAttendance Boolean?
+  activities   String?   @db.Text
+  observations String?   @db.Text
+  content      String?   @db.Text
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -296,7 +300,7 @@ model Attendance {
   studentId Int
   student   students  @relation(fields: [studentId], references: [id])
   status    String    @db.VarChar(20) // present, Without notice, In advance, Business trip, Student vacation, National holiday
-  /* agregar el tiempo asistido */
+  timeAttendance  Int @default(0) // tiempo asistido en minutos
   date      DateTime  @db.Date
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
