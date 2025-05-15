@@ -84,6 +84,26 @@ export const GroupProvider = ({ children }) => {
     }
   };
 
+  /* OBTENER GRUPO POR ID */
+  const fetchGroupById = async (groupId) => {
+    try {
+      const response = await fetch(`${CONFIG.API_URL}/groups/${groupId}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setSnackbarErrorMessage(data.message);
+        return null;
+      }
+      return data.data;
+    } catch (error) {
+      console.log("Error al buscar grupo:", error);
+      setSnackbarErrorMessage("Error al obtener información del grupo");
+      return null;
+    }
+  };
+
   /* ACTUALIZAR GRUPO */
   async function updateGroup(dataToUpdate, groupId) {
     setFormErrors({});
@@ -152,6 +172,7 @@ export const GroupProvider = ({ children }) => {
         updated,
         handleSubmitGroup,
         fetchGroups,
+        fetchGroupById,
         updateGroup,
         deleteGroup,
       }}

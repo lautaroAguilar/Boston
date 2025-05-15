@@ -11,6 +11,7 @@ export const ScheduleProvider = ({ children }) => {
   const [scheduleCreated, setScheduleCreated] = useState(false);
   const [schedules, setSchedules] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [classesByGroupId, setClassesByGroupId] = useState([]);
 
   async function fetchSchedules(companyId) {
     try {
@@ -18,7 +19,7 @@ export const ScheduleProvider = ({ children }) => {
       if (companyId) {
         url += `?companyId=${companyId}`;
       }
-      
+
       const res = await fetch(url, {
         credentials: "include",
       });
@@ -59,13 +60,37 @@ export const ScheduleProvider = ({ children }) => {
       console.error("Error al obtener las clases:", error);
     }
   }
+  async function fetchClassesByGroupId(groupId) {
+    try {
+      const res = await fetch(
+        `${CONFIG.API_URL}/schedules/classes/${groupId}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.message);
+        return;
+      }
+
+      const data = await res.json();
+      setClassesByGroupId(data.data);
+      return data.data;
+    } catch (error) {
+      setSnackbarErrorMessage("Error al obtener las clases");
+      console.error("Error al obtener las clases:", error);
+    }
+  }
+
   async function createSchedule(groupId, scheduleData) {
     setFormErrors({});
     setErrorMessage("");
     try {
       const transformedData = {
-        startDate: scheduleData.startDate.format('YYYY-MM-DD'),
-        endDate: scheduleData.endDate.format('YYYY-MM-DD'),
+        startDate: scheduleData.startDate.format("YYYY-MM-DD"),
+        endDate: scheduleData.endDate.format("YYYY-MM-DD"),
         days: scheduleData.weekDays.map((dayId) => ({
           dayOfWeek: dayId,
           startTime: scheduleData.startTime,
@@ -176,6 +201,30 @@ export const ScheduleProvider = ({ children }) => {
       return null;
     }
   }
+  async function updateClass(classId, classData) {
+    try {
+      const res = await fetch(`${CONFIG.API_URL}/schedules/classes/${classId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(classData),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.message);
+        return null;
+      }
+
+      const data = await res.json();
+      setSnackbarMessage("Clase actualizada exitosamente");
+      return data;
+    } catch (error) {
+      setSnackbarErrorMessage("Error al actualizar la clase");
+      console.error("Error al actualizar la clase:", error);
+      return null;
+    }
+  }
 
   const value = {
     schedules,
@@ -187,9 +236,13 @@ export const ScheduleProvider = ({ children }) => {
     updateSchedule,
     fetchSchedules,
     fetchClassesByDateAndCompany,
+    fetchClassesByGroupId,
     errorMessage,
     classes,
     setClasses,
+    classesByGroupId,
+    setClassesByGroupId,
+    updateClass,
   };
 
   return (

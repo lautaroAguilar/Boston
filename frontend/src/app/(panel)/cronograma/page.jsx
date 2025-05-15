@@ -233,7 +233,7 @@ export default function Page() {
       filterable: false,
       renderCell: (params) => {
         const handleView = (row) => {
-          router.push(`/cronograma/${row.id}?groupId=${row.group.id}`);
+          router.push(`/cronograma/${row.group.id}`);
           // Implementar lógica para ver detalles
         };
         const options = [
@@ -308,7 +308,7 @@ export default function Page() {
       filterable: false,
       renderCell: (params) => {
         const handleView = (row) => {
-          router.push(`/cronograma/${row.id}?groupId=${row.group.id}`);
+          router.push(`/cronograma/${row.group.id}`);
           // Implementar lógica para ver detalles
         };
         const options = [
