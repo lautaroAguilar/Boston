@@ -10,7 +10,7 @@ const userAuthController = new UserAuthController({
 userAuthRouter.get('/me', authenticateToken, userAuthController.me)
 userAuthRouter.post('/register', userAuthController.register)
 userAuthRouter.post('/login', userAuthController.login)
-userAuthRouter.post('/logout', authenticateToken, userAuthController.logout)
+userAuthRouter.post('/logout', userAuthController.logout)
 userAuthRouter.post('/refresh', userAuthController.refreshToken)
 
 module.exports = { userAuthRouter }
