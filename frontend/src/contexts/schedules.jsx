@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState } from "react";
 import CONFIG from "../../config/api";
 import { useDashboard } from "./dashboard";
-
+import { useAuth } from "./auth";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 const ScheduleContext = createContext();
 
 export const ScheduleProvider = ({ children }) => {
+  const { refreshToken, logout } = useAuth();
   const { setSnackbarMessage, setSnackbarErrorMessage } = useDashboard();
   const [errorMessage, setErrorMessage] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -20,9 +22,14 @@ export const ScheduleProvider = ({ children }) => {
         url += `?companyId=${companyId}`;
       }
 
-      const res = await fetch(url, {
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(
+        url,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -39,11 +46,13 @@ export const ScheduleProvider = ({ children }) => {
   }
   async function fetchClassesByDateAndCompany(date, companyId) {
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/schedules/classes?date=${date}&companyId=${companyId}`,
         {
-          credentials: "include",
-        }
+          method: "GET",
+        },
+        refreshToken,
+        logout
       );
 
       if (!res.ok) {
@@ -62,11 +71,13 @@ export const ScheduleProvider = ({ children }) => {
   }
   async function fetchClassesByGroupId(groupId) {
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/schedules/classes/${groupId}`,
         {
-          credentials: "include",
-        }
+          method: "GET",
+        },
+        refreshToken,
+        logout
       );
 
       if (!res.ok) {
@@ -98,12 +109,16 @@ export const ScheduleProvider = ({ children }) => {
         })),
       };
 
-      const res = await fetch(`${CONFIG.API_URL}/schedules/${groupId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(transformedData),
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/schedules/${groupId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(transformedData),
+        },
+        refreshToken,
+        logout
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -135,9 +150,14 @@ export const ScheduleProvider = ({ children }) => {
 
   async function getScheduleByGroupId(groupId) {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/schedules/${groupId}`, {
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/schedules/${groupId}`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -168,12 +188,16 @@ export const ScheduleProvider = ({ children }) => {
         })),
       };
 
-      const res = await fetch(`${CONFIG.API_URL}/schedules/${groupId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(transformedData),
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/schedules/${groupId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(transformedData),
+        },
+        refreshToken,
+        logout
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -203,12 +227,16 @@ export const ScheduleProvider = ({ children }) => {
   }
   async function updateClass(classId, classData) {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/schedules/classes/${classId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(classData),
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/schedules/classes/${classId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(classData),
+          },
+        refreshToken,
+        logout
+      );
 
       if (!res.ok) {
         const errorData = await res.json();

@@ -2,12 +2,15 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import CONFIG from "../../config/api";
 import { useDashboard } from "./dashboard";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
+import { useAuth } from "./auth";
 
 const StudentContext = createContext();
 
 export const StudentProvider = ({ children }) => {
   const { setSnackbarErrorMessage, setSnackbarMessage, selectedCompany } =
     useDashboard();
+  const { refreshToken, logout } = useAuth();
   const [students, setStudents] = useState([]);
   const [student, setStudent] = useState(null);
   const [updated, setUpdated] = useState(false);
@@ -16,12 +19,16 @@ export const StudentProvider = ({ children }) => {
 
   const createStudent = async (studentData) => {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/students`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(studentData),
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/students`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(studentData),
+        },
+        refreshToken,
+        logout
+      );
       const data = await res.json();
 
       if (!res.ok) {
@@ -48,12 +55,11 @@ export const StudentProvider = ({ children }) => {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/students?companyId=${selectedCompany}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
+        { method: "GET" },
+        refreshToken,
+        logout
       );
       const data = await res.json();
       if (!res.ok) {
@@ -70,10 +76,12 @@ export const StudentProvider = ({ children }) => {
   const fetchStudentById = async (id) => {
     setLoading(true);
     try {
-      const res = await fetch(`${CONFIG.API_URL}/students/${id}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/students/${id}`,
+        { method: "GET" },
+        refreshToken,
+        logout
+      );
       const data = await res.json();
       if (!res.ok) {
         setSnackbarErrorMessage(data.message);
@@ -92,12 +100,16 @@ export const StudentProvider = ({ children }) => {
   const updateStudent = async (id, studentData) => {
     setLoading(true);
     try {
-      const res = await fetch(`${CONFIG.API_URL}/students/${id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(studentData),
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/students/${id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(studentData),
+        },
+        refreshToken,
+        logout
+      );
       const data = await res.json();
       if (!res.ok) {
         setSnackbarErrorMessage(data.message);
@@ -105,12 +117,12 @@ export const StudentProvider = ({ children }) => {
       }
       setSnackbarMessage("Estudiante actualizado correctamente");
       setUpdated((prev) => !prev);
-      
+
       // Actualizar el estudiante localmente si es el que estamos viendo actualmente
       if (student && student.student_id === parseInt(id)) {
         fetchStudentById(id);
       }
-      
+
       return data;
     } catch (error) {
       console.log("Error de red al actualizar estudiante:", error);
@@ -123,10 +135,12 @@ export const StudentProvider = ({ children }) => {
   const deleteStudent = async (id) => {
     setLoading(true);
     try {
-      const res = await fetch(`${CONFIG.API_URL}/students/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/students/${id}`,
+        { method: "DELETE" },
+        refreshToken,
+        logout
+      );
       const data = await res.json();
       if (!res.ok) {
         setSnackbarErrorMessage(data.message);
@@ -134,15 +148,15 @@ export const StudentProvider = ({ children }) => {
       }
       setSnackbarMessage("Estudiante eliminado correctamente");
       setUpdated((prev) => !prev);
-      
+
       // Actualizar la lista de estudiantes
-      setStudents(students.filter(s => s.student_id !== parseInt(id)));
-      
+      setStudents(students.filter((s) => s.student_id !== parseInt(id)));
+
       // Si el estudiante actual es el que se está eliminando, limpiar el estado
       if (student && student.student_id === parseInt(id)) {
         setStudent(null);
       }
-      
+
       return true;
     } catch (error) {
       console.log("Error de red al eliminar estudiante:", error);
@@ -156,16 +170,17 @@ export const StudentProvider = ({ children }) => {
   const fetchEnrollments = async (studentId) => {
     setLoading(true);
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/students/${studentId}/enrollments`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
+        { method: "GET" },
+        refreshToken,
+        logout
       );
       const data = await res.json();
       if (!res.ok) {
-        setSnackbarErrorMessage(data.message || "Error al obtener inscripciones");
+        setSnackbarErrorMessage(
+          data.message || "Error al obtener inscripciones"
+        );
         return [];
       }
       return data.data;
@@ -180,26 +195,29 @@ export const StudentProvider = ({ children }) => {
   const updateEnrollment = async (studentId, enrollmentId, enrollmentData) => {
     setLoading(true);
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/students/${studentId}/enrollments/${enrollmentId}`,
         {
           method: "PUT",
-          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(enrollmentData),
-        }
+        },
+        refreshToken,
+        logout
       );
       const data = await res.json();
       if (!res.ok) {
-        setSnackbarErrorMessage(data.message || "Error al actualizar inscripción");
+        setSnackbarErrorMessage(
+          data.message || "Error al actualizar inscripción"
+        );
         return null;
       }
-      
+
       setSnackbarMessage("Inscripción actualizada correctamente");
-      
+
       // Actualizar el estudiante para reflejar los cambios
       await fetchStudentById(studentId);
-      
+
       return data.data;
     } catch (error) {
       console.log("Error de red al actualizar inscripción:", error);
@@ -212,26 +230,29 @@ export const StudentProvider = ({ children }) => {
   const completeCourse = async (studentId, enrollmentId, data = {}) => {
     setLoading(true);
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/students/${studentId}/enrollments/${enrollmentId}/complete`,
         {
           method: "POST",
-          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-        }
+        },
+        refreshToken,
+        logout
       );
       const responseData = await res.json();
       if (!res.ok) {
-        setSnackbarErrorMessage(responseData.message || "Error al completar curso");
+        setSnackbarErrorMessage(
+          responseData.message || "Error al completar curso"
+        );
         return null;
       }
-      
+
       setSnackbarMessage("Curso completado correctamente");
-      
+
       // Actualizar el estudiante para reflejar los cambios
       await fetchStudentById(studentId);
-      
+
       return responseData.data;
     } catch (error) {
       console.log("Error de red al completar curso:", error);
@@ -262,7 +283,7 @@ export const StudentProvider = ({ children }) => {
         deleteStudent,
         fetchEnrollments,
         updateEnrollment,
-        completeCourse
+        completeCourse,
       }}
     >
       {children}

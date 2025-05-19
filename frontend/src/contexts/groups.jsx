@@ -2,10 +2,12 @@ import React, { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 import CONFIG from "../../config/api";
 import { useDashboard } from "./dashboard";
-
+import { useAuth } from "./auth";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 const GroupContext = createContext();
 
 export const GroupProvider = ({ children }) => {
+  const { refreshToken, logout } = useAuth();
   const { setSnackbarMessage, setSnackbarErrorMessage, setSnackbarWarningMessage } = useDashboard();
   const [errorMessage, setErrorMessage] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -19,11 +21,12 @@ export const GroupProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(`${CONFIG.API_URL}/groups`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/groups`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
           name: dataToSend.name,
           teacherId: Number(dataToSend.teacherId),
           languageId: Number(dataToSend.languageId),
@@ -32,7 +35,10 @@ export const GroupProvider = ({ children }) => {
           students: dataToSend.students,
           companyId: companyId,
         }),
-      });
+      },
+        refreshToken,
+        logout
+      );
       
       if (!res.ok) {
         const errorData = await res.json();
@@ -67,10 +73,14 @@ export const GroupProvider = ({ children }) => {
   /* OBTENER TODOS LOS GRUPOS */
   const fetchGroups = async (selectedCompany) => {
     try {
-      const response = await fetch(`${CONFIG.API_URL}/groups?companyId=${selectedCompany}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${CONFIG.API_URL}/groups?companyId=${selectedCompany}`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
       const data = await response.json();
       if (!response.ok) {
         setSnackbarErrorMessage(data.message);
@@ -87,10 +97,14 @@ export const GroupProvider = ({ children }) => {
   /* OBTENER GRUPO POR ID */
   const fetchGroupById = async (groupId) => {
     try {
-      const response = await fetch(`${CONFIG.API_URL}/groups/${groupId}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${CONFIG.API_URL}/groups/${groupId}`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
       const data = await response.json();
       if (!response.ok) {
         setSnackbarErrorMessage(data.message);
@@ -109,12 +123,16 @@ export const GroupProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(`${CONFIG.API_URL}/groups/${groupId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(dataToUpdate),
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/groups/${groupId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dataToUpdate),
+        },
+        refreshToken,
+        logout
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -143,11 +161,14 @@ export const GroupProvider = ({ children }) => {
   /* ELIMINAR GRUPO */
   async function deleteGroup(groupId) {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/groups/${groupId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/groups/${groupId}`,
+        {
+          method: "DELETE",
+        },
+        refreshToken,
+        logout
+      );
       if (!res.ok) {
         const errorData = await res.json();
         setSnackbarErrorMessage(errorData.error);

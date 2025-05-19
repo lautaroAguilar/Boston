@@ -2,11 +2,13 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CONFIG from "../../config/api";
 import { useDashboard } from "./dashboard";
-
+import { useAuth } from "./auth";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 const CompanyContext = createContext();
 
 export const CompanyProvider = ({ children }) => {
   const { setSnackbarMessage, setSnackbarErrorMessage } = useDashboard();
+  const { refreshToken, logout } = useAuth();
   const [errorMessage, setErrorMessage] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
@@ -24,18 +26,22 @@ export const CompanyProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(`${CONFIG.API_URL}/companies`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name: dataToSend.name,
-          cuit: Number(dataToSend.cuit),
-          business_name: dataToSend.business_name,
-          first_survey_link: dataToSend.first_survey_link,
-          second_survey_link: dataToSend.second_survey_link,
-        }),
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/companies`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: dataToSend.name,
+            cuit: Number(dataToSend.cuit),
+            business_name: dataToSend.business_name,
+            first_survey_link: dataToSend.first_survey_link,
+            second_survey_link: dataToSend.second_survey_link,
+          }),
+        },
+        refreshToken,
+        logout
+      );
       if (res.status !== 201) {
         const errorData = await res.json();
         /* CREAMOS OBJETO DE ERRORES PARA PASAR AL FORM COMPONENT */
@@ -63,16 +69,17 @@ export const CompanyProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${newCompanyId}/cost-centers`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             name: dataToSend.name,
           }),
-        }
+        },
+        refreshToken,
+        logout
       );
       if (res.status !== 201) {
         const errorData = await res.json();
@@ -103,16 +110,17 @@ export const CompanyProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${newCompanyId}/sectors`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             name: dataToSend.name,
           }),
-        }
+        },
+        refreshToken,
+        logout
       );
       if (res.status !== 201) {
         const errorData = await res.json();
@@ -143,18 +151,19 @@ export const CompanyProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${newCompanyId}/contacts`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             name: dataToSend.name,
             email: dataToSend.email,
             notes: dataToSend.notes,
           }),
-        }
+        },
+        refreshToken,
+        logout
       );
       if (res.status !== 201) {
         const errorData = await res.json();
@@ -183,10 +192,14 @@ export const CompanyProvider = ({ children }) => {
 
   const fetchCompany = async (companyId) => {
     try {
-      const response = await fetch(`${CONFIG.API_URL}/companies/${companyId}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${CONFIG.API_URL}/companies/${companyId}`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
       const data = await response.json();
       return data;
     } catch (error) {
@@ -195,12 +208,13 @@ export const CompanyProvider = ({ children }) => {
   };
   const fetchCostCenters = async (companyId) => {
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${companyId}/cost-centers`,
         {
           method: "GET",
-          credentials: "include",
-        }
+        },
+        refreshToken,
+        logout
       );
       const data = await response.json();
       setCostCenters(data);
@@ -212,12 +226,13 @@ export const CompanyProvider = ({ children }) => {
   };
   const fetchContacts = async (companyId) => {
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${companyId}/contacts`,
         {
           method: "GET",
-          credentials: "include",
-        }
+        },
+        refreshToken,
+        logout
       );
       const data = await response.json();
       setContacts(data);
@@ -229,12 +244,13 @@ export const CompanyProvider = ({ children }) => {
   };
   const fetchSectors = async (companyId) => {
     try {
-      const response = await fetch(
+      const response = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${companyId}/sectors`,
         {
           method: "GET",
-          credentials: "include",
-        }
+        },
+        refreshToken,
+        logout
       );
       const data = await response.json();
       setSectors(data);
@@ -247,10 +263,14 @@ export const CompanyProvider = ({ children }) => {
   /* FUNCION PARA OBTENER TODAS LAS EMPRESAS COMPLETAS CON SUS CC, SECTORES Y CONTACTOS */
   const fetchCompaniesInfo = async () => {
     try {
-      const response = await fetch(`${CONFIG.API_URL}/companies`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${CONFIG.API_URL}/companies`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
 
       const companiesData = await response.json();
       // Verificamos si companiesData es un array
@@ -302,10 +322,14 @@ export const CompanyProvider = ({ children }) => {
   /* FUNCION PARA OBTENER INFORMACION BÁSICA (NOMBRE) DE LA EMPRESA */
   const fetchCompaniesToSelect = async () => {
     try {
-      const response = await fetch(`${CONFIG.API_URL}/companies`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${CONFIG.API_URL}/companies`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
 
       const companiesData = await response.json();
       if (response.ok) {
@@ -326,18 +350,22 @@ export const CompanyProvider = ({ children }) => {
   /* ACTUALIZAMOS EMPRESA */
   async function updateCompany(dataToUpdate, companyId) {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/companies/${companyId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name: dataToUpdate.name,
-          cuit: Number(dataToUpdate.cuit),
-          business_name: dataToUpdate.business_name,
-          first_survey_link: dataToUpdate.first_survey_link,
-          second_survey_link: dataToUpdate.second_survey_link,
-        }),
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/companies/${companyId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: dataToUpdate.name,
+            cuit: Number(dataToUpdate.cuit),
+            business_name: dataToUpdate.business_name,
+            first_survey_link: dataToUpdate.first_survey_link,
+            second_survey_link: dataToUpdate.second_survey_link,
+          }),
+        },
+        refreshToken,
+        logout
+      );
       if (!res.ok) {
         const errorData = await res.json();
         setSnackbarErrorMessage(errorData.error);
@@ -354,10 +382,14 @@ export const CompanyProvider = ({ children }) => {
   /* ELIMINAMOS UNA EMRPESA */
   async function deleteCompany(id) {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/companies/${id}`, {
-        method: "delete",
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/companies/${id}`,
+        {
+          method: "delete",
+        },
+        refreshToken,
+        logout
+      );
       const data = await res.json();
       if (!res.ok) {
         setSnackbarErrorMessage(data.error);
@@ -373,16 +405,17 @@ export const CompanyProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${companyId}/cost-centers/${costCenterId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             name: dataToUpdate.name,
           }),
-        }
+        },
+        refreshToken,
+        logout
       );
       if (!res.ok) {
         const errorData = await res.json();
@@ -401,12 +434,13 @@ export const CompanyProvider = ({ children }) => {
   async function deleteCostCenter(companyId, costCenterId) {
     setErrorMessage("");
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${companyId}/cost-centers/${costCenterId}`,
         {
           method: "DELETE",
-          credentials: "include",
-        }
+        },
+        refreshToken,
+        logout
       );
       if (!res.ok) {
         const errorData = await res.json();
@@ -427,18 +461,19 @@ export const CompanyProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${companyId}/contacts/${contactId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             name: dataToUpdate.name,
             email: dataToUpdate.email,
             notes: dataToUpdate.notes,
           }),
-        }
+        },
+        refreshToken,
+        logout
       );
       if (!res.ok) {
         const errorData = await res.json();
@@ -459,12 +494,13 @@ export const CompanyProvider = ({ children }) => {
   async function deleteContact(companyId, contactId) {
     setErrorMessage("");
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${companyId}/contacts/${contactId}`,
         {
           method: "DELETE",
-          credentials: "include",
-        }
+        },
+        refreshToken,
+        logout
       );
       if (!res.ok) {
         const errorData = await res.json();
@@ -485,16 +521,17 @@ export const CompanyProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${companyId}/sectors/${sectorId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             name: dataToUpdate.name,
           }),
-        }
+        },
+        refreshToken,
+        logout
       );
       if (!res.ok) {
         const errorData = await res.json();
@@ -514,12 +551,13 @@ export const CompanyProvider = ({ children }) => {
   async function deleteSector(companyId, sectorId) {
     setErrorMessage("");
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         `${CONFIG.API_URL}/companies/${companyId}/sectors/${sectorId}`,
         {
           method: "DELETE",
-          credentials: "include",
-        }
+        },
+        refreshToken,
+        logout
       );
       if (!res.ok) {
         const errorData = await res.json();

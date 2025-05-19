@@ -2,10 +2,12 @@ import React, { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 import CONFIG from "../../config/api";
 import { useDashboard } from "./dashboard";
-
+import { useAuth } from "./auth";
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 const TeacherContext = createContext();
 
 export const TeacherProvider = ({ children }) => {
+  const { refreshToken, logout } = useAuth();
   const { setSnackbarMessage, setSnackbarErrorMessage } = useDashboard();
   const [errorMessage, setErrorMessage] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -19,25 +21,29 @@ export const TeacherProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(`${CONFIG.API_URL}/teachers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          firstName: dataToSend.firstName,
-          lastName: dataToSend.lastName,
-          email: dataToSend.email,
-          phone: dataToSend.phone,
-          CBU: dataToSend.CBU,
-          CUIT: dataToSend.CUIT,
-          professionalCategoryId: dataToSend.professionalCategoryId,
-          fictitiousSeniority: Number(dataToSend.fictitiousSeniority),
-          bostonSeniority: Number(dataToSend.bostonSeniority),
-          observations: dataToSend.observations,
-          languages: dataToSend.languages,
-        }),
-      });
-      
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/teachers`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firstName: dataToSend.firstName,
+            lastName: dataToSend.lastName,
+            email: dataToSend.email,
+            phone: dataToSend.phone,
+            CBU: dataToSend.CBU,
+            CUIT: dataToSend.CUIT,
+            professionalCategoryId: dataToSend.professionalCategoryId,
+            fictitiousSeniority: Number(dataToSend.fictitiousSeniority),
+            bostonSeniority: Number(dataToSend.bostonSeniority),
+            observations: dataToSend.observations,
+            languages: dataToSend.languages,
+          }),
+        },
+        refreshToken,
+        logout
+      );
+
       if (res.status !== 201) {
         const errorData = await res.json();
         if (Array.isArray(errorData.errors)) {
@@ -65,16 +71,18 @@ export const TeacherProvider = ({ children }) => {
   /* OBTENER TODOS LOS DOCENTES */
   const fetchTeachers = async () => {
     try {
-      const response = await fetch(`${CONFIG.API_URL}/teachers`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${CONFIG.API_URL}/teachers`,
+        { method: "GET" },
+        refreshToken,
+        logout
+      );
       const data = await response.json();
       if (!response.ok) {
         setSnackbarErrorMessage(data.message);
         return;
       }
-      setSnackbarMessage(data.message)
+      setSnackbarMessage(data.message);
       setTeachers(data.data);
       return data;
     } catch (error) {
@@ -88,12 +96,16 @@ export const TeacherProvider = ({ children }) => {
     setFormErrors({});
     setErrorMessage("");
     try {
-      const res = await fetch(`${CONFIG.API_URL}/teachers/${teacherId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(dataToUpdate),
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/teachers/${teacherId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dataToUpdate),
+        },
+        refreshToken,
+        logout
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -122,10 +134,12 @@ export const TeacherProvider = ({ children }) => {
   /* ELIMINAR DOCENTE */
   async function deleteTeacher(teacherId) {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/teachers/${teacherId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/teachers/${teacherId}`,
+        { method: "DELETE" },
+        refreshToken,
+        logout
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -166,4 +180,4 @@ export const useTeacher = () => {
     throw new Error("useTeacher debe ser usado dentro de TeacherProvider");
   }
   return context;
-}; 
+};
