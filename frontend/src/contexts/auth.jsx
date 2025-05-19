@@ -1,16 +1,35 @@
 "use client";
-import { createContext, useState, useEffect, useContext,} from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
 import CONFIG from "../../config/api";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
+
+  const getUsers = async () => {
+    try {
+      const res = await fetch(`${CONFIG.API_URL}/user`, {
+        method: "GET",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSnackbarErrorMessage(data.message);
+        return;
+      }
+      setUsers(data);
+      return;
+    } catch (error) {
+      console.log("error al buscar usuarios", error);
+    }
+  };
 
   const checkUserSession = async () => {
     try {
@@ -31,13 +50,13 @@ export const AuthProvider = ({ children }) => {
           }
           return null;
         }
-        
+
         return refreshResult;
       }
 
       const data = await res.json();
       setUser(data);
-      
+
       if (data && data.userId) {
         await fetchUserInfo(data.userId);
       }
@@ -79,7 +98,7 @@ export const AuthProvider = ({ children }) => {
       });
       if (res.ok) {
         const successMessage = res.json();
-        
+
         setUser(null);
         router.push("/autenticacion");
       }
@@ -97,27 +116,16 @@ export const AuthProvider = ({ children }) => {
       if (!res.ok) {
         const errorMessage = await res.json();
         setErrorMessage(errorMessage.error);
-        logout()
+        logout();
       }
 
       const userInfo = await res.json();
-      
+
       setUserInfo(userInfo);
     } catch (error) {
       console.log(error);
     }
   };
-  /* SE INTENTA REFRESCAR EL ACCESS_TOKEN AUTOMÁTICAMENTE */
-  useEffect(() => {
-    checkUserSession();
-    /* const interval = setInterval(
-      () => {
-        refreshToken();
-      },
-      14 * 60 * 1000
-    );
-    return () => clearInterval(interval); */
-  }, []);
   return (
     <AuthContext.Provider
       value={{
@@ -127,6 +135,10 @@ export const AuthProvider = ({ children }) => {
         logout,
         errorMessage,
         checkUserSession,
+        refreshToken,
+        users,
+        setUsers,
+        getUsers
       }}
     >
       {children}

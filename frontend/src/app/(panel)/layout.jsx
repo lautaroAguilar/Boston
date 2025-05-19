@@ -21,6 +21,8 @@ import { useCompany } from "@/contexts/companies";
 import { useDashboard } from "@/contexts/dashboard";
 import CONFIG from "../../../config/api";
 import MySnackbar from "@/components/Snackbar";
+import AccountMenu from "@/components/AccountMenu";
+import { useAuth } from "@/contexts/auth";
 function CustomAppTitle() {
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
@@ -53,36 +55,45 @@ function CustomSelectCompany() {
   }, [companyCreated]);
   const isMobile = useMediaQuery("(max-width:600px)");
   return (
-    <Stack direction={"row"} alignItems={"center"} spacing={2}>
-      <FormControl fullWidth size="small">
-        <InputLabel id="company">Empresa</InputLabel>
-        <Select
-          name={selectedCompany}
-          labelId="company"
-          id="selectCompany"
-          value={selectedCompany || ""}
-          label={"Empresa"}
-          onChange={(e) => {
-            fetchCompanyId(e.target.value);
-          }}
-          sx={{ width: isMobile ? "120px" : "200px" }}
-        >
-          {companiesInfo.length > 0 ? (
-            companiesInfo.map((opt) => (
-              <MenuItem key={opt.id} value={opt.id}>
-                {opt.name}
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem value="">No hay empresas disponibles</MenuItem>
-          )}
-        </Select>
-      </FormControl>
+    <FormControl fullWidth size="small">
+      <InputLabel id="company">Empresa</InputLabel>
+      <Select
+        name={selectedCompany}
+        labelId="company"
+        id="selectCompany"
+        value={selectedCompany || ""}
+        label={"Empresa"}
+        onChange={(e) => {
+          fetchCompanyId(e.target.value);
+        }}
+        sx={{ width: isMobile ? "120px" : "200px" }}
+      >
+        {companiesInfo.length > 0 ? (
+          companiesInfo.map((opt) => (
+            <MenuItem key={opt.id} value={opt.id}>
+              {opt.name}
+            </MenuItem>
+          ))
+        ) : (
+          <MenuItem value="">No hay empresas disponibles</MenuItem>
+        )}
+      </Select>
+    </FormControl>
+  );
+}
 
+/* Componente para las acciones en el toolbar */
+function CustomToolbarActions() {
+  const { user } = useAuth();
+  return (
+    <Stack direction="row" alignItems="center" spacing={2}>
+      <CustomSelectCompany />
       <ThemeSwitcher />
+      {user && <AccountMenu />}
     </Stack>
   );
 }
+
 function CustomPageToolbar({ toolbarButtonAction }) {
   return (
     <PageHeaderToolbar>
@@ -118,14 +129,35 @@ function CustomPageHeader() {
 }
 export default function DashboardRootLayout({ children }) {
   const CustomPageHeaderComponent = useCallback(() => <CustomPageHeader />, []);
-  const { snackbarMessage, snackbarErrorMessage, snackbarWarningMessage, openSnackbar } =
-    useDashboard();
+  const { checkUserSession } = useAuth();
+  const {
+    snackbarMessage,
+    snackbarErrorMessage,
+    snackbarWarningMessage,
+    openSnackbar,
+    sidebarCollapsed,
+    setSidebarCollapsed,
+  } = useDashboard();
+
+  // Intentamos manejar el cambio de estado del sidebar cuando se hace clic en el botón de colapso
+  const handleSidebarStateChange = useCallback(
+    (collapsed) => {
+      setSidebarCollapsed(collapsed);
+    },
+    [setSidebarCollapsed]
+  );
+
+  useEffect(() => {
+    checkUserSession();
+  }, []);
+
   return (
     <DashboardLayout
-      defaultSidebarCollapsed
+      defaultSidebarCollapsed={sidebarCollapsed}
+      onSidebarStateChange={handleSidebarStateChange}
       slots={{
         appTitle: CustomAppTitle,
-        toolbarActions: CustomSelectCompany,
+        toolbarActions: CustomToolbarActions,
       }}
     >
       <PageContainer slots={{ header: CustomPageHeaderComponent }}>

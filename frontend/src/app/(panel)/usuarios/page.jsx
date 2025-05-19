@@ -9,8 +9,10 @@ import MyForm from "@/components/Form";
 import CONFIG from "../../../../config/api";
 import { useDashboard } from "@/contexts/dashboard";
 import { useCompany } from "@/contexts/companies";
+import { useAuth } from "@/contexts/auth";
 
 export default function page() {
+  const { users, getUsers } = useAuth();
   const theme = createTheme(esES);
   const isMobile = useMediaQuery("(max-width:600px)");
   const {
@@ -20,11 +22,12 @@ export default function page() {
     snackbarMessage,
     snackbarErrorMessage,
     setOpenSnackbar,
+    roles,
+    fetchRoles
   } = useDashboard();
   const { companiesInfo } = useCompany();
   const [showForm, setShowForm] = useState(false);
-  const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
+  
   const [created, setCreated] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [formRegisterValues, setFormRegisterValues] = useState({
@@ -35,16 +38,13 @@ export default function page() {
     role_id: "",
     belongs_to: "",
   });
-  async function getRoles() {
-    try {
-      const response = await fetch(`${CONFIG.API_URL}/settings/roles`);
-      const data = await response.json();
-      setRoles(data);
-      return;
-    } catch (error) {
-      console.log(error);
+
+  useEffect(() => {
+    if (!roles || roles.length === 0) {
+      fetchRoles();
     }
-  }
+  }, []);
+
   const fieldsRegister = [
     { name: "first_name", label: "Nombre", required: true },
     { name: "last_name", label: "Apellido", required: true },
@@ -57,7 +57,7 @@ export default function page() {
       required: true,
       component: "select",
       options: roles
-        ? roles?.map((role) => ({ id: role.id, label: role.name }))
+        ? roles?.filter(role => role.id !== 3).map((role) => ({ id: role.id, label: role.name }))
         : [{ id: 0, label: "No se encontraron roles" }],
     },
     {
@@ -114,23 +114,6 @@ export default function page() {
       console.error("Error al registrar: ", err);
     }
   };
-  const getUsers = async () => {
-    try {
-      const res = await fetch(`${CONFIG.API_URL}/user`, {
-        method: "GET",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setSnackbarErrorMessage(data.message);
-        return;
-      }
-      setUsers(data);
-      return;
-    } catch (error) {
-      console.log("error al buscar usuarios", error);
-    }
-  };
   const userColumns = [
     { field: "id", headerName: "ID", minWidth: 50 },
     { field: "first_name", headerName: "Nombre", minWidth: 150, flex: 1 },
@@ -164,7 +147,6 @@ export default function page() {
   }, [snackbarMessage, snackbarErrorMessage]);
   useEffect(() => {
     getUsers();
-    getRoles();
   }, [created]);
   return (
     <>
