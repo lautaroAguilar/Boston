@@ -22,7 +22,10 @@ const userSchema = z.object({
   belongs_to: z
     .string()
     .optional(),
-  active: z.boolean().default(true)
+  active: z.union([
+    z.boolean(),
+    z.number().transform(val => Boolean(val))
+  ]).default(true).optional()
 })
 
 function validateRegister(user) {

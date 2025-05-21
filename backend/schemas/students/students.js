@@ -31,7 +31,10 @@ const studentsSchema = z.object({
   sector_id: z
     .number({ required_error: 'El ID del sector es requerido' })
     .int('El ID del sector debe ser un número entero'),
-  active: z.boolean().default(true).optional(),
+  active: z.union([
+    z.boolean(),
+    z.number().transform(val => Boolean(val))
+  ]).default(true).optional(),
   languages: z.array(
     z.object({
       language_id: z.number().int('El ID del idioma debe ser un número entero'),

@@ -35,7 +35,10 @@ const companySchema = z.object({
       z.null()
     ])
     .optional(),
-  active: z.boolean().default(true).optional()
+  active: z.union([
+    z.boolean(),
+    z.number().transform(val => Boolean(val))
+  ]).default(true).optional()
 })
 
 function validateCompany(company) {
