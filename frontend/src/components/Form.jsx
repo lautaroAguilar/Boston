@@ -10,6 +10,8 @@ import {
   FormControl,
   FormHelperText,
   Typography,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -95,6 +97,21 @@ export default function MyForm({
                     </LocalizationWrapper>
                   );
                 default:
+                  if (field.type === "switch") {
+                    return (
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={Boolean(values[field.name])}
+                            onChange={(e) => onChange(field.name, e.target.checked)}
+                            name={field.name}
+                            color="primary"
+                          />
+                        }
+                        label={field.label}
+                      />
+                    );
+                  }
                   return (
                     <TextField
                       fullWidth

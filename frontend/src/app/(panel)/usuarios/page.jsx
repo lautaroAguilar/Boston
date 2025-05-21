@@ -10,9 +10,11 @@ import CONFIG from "../../../../config/api";
 import { useDashboard } from "@/contexts/dashboard";
 import { useCompany } from "@/contexts/companies";
 import { useAuth } from "@/contexts/auth";
+import OptionsButton from "@/components/OptionsButton";
+import { Edit, Delete, PowerSettingsNew, Check } from "@mui/icons-material";
 
 export default function page() {
-  const { users, getUsers } = useAuth();
+  const { users, getUsers, updateUserStatus } = useAuth();
   const theme = createTheme(esES);
   const isMobile = useMediaQuery("(max-width:600px)");
   const {
@@ -27,7 +29,6 @@ export default function page() {
   } = useDashboard();
   const { companiesInfo } = useCompany();
   const [showForm, setShowForm] = useState(false);
-  
   const [created, setCreated] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [formRegisterValues, setFormRegisterValues] = useState({
@@ -132,6 +133,59 @@ export default function page() {
       },
     },
     { field: "belongs_to", headerName: "Empresa", minWidth: 150, flex: 1 },
+    {
+      field: "active",
+      headerName: "Estado",
+      minWidth: 120,
+      flex: 1,
+      renderCell: (params) => {
+        const isActive = params.row.active !== false && params.row.active !== 0;
+        return (
+          <Typography
+            variant="body2"
+            sx={{
+              color: isActive ? 'success.main' : 'error.main',
+              fontWeight: 'bold'
+            }}
+          >
+            {isActive ? 'Activo' : 'Inactivo'}
+          </Typography>
+        );
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Acciones",
+      width: 80,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => {
+        const isActive = params.row.active !== false && params.row.active !== 0;
+        
+        const handleToggleStatus = async (row) => {
+          const newStatus = !isActive;
+          const success = await updateUserStatus(row.id, newStatus);
+          if (success) {
+            setSnackbarMessage(`Usuario ${isActive ? 'desactivado' : 'activado'} correctamente`);
+            setOpenSnackbar(true);
+            setCreated(true);
+          } else {
+            setSnackbarErrorMessage(`Error al ${isActive ? 'desactivar' : 'activar'} el usuario`);
+            setOpenSnackbar(true);
+          }
+        };
+
+        const options = [
+          {
+            label: isActive ? "Desactivar" : "Activar",
+            icon: isActive ? <PowerSettingsNew fontSize="small" color="error" /> : <Check fontSize="small" color="success" />,
+            onClick: handleToggleStatus
+          }
+        ];
+
+        return <OptionsButton options={options} row={params.row} />;
+      },
+    },
   ];
   useEffect(() => {
     setToolbarButtonAction({

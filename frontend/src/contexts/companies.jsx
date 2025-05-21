@@ -361,6 +361,7 @@ export const CompanyProvider = ({ children }) => {
             business_name: dataToUpdate.business_name,
             first_survey_link: dataToUpdate.first_survey_link,
             second_survey_link: dataToUpdate.second_survey_link,
+            active: dataToUpdate.active,
           }),
         },
         refreshToken,

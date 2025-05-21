@@ -2,7 +2,7 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
 import CONFIG from "../../config/api";
-
+import { fetchWithAuth } from "@/utils/fetchWithAuth";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -15,10 +15,14 @@ export const AuthProvider = ({ children }) => {
 
   const getUsers = async () => {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/user`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/user`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
       const data = await res.json();
       if (!res.ok) {
         setSnackbarErrorMessage(data.message);
@@ -31,13 +35,52 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUserStatus = async (userId, isActive) => {
+    try {
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/user/${userId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ active: isActive }),
+        },
+        refreshToken,
+        logout
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Error al actualizar estado del usuario:", errorData);
+        return false;
+      }
+
+      // Actualizar el estado local de usuarios
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, active: isActive } : user
+        )
+      );
+
+      return true;
+    } catch (error) {
+      console.error("Error de red al actualizar estado del usuario:", error);
+      return false;
+    }
+  };
+
   const checkUserSession = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${CONFIG.API_URL}/auth/me`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/auth/me`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
 
       if (res.status === 401) {
         // Si recibimos 401, intentamos refrescar el token
@@ -110,9 +153,14 @@ export const AuthProvider = ({ children }) => {
   };
   const fetchUserInfo = async (id) => {
     try {
-      const res = await fetch(`${CONFIG.API_URL}/user/${id}`, {
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/user/${id}`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
       if (!res.ok) {
         const errorMessage = await res.json();
         setErrorMessage(errorMessage.error);
@@ -138,7 +186,8 @@ export const AuthProvider = ({ children }) => {
         refreshToken,
         users,
         setUsers,
-        getUsers
+        getUsers,
+        updateUserStatus,
       }}
     >
       {children}

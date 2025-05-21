@@ -70,8 +70,6 @@ export default function Page() {
         contacts,
         sectors,
       };
-
-      console.log(data);
       setCompanyData(data);
     } catch (error) {
       console.error("Error fetching company data:", error);
@@ -82,6 +80,7 @@ export default function Page() {
     company: {
       title: "Editar Empresa",
       fields: [
+        { name: "active", label: "Activa", type: "switch" },
         { name: "name", label: "Nombre" },
         { name: "business_name", label: "Razón Social" },
         { name: "cuit", label: "CUIT", type: "number" },
@@ -94,6 +93,7 @@ export default function Page() {
         cuit: companyData?.cuit || "",
         first_survey_link: companyData?.first_survey_link || "",
         second_survey_link: companyData?.second_survey_link || "",
+        active: companyData?.active || false,
       }),
       onSubmit: (data) => {
         updateCompany(data, id);
@@ -348,6 +348,33 @@ export default function Page() {
             />
             <CardContent>
               <Stack spacing={2}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  sx={{
+                    backgroundColor:
+                      theme.palette.mode === "dark"
+                        ? theme.palette.grey[800]
+                        : theme.palette.grey[200],
+                    p: 1,
+                    borderRadius: 1,
+                  }}
+                >
+                  <Typography variant="body1" color="text.secondary">
+                    Estado
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: companyData?.active
+                        ? "success.main"
+                        : "error.main",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {companyData?.active ? "ACTIVA" : "INACTIVA"}
+                  </Typography>
+                </Box>
                 <Box
                   display="flex"
                   justifyContent="space-between"

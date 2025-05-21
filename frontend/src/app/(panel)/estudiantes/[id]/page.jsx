@@ -10,7 +10,7 @@ import { formatDate } from "@/utils/dateUtils";
 
 export default function StudentDetail() {
   const { id } = useParams();
-  const { fetchStudentById, student } = useStudent();
+  const { fetchStudentById, student, updateStudent } = useStudent();
   const {
     snackbarErrorMessage,
     snackbarMessage,
@@ -19,6 +19,7 @@ export default function StudentDetail() {
     setToolbarButtonAction,
   } = useDashboard();
   const [enrollments, setEnrollments] = useState([]);
+  const [isActive, setIsActive] = useState(true);
   
   // Estado local para manejar los cambios visuales de los certificados
   const [certificateStates, setCertificateStates] = useState({});
@@ -28,6 +29,12 @@ export default function StudentDetail() {
       ...prev,
       [enrollmentId]: newValue
     }));
+  };
+
+  const handleActiveChange = (event) => {
+    const newActive = event.target.checked;
+    setIsActive(newActive);
+    updateStudent(id, { active: newActive });
   };
 
   const handleExportExcel = () => {
@@ -108,6 +115,9 @@ export default function StudentDetail() {
   }, []);
   useEffect(() => {
     if (student) {
+      // Actualizar el estado isActive con el valor del estudiante
+      setIsActive(student.active !== undefined ? student.active : true);
+      
       // Filtrar solo el enrollment activo
       const activeEnrollment = student.enrollments?.find(
         (e) => e.status === "active"
@@ -118,14 +128,26 @@ export default function StudentDetail() {
   return (
     <Box sx={{ p: 1 }}>
       <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-        <Box>
-          <Typography variant="h5" component="h1" gutterBottom>
-            {formatDate(new Date())} - {student?.first_name}{" "}
-            {student?.last_name}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>
-            {student?.company_name}
-          </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Box>
+            <Typography variant="h5" component="h1" gutterBottom>
+              {formatDate(new Date())} - {student?.first_name}{" "}
+              {student?.last_name}
+            </Typography>
+            <Typography variant="body1" color="text.secondary" gutterBottom>
+              {student?.company_name}
+            </Typography>
+          </Box>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isActive}
+                onChange={handleActiveChange}
+                color={isActive ? "success" : "error"}
+              />
+            }
+            label={isActive ? "Activo" : "Inactivo"}
+          />
         </Box>
 
         <Divider sx={{ my: 2 }} />
