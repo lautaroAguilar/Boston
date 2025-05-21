@@ -109,6 +109,14 @@ export default function MyForm({
                           />
                         }
                         label={field.label}
+                        labelPlacement="start"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          width: "100%",
+                          margin: "0 auto",
+                        }}
                       />
                     );
                   }

@@ -112,7 +112,7 @@ export const StudentProvider = ({ children }) => {
       );
       const data = await res.json();
       if (!res.ok) {
-        setSnackbarErrorMessage(data.message);
+        setSnackbarErrorMessage("Hubo un error al actualizar el estudiante");
         return null;
       }
       setSnackbarMessage("Estudiante actualizado correctamente");

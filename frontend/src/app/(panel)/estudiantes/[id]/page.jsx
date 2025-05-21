@@ -1,12 +1,22 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Box, Paper, Typography, Divider, Stack, Button, Switch, FormControlLabel } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Typography,
+  Divider,
+  Stack,
+  Button,
+  Switch,
+  FormControlLabel,
+} from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { FileDownloadOutlined } from "@mui/icons-material";
+import { FileDownloadOutlined, Edit as EditIcon } from "@mui/icons-material";
 import { useStudent } from "@/contexts/students";
 import { useDashboard } from "@/contexts/dashboard";
 import { formatDate } from "@/utils/dateUtils";
+import EditModal from "@/components/EditModal";
 
 export default function StudentDetail() {
   const { id } = useParams();
@@ -20,21 +30,18 @@ export default function StudentDetail() {
   } = useDashboard();
   const [enrollments, setEnrollments] = useState([]);
   const [isActive, setIsActive] = useState(true);
-  
+
+  // Modal de edición
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+
   // Estado local para manejar los cambios visuales de los certificados
   const [certificateStates, setCertificateStates] = useState({});
-  
-  const handleCertificateChange = (enrollmentId, newValue) => {
-    setCertificateStates(prev => ({
-      ...prev,
-      [enrollmentId]: newValue
-    }));
-  };
 
-  const handleActiveChange = (event) => {
-    const newActive = event.target.checked;
-    setIsActive(newActive);
-    updateStudent(id, { active: newActive });
+  const handleCertificateChange = (enrollmentId, newValue) => {
+    setCertificateStates((prev) => ({
+      ...prev,
+      [enrollmentId]: newValue,
+    }));
   };
 
   const handleExportExcel = () => {
@@ -45,6 +52,32 @@ export default function StudentDetail() {
   const handleAddRecord = () => {
     console.log("Agregando nuevo registro...");
     // Implementar lógica para agregar un nuevo registro
+  };
+
+  // Configuración del modal de edición
+  const studentModalConfig = {
+    title: "Editar Perfil",
+    fields: [
+      { name: "active", label: "Estado del estudiante", type: "switch" },
+      { name: "first_name", label: "Nombre" },
+      { name: "last_name", label: "Apellido" },
+      { name: "email", label: "Email", type: "email" },
+      { name: "sid", label: "SID" },
+    ],
+    onSubmit: (data) => {
+      updateStudent(id, data);
+      setIsActive(data.active);
+      setOpenEditDialog(false);
+    },
+  };
+
+  // Valores actualizados para el modal
+  const studentModalValues = {
+    active: isActive,
+    first_name: student?.first_name || "",
+    last_name: student?.last_name || "",
+    email: student?.email || "",
+    sid: student?.sid || "",
   };
 
   const columns = [
@@ -68,29 +101,31 @@ export default function StudentDetail() {
         return "Sin docente";
       },
     },
-    { 
-      field: "certificate_sent", 
-      headerName: "Certificado enviado", 
+    {
+      field: "certificate_sent",
+      headerName: "Certificado enviado",
       flex: 1,
       renderCell: (params) => {
         // Usar el estado local si existe, de lo contrario usar el valor original
-        const isChecked = certificateStates.hasOwnProperty(params.row.id) 
-          ? certificateStates[params.row.id] 
+        const isChecked = certificateStates.hasOwnProperty(params.row.id)
+          ? certificateStates[params.row.id]
           : Boolean(params.row.certificate_sent);
-        
+
         return (
           <FormControlLabel
             control={
-              <Switch 
-                checked={isChecked} 
-                onChange={(e) => handleCertificateChange(params.row.id, e.target.checked)}
+              <Switch
+                checked={isChecked}
+                onChange={(e) =>
+                  handleCertificateChange(params.row.id, e.target.checked)
+                }
                 color="primary"
               />
             }
             label={isChecked ? "Sí" : "No"}
           />
         );
-      }
+      },
     },
     {
       field: "status",
@@ -117,7 +152,7 @@ export default function StudentDetail() {
     if (student) {
       // Actualizar el estado isActive con el valor del estudiante
       setIsActive(student.active !== undefined ? student.active : true);
-      
+
       // Filtrar solo el enrollment activo
       const activeEnrollment = student.enrollments?.find(
         (e) => e.status === "active"
@@ -128,60 +163,57 @@ export default function StudentDetail() {
   return (
     <Box sx={{ p: 1 }}>
       <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Box>
             <Typography variant="h5" component="h1" gutterBottom>
-              {formatDate(new Date())} - {student?.first_name}{" "}
-              {student?.last_name}
+              {student?.last_name} {student?.first_name}
+              {student?.active ? " - Activo" : " - Inactivo"}
             </Typography>
             <Typography variant="body1" color="text.secondary" gutterBottom>
               {student?.company_name}
             </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Porcentaje de asistencia:
+              </Typography>
+              <Typography variant="h6" component="span">
+                {
+                  student?.enrollments?.find((e) => e.status === "active")
+                    ?.attendance
+                }
+                %
+              </Typography>
+            </Box>
           </Box>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isActive}
-                onChange={handleActiveChange}
-                color={isActive ? "success" : "error"}
-              />
-            }
-            label={isActive ? "Activo" : "Inactivo"}
-          />
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              Porcentaje de asistencia:
-            </Typography>
-            <Typography variant="h6" component="span">
-              {
-                student?.enrollments?.find((e) => e.status === "active")
-                  ?.attendance
-              }
-              %
-            </Typography>
-          </Box>
-
-          <Stack
-            direction="row"
-            spacing={2}
-            justifyContent={{ xs: "flex-start", md: "flex-end" }}
-          >
-            <Button
-              variant="outlined"
-              startIcon={<FileDownloadOutlined />}
-              onClick={handleExportExcel}
+          <Box>
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent={{ xs: "flex-start", md: "flex-end" }}
             >
-              EXPORTAR EXCEL
-            </Button>
-
-            <Button variant="contained" onClick={handleAddRecord}>
-              NUEVO
-            </Button>
-          </Stack>
+              <Button
+                variant="outlined"
+                startIcon={<FileDownloadOutlined />}
+                onClick={handleExportExcel}
+              >
+                EXPORTAR EXCEL
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                onClick={() => setOpenEditDialog(true)}
+                size="small"
+              >
+                EDITAR PERFIL
+              </Button>
+            </Stack>
+          </Box>
         </Box>
 
         <Divider sx={{ my: 2 }} />
@@ -197,6 +229,16 @@ export default function StudentDetail() {
           pageSizeOptions={[10, 25, 50]}
         />
       </Paper>
+
+      {/* Modal de edición de perfil */}
+      <EditModal
+        isOpen={openEditDialog}
+        onClose={() => setOpenEditDialog(false)}
+        title={studentModalConfig.title}
+        fields={studentModalConfig.fields}
+        values={studentModalValues}
+        onSubmit={studentModalConfig.onSubmit}
+      />
     </Box>
   );
 }

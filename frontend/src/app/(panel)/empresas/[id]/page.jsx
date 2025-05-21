@@ -80,7 +80,7 @@ export default function Page() {
     company: {
       title: "Editar Empresa",
       fields: [
-        { name: "active", label: "Activa", type: "switch" },
+        { name: "active", label: "Estado de la empresa", type: "switch" },
         { name: "name", label: "Nombre" },
         { name: "business_name", label: "Razón Social" },
         { name: "cuit", label: "CUIT", type: "number" },
