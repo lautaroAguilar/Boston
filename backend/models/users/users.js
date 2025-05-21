@@ -5,7 +5,7 @@ class UserModel {
     const connection = await pool.getConnection()
     try {
       const [users] = await connection.query(
-        `SELECT id, first_name, last_name, email, role_id, belongs_to FROM users`
+        `SELECT id, first_name, last_name, email, role_id, belongs_to, active FROM users`
       )
       return users
     } catch (error) {
@@ -19,7 +19,7 @@ class UserModel {
     const connection = await pool.getConnection()
     try {
       const [user] = await connection.query(
-        `SELECT id, first_name, last_name, email, role_id, belongs_to
+        `SELECT id, first_name, last_name, email, role_id, belongs_to, active
               FROM users u 
               WHERE u.id = ?`,
         [userId]

@@ -44,15 +44,16 @@ class CompanyModel {
       // Se inserta la empresa
       const [result] = await conn.query(
         `
-        INSERT INTO company (name, cuit, business_name, first_survey_link, second_survey_link)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO company (name, cuit, business_name, first_survey_link, second_survey_link, active)
+        VALUES (?, ?, ?, ?, ?, ?)
       `,
         [
           companyData.name,
           companyData.cuit,
           companyData.business_name,
           companyData.first_survey_link,
-          companyData.second_survey_link
+          companyData.second_survey_link,
+          companyData.active !== undefined ? companyData.active : true
         ]
       )
 
@@ -85,7 +86,8 @@ class CompanyModel {
           cuit,
           business_name,
           first_survey_link,
-          second_survey_link
+          second_survey_link,
+          active
         FROM company
       `)
       return companies
@@ -108,7 +110,8 @@ class CompanyModel {
           c.cuit,
           c.business_name,
           c.first_survey_link,
-          c.second_survey_link
+          c.second_survey_link,
+          c.active
         FROM company c
         WHERE c.id = ?
       `,
@@ -172,6 +175,10 @@ class CompanyModel {
       if (companyData.second_survey_link !== undefined) {
         setClauses.push('second_survey_link = ?')
         values.push(companyData.second_survey_link)
+      }
+      if (companyData.active !== undefined) {
+        setClauses.push('active = ?')
+        values.push(companyData.active)
       }
       if (setClauses.length === 0) {
         return 0

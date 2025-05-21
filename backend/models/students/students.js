@@ -8,7 +8,7 @@ class StudentsModel {
       await connection.beginTransaction()
 
       const [studentResult] = await connection.query(
-        `INSERT INTO students (first_name, last_name, email, sid, initial_leveling_date, company_id, cost_center_id, sector_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO students (first_name, last_name, email, sid, initial_leveling_date, company_id, cost_center_id, sector_id, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           studentData.first_name,
           studentData.last_name,
@@ -17,7 +17,8 @@ class StudentsModel {
           studentData.initial_leveling_date,
           studentData.company_id,
           studentData.cost_center_id,
-          studentData.sector_id
+          studentData.sector_id,
+          studentData.active !== undefined ? studentData.active : true
         ]
       )
       const studentId = studentResult.insertId
@@ -52,6 +53,7 @@ class StudentsModel {
           s.email,
           s.initial_leveling_date,
           s.sid,
+          s.active,
           c.id AS company_id,
           c.name AS company_name,
           cc.id AS cost_center_id,
@@ -107,6 +109,7 @@ class StudentsModel {
           s.email,
           s.initial_leveling_date,
           s.sid,
+          s.active,
           c.name AS company_name,
           cc.name AS cost_center_name,
           sec.name AS sector_name,

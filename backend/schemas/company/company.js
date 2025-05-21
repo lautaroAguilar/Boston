@@ -34,7 +34,8 @@ const companySchema = z.object({
       z.literal(''),
       z.null()
     ])
-    .optional()
+    .optional(),
+  active: z.boolean().default(true).optional()
 })
 
 function validateCompany(company) {
