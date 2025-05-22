@@ -1,11 +1,12 @@
 const { validateTeacher } = require('../../schemas/teacher/teacher.js')
 const { generateTemporaryPassword } = require('../../utils/passwordGenerator.js')
-const emailService = require('../../services/emailService.js')
+const { MailService } = require('../../services/mail.js')
 const bcrypt = require('bcryptjs')
 
 class TeacherController {
   constructor({ teacherModel }) {
     this.teacherModel = teacherModel
+    this.mailService = new MailService()
   }
 
   create = async (req, res) => {
@@ -30,22 +31,20 @@ class TeacherController {
       const createdData = await this.teacherModel.createWithUser(result.data, hashedPassword)
 
       // Enviar email con credenciales
-      /* await emailService.sendWelcomeEmail({
-        to: createdData.teacher.email,
-        temporaryPassword,
-        teacherName: createdData.teacher.firstName
-      }) */
+      if (result.data.is_temp_password) {
+        const emailSent = await this.mailService.sendTemporaryPassword(result.data.email, result.data.firstName, temporaryPassword)
+        if (!emailSent) {
+          await connection.rollback();
+          return res.status(500).json({
+            error: 'Error al enviar el email con la contraseña temporal'
+          });
+        }
+      }
 
-      // En desarrollo, devolvemos la contraseña temporal
       const response = {
         error: false,
         message: 'Docente creado exitosamente',
         data: createdData.teacher
-      }
-
-      if (process.env.NODE_ENV === 'development') {
-        response.temporaryPassword = temporaryPassword
-        response.message += '. IMPORTANTE: Guarda esta contraseña temporal ya que no se volverá a mostrar'
       }
 
       res.status(201).json(response)

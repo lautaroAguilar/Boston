@@ -14,10 +14,6 @@ const userSchema = z.object({
     .trim()
     .min(1, 'El email es requerido')
     .email('El email debe ser válido'),
-  password: z
-    .string({ required_error: 'La contraseña es requerida' })
-    .trim()
-    .min(6, 'La contraseña debe tener al menos 6 caracteres'),
   role_id: z.number({ invalid_type_error: 'Por favor, selecciona un rol.' }).int(),
   belongs_to: z
     .string()
@@ -25,7 +21,8 @@ const userSchema = z.object({
   active: z.union([
     z.boolean(),
     z.number().transform(val => Boolean(val))
-  ]).default(true).optional()
+  ]).default(true).optional(),
+  is_temp_password: z.boolean().default(false).optional()
 })
 
 function validateRegister(user) {

@@ -4,21 +4,39 @@ const {
 } = require('../../schemas/auth/user.js')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
+const {
+  generateTemporaryPassword
+} = require('../../utils/passwordGenerator.js')
+const { MailService } = require('../../services/mail.js')
 
 class UserAuthController {
   constructor({ userAuthModel }) {
     this.userAuthModel = userAuthModel
+    this.mailService = new MailService()
   }
   register = async (req, res) => {
+    const connection = await require('../../config/database').pool.getConnection();
     try {
+      await connection.beginTransaction();
+
       const result = validateRegister(req.body)
       if (!result.success) {
         return res.status(400).json(result.error.issues)
       }
-      const { first_name, last_name, email, password, role_id, belongs_to } =
-        result.data
+      const { first_name, last_name, email, role_id, belongs_to } = result.data
+
+      // Si no se proporciona contraseña o se indica generar temporal, crear una
+      let password = result.data.password
+      let isTemporaryPassword = result.data.is_temp_password === true
+
+      if (!password || isTemporaryPassword) {
+        password = generateTemporaryPassword()
+        isTemporaryPassword = true
+      }
+
       const userExist = await this.userAuthModel.findOne(email)
       if (userExist) {
+        await connection.rollback();
         return res
           .status(400)
           .json([{ path: ['email'], message: 'Este email ya está en uso' }])
@@ -34,18 +52,35 @@ class UserAuthController {
         email,
         hashedPassword,
         role_id,
-        belongs_to
+        belongs_to,
+        isTemporaryPassword
       )
+
+      // Enviar email con contraseña temporal si corresponde
+      if (isTemporaryPassword) {
+        const emailSent = await this.mailService.sendTemporaryPassword(email, first_name, password)
+        if (!emailSent) {
+          await connection.rollback();
+          return res.status(500).json({
+            error: 'Error al enviar el email con la contraseña temporal'
+          });
+        }
+      }
+
+      await connection.commit();
       return res.status(201).json({
         message: 'Usuario registrado exitosamente',
         user: newUser
       })
     } catch (error) {
+      await connection.rollback();
       return res.status(500).json({
         error: 'Hubo un error al registrar el usuario',
         details:
           process.env.NODE_ENV === 'development' ? error.message : undefined
       })
+    } finally {
+      connection.release();
     }
   }
   login = async (req, res) => {
@@ -99,7 +134,10 @@ class UserAuthController {
           path: '/'
         })
         .status(200)
-        .json({ message: 'Login exitoso' })
+        .json({
+          message: 'Login exitoso',
+          is_temp_password: user.is_temp_password
+        })
     } catch (error) {
       return res.status(500).json({
         error: 'Error al iniciar sesión',
