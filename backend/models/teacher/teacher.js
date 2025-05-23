@@ -9,15 +9,16 @@ class TeacherModel {
       
       // 1. Crear el usuario
       const [userResult] = await connection.query(
-        `INSERT INTO users (first_name, last_name, email, password, role_id, active)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO users (first_name, last_name, email, password, role_id, active, is_temp_password)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           teacherData.firstName,  
           teacherData.lastName, 
           teacherData.email, 
           hashedPassword, 
           3, // ID del rol "docente"
-          true
+          true,
+          true // Siempre será contraseña temporal
         ]
       )
       

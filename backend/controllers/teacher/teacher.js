@@ -1,5 +1,7 @@
 const { validateTeacher } = require('../../schemas/teacher/teacher.js')
-const { generateTemporaryPassword } = require('../../utils/passwordGenerator.js')
+const {
+  generateTemporaryPassword
+} = require('../../utils/passwordGenerator.js')
 const { MailService } = require('../../services/mail.js')
 const bcrypt = require('bcryptjs')
 
@@ -28,26 +30,30 @@ class TeacherController {
       const temporaryPassword = generateTemporaryPassword()
       const hashedPassword = await bcrypt.hash(temporaryPassword, saltRounds)
 
-      const createdData = await this.teacherModel.createWithUser(result.data, hashedPassword)
+      const createdData = await this.teacherModel.createWithUser(
+        { ...result.data, is_temp_password: true },
+        hashedPassword
+      )
 
-      // Enviar email con credenciales
-      if (result.data.is_temp_password) {
-        const emailSent = await this.mailService.sendTemporaryPassword(result.data.email, result.data.firstName, temporaryPassword)
-        if (!emailSent) {
-          await connection.rollback();
-          return res.status(500).json({
-            error: 'Error al enviar el email con la contraseña temporal'
-          });
-        }
+      // Siempre enviar email con credenciales
+      const emailSent = await this.mailService.sendTemporaryPassword(
+        result.data.email,
+        result.data.firstName,
+        temporaryPassword
+      )
+
+      if (!emailSent) {
+        return res.status(500).json({
+          error: true,
+          message: 'Error al enviar el email con la contraseña temporal'
+        })
       }
 
-      const response = {
+      res.status(201).json({
         error: false,
         message: 'Docente creado exitosamente',
         data: createdData.teacher
-      }
-
-      res.status(201).json(response)
+      })
     } catch (error) {
       console.error('Error en el controlador de creación de docente:', error)
       res.status(500).json({
@@ -131,7 +137,10 @@ class TeacherController {
         data: teacher
       })
     } catch (error) {
-      console.error('Error en el controlador de actualización de docente:', error)
+      console.error(
+        'Error en el controlador de actualización de docente:',
+        error
+      )
       res.status(500).json({
         error: true,
         message: 'Error al actualizar el docente',

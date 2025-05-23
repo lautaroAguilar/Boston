@@ -15,10 +15,7 @@ class UserAuthController {
     this.mailService = new MailService()
   }
   register = async (req, res) => {
-    const connection = await require('../../config/database').pool.getConnection();
     try {
-      await connection.beginTransaction();
-
       const result = validateRegister(req.body)
       if (!result.success) {
         return res.status(400).json(result.error.issues)
@@ -36,16 +33,16 @@ class UserAuthController {
 
       const userExist = await this.userAuthModel.findOne(email)
       if (userExist) {
-        await connection.rollback();
         return res
           .status(400)
           .json([{ path: ['email'], message: 'Este email ya está en uso' }])
       }
-      const saltRounds =
-        process.env.NODE_ENV === 'production'
-          ? parseInt(process.env.SALT_ROUNDS)
-          : 1
+
+      const saltRounds = process.env.NODE_ENV === 'production'
+        ? parseInt(process.env.SALT_ROUNDS)
+        : 1
       const hashedPassword = await bcrypt.hash(password, saltRounds)
+
       const newUser = await this.userAuthModel.register(
         first_name,
         last_name,
@@ -60,27 +57,21 @@ class UserAuthController {
       if (isTemporaryPassword) {
         const emailSent = await this.mailService.sendTemporaryPassword(email, first_name, password)
         if (!emailSent) {
-          await connection.rollback();
           return res.status(500).json({
             error: 'Error al enviar el email con la contraseña temporal'
           });
         }
       }
 
-      await connection.commit();
       return res.status(201).json({
         message: 'Usuario registrado exitosamente',
         user: newUser
       })
     } catch (error) {
-      await connection.rollback();
       return res.status(500).json({
         error: 'Hubo un error al registrar el usuario',
-        details:
-          process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       })
-    } finally {
-      connection.release();
     }
   }
   login = async (req, res) => {
