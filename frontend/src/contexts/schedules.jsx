@@ -14,6 +14,7 @@ export const ScheduleProvider = ({ children }) => {
   const [schedules, setSchedules] = useState([]);
   const [classes, setClasses] = useState([]);
   const [classesByGroupId, setClassesByGroupId] = useState([]);
+  const [classInfo, setClassInfo] = useState(null);
 
   async function fetchSchedules(companyId) {
     try {
@@ -92,6 +93,33 @@ export const ScheduleProvider = ({ children }) => {
     } catch (error) {
       setSnackbarErrorMessage("Error al obtener las clases");
       console.error("Error al obtener las clases:", error);
+    }
+  }
+
+  async function getClassById(classId) {
+    try {
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/schedules/classes/info/${classId}`,
+        {
+          method: "GET",
+        },
+        refreshToken,
+        logout
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.message);
+        return null;
+      }
+
+      const data = await res.json();
+      setClassInfo(data.data);
+      return;
+    } catch (error) {
+      setSnackbarErrorMessage("Error al obtener la información de la clase");
+      console.error("Error al obtener la información de la clase:", error);
+      return null;
     }
   }
 
@@ -225,6 +253,7 @@ export const ScheduleProvider = ({ children }) => {
       return null;
     }
   }
+  /* EDITAR CLASE (AGREGAR ASISTENCIA, OBSERVACIONES, ACTIVIDADES, CONTENIDO) */
   async function updateClass(classId, classData) {
     try {
       const res = await fetchWithAuth(
@@ -233,7 +262,7 @@ export const ScheduleProvider = ({ children }) => {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(classData),
-          },
+        },
         refreshToken,
         logout
       );
@@ -265,12 +294,15 @@ export const ScheduleProvider = ({ children }) => {
     fetchSchedules,
     fetchClassesByDateAndCompany,
     fetchClassesByGroupId,
+    getClassById,
     errorMessage,
     classes,
     setClasses,
     classesByGroupId,
     setClassesByGroupId,
     updateClass,
+    classInfo,
+    setClassInfo,
   };
 
   return (

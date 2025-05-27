@@ -12,10 +12,13 @@ import {
   Typography,
   Switch,
   FormControlLabel,
+  RadioGroup,
+  Radio,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import LocalizationWrapper from "./LocalizationWrapper";
+
 export default function MyForm({
   fields,
   values = {},
@@ -118,6 +121,33 @@ export default function MyForm({
                           margin: "0 auto",
                         }}
                       />
+                    );
+                  } else if (field.type === "radio") {
+                    return (
+                      <FormControl component="fieldset" fullWidth>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>{field.label}</Typography>
+                        <RadioGroup
+                          row
+                          name={field.name}
+                          value={values[field.name]?.toString() ?? ''}
+                          onChange={(e) => {
+                            const newValue = field.options.find(opt => opt.value.toString() === e.target.value)?.value;
+                            onChange(field.name, newValue);
+                          }}
+                        >
+                          {field.options?.map((option, i) => (
+                            <FormControlLabel
+                              key={option.value ?? i}
+                              value={option.value.toString()}
+                              control={<Radio />}
+                              label={option.label}
+                            />
+                          ))}
+                        </RadioGroup>
+                        {errors && errors[field.name] && (
+                          <FormHelperText>{errors[field.name]}</FormHelperText>
+                        )}
+                      </FormControl>
                     );
                   }
                   return (
