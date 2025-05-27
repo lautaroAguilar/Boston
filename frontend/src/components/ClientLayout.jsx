@@ -11,8 +11,8 @@ import LocalizationWrapper from "./LocalizationWrapper";
 
 export default function ClientLayout({ children }) {
   return (
-    <AuthProvider>
-      <DashboardProvider>
+    <DashboardProvider>
+      <AuthProvider>
         <CompanyProvider>
           <StudentProvider>
             <TeacherProvider>
@@ -34,7 +34,7 @@ export default function ClientLayout({ children }) {
             </TeacherProvider>
           </StudentProvider>
         </CompanyProvider>
-      </DashboardProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </DashboardProvider>
   );
 }

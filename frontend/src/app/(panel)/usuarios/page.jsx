@@ -6,7 +6,6 @@ import { DataGrid } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import MyForm from "@/components/Form";
-import CONFIG from "../../../../config/api";
 import { useDashboard } from "@/contexts/dashboard";
 import { useCompany } from "@/contexts/companies";
 import { useAuth } from "@/contexts/auth";
@@ -14,7 +13,7 @@ import OptionsButton from "@/components/OptionsButton";
 import { Edit, Delete, PowerSettingsNew, Check } from "@mui/icons-material";
 
 export default function page() {
-  const { users, getUsers, updateUserStatus } = useAuth();
+  const { users, getUsers, updateUserStatus, createUser } = useAuth();
   const theme = createTheme(esES);
   const isMobile = useMediaQuery("(max-width:600px)");
   const {
@@ -35,7 +34,6 @@ export default function page() {
     first_name: "",
     last_name: "",
     email: "",
-    password: "",
     role_id: "",
     belongs_to: "",
   });
@@ -50,7 +48,6 @@ export default function page() {
     { name: "first_name", label: "Nombre", required: true },
     { name: "last_name", label: "Apellido", required: true },
     { name: "email", label: "Email", type: "email", required: true },
-    { name: "password", label: "Contraseña", type: "password", required: true },
     {
       name: "role_id",
       label: "Rol",
@@ -83,33 +80,25 @@ export default function page() {
   const handleSubmitRegister = async () => {
     setFormErrors({});
     try {
-      const response = await fetch(`${CONFIG.API_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formRegisterValues),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        /* CREAMOS OBJETO DE ERRORES PARA PASAR AL FORM COMPONENT */
-        if (Array.isArray(errorData)) {
-          const errorObj = errorData.reduce((acc, issue) => {
+      const result = await createUser(formRegisterValues);
+      
+      if (!result.success) {
+        if (Array.isArray(result.error)) {
+          const errorObj = result.error.reduce((acc, issue) => {
             const fieldName = issue.path[0];
             acc[fieldName] = issue.message;
             return acc;
           }, {});
           setFormErrors(errorObj);
         } else {
-          setSnackbarErrorMessage(errorData.message || "Error desconocido");
+          setSnackbarErrorMessage(result.error.message || "Error desconocido");
         }
         return;
       }
-      const data = await response.json();
-      setSnackbarMessage(data.message);
+      
+      setSnackbarMessage("Usuario registrado exitosamente. Se ha enviado una contraseña temporal al correo del usuario.");
       setCreated(true);
       setShowForm(false);
-      return;
     } catch (err) {
       setSnackbarErrorMessage(err.message);
       console.error("Error al registrar: ", err);
@@ -253,6 +242,9 @@ export default function page() {
           }}
         >
           <Typography variant="h4">Crear nuevo usuario</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Se generará automáticamente una contraseña temporal que será enviada al correo electrónico del usuario.
+          </Typography>
           <MyForm
             fields={fieldsRegister}
             values={formRegisterValues}

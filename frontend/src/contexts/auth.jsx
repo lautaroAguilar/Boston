@@ -3,9 +3,11 @@ import { createContext, useState, useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
 import CONFIG from "../../config/api";
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
+import { useDashboard } from "@/contexts/dashboard";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const { setSnackbarErrorMessage } = useDashboard();
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
@@ -32,6 +34,45 @@ export const AuthProvider = ({ children }) => {
       return;
     } catch (error) {
       console.log("error al buscar usuarios", error);
+    }
+  };
+
+  const createUser = async (userData) => {
+    try {
+      // Siempre establecemos is_temp_password en true para que se genere una contraseña automática
+      const dataToSend = {
+        ...userData,
+        is_temp_password: true,
+      };
+
+      const response = await fetchWithAuth(
+        `${CONFIG.API_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(dataToSend),
+        },
+        refreshToken,
+        logout
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return { success: false, error: errorData };
+      }
+
+      const data = await response.json();
+      await getUsers(); // Actualizamos la lista de usuarios
+
+      return { success: true, data };
+    } catch (err) {
+      console.error("Error al registrar el usuario:", err);
+      return {
+        success: false,
+        error: { message: "Error de conexión al registrar el usuario" },
+      };
     }
   };
 
@@ -174,6 +215,44 @@ export const AuthProvider = ({ children }) => {
       console.log(error);
     }
   };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      if (!user?.userId) {
+        return { success: false, error: "Usuario no autenticado" };
+      }
+
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/password/change`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword,
+          }),
+        },
+        refreshToken,
+        logout
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        return { success: false, error: errorData.error };
+      }
+      const data = await res.json();
+      return { success: true, message: data.message };
+    } catch (error) {
+      console.error("Error al cambiar la contraseña:", error);
+      return {
+        success: false,
+        error: "Error de conexión al cambiar la contraseña",
+      };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -188,6 +267,8 @@ export const AuthProvider = ({ children }) => {
         setUsers,
         getUsers,
         updateUserStatus,
+        createUser,
+        changePassword,
       }}
     >
       {children}
