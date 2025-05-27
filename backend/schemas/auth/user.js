@@ -14,14 +14,19 @@ const userSchema = z.object({
     .trim()
     .min(1, 'El email es requerido')
     .email('El email debe ser válido'),
-  role_id: z.number({ invalid_type_error: 'Por favor, selecciona un rol.' }).int(),
-  belongs_to: z
+  password: z
     .string()
+    .trim()
+    .min(6, 'La contraseña debe tener al menos 6 caracteres')
     .optional(),
-  active: z.union([
-    z.boolean(),
-    z.number().transform(val => Boolean(val))
-  ]).default(true).optional(),
+  role_id: z
+    .number({ invalid_type_error: 'Por favor, selecciona un rol.' })
+    .int(),
+  belongs_to: z.string().optional(),
+  active: z
+    .union([z.boolean(), z.number().transform((val) => Boolean(val))])
+    .default(true)
+    .optional(),
   is_temp_password: z.boolean().default(false).optional()
 })
 
@@ -34,7 +39,17 @@ function validatePartialRegister(user) {
 }
 
 function validateLogin(user) {
-  const loginSchema = userSchema.pick({ email: true, password: true })
+  const loginSchema = z.object({
+    email: z
+      .string({ required_error: 'El email es requerido' })
+      .trim()
+      .min(1, 'El email es requerido')
+      .email('El email debe ser válido'),
+    password: z
+      .string({ required_error: 'La contraseña es requerida' })
+      .trim()
+      .min(1, 'La contraseña es requerida')
+  });
   return loginSchema.safeParse(user)
 }
 
