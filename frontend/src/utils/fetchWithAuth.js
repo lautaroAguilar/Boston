@@ -8,8 +8,8 @@ import CONFIG from "../../config/api";
  * @param {function} logoutFn - Función para cerrar sesión si el refresh falla
  * @returns {Promise<Response>} - Respuesta de fetch
  */
-export async function fetchWithAuth(url, options, refreshTokenFn, logoutFn) {
-  let res = await fetch(url, options);
+export async function fetchWithAuth(url, options = {}, refreshTokenFn, logoutFn) {
+  let res = await fetch(url, { ...options, credentials: "include" });
 
   if (res.status === 401) {
     // Intentar refrescar el token
@@ -20,7 +20,7 @@ export async function fetchWithAuth(url, options, refreshTokenFn, logoutFn) {
       throw new Error("No autorizado");
     }
     // Reintentar la petición original
-    res = await fetch(url, options);
+    res = await fetch(url, { ...options, credentials: "include" });
   }
 
   return res;
