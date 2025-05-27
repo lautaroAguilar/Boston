@@ -519,17 +519,25 @@ class ScheduleModel {
         whereClause += ' AND c.teacherId = ?'
         params.push(parseInt(filters.teacherId))
       }
+      // Filtrar por ID de clase
+      if (filters.id) {
+        whereClause += ' AND c.id = ?'
+        params.push(parseInt(filters.id))
+      }
       
       const query = `
         SELECT 
-          c.id, c.date, c.startTime, c.endTime,
+          c.id, c.date, c.startTime, c.endTime, c.teacherAttendance, c.activities, c.observations, c.content,
           g.id as groupId, g.name as groupName,
           l.id as languageId, l.name as languageName,
           m.id as moduleId, m.name as moduleName,
           md.id as modalityId, md.name as modalityName,
           gs.id as statusId, gs.name as statusName,
           cp.id as companyId, cp.name as companyName,
-          t.id as teacherId, t.firstName as teacherFirstName, t.lastName as teacherLastName
+          t.id as teacherId, t.firstName as teacherFirstName, t.lastName as teacherLastName,
+          a.id as attendanceId, a.studentId as attendanceStudentId, a.status as attendanceStatus, 
+          a.timeAttendance as attendanceTime, a.date as attendanceDate,
+          s.first_name as studentFirstName, s.last_name as studentLastName
         FROM Class c
         JOIN \`Group\` g ON c.groupId = g.id
         LEFT JOIN languages l ON g.languageId = l.id
@@ -538,6 +546,8 @@ class ScheduleModel {
         LEFT JOIN GroupStatus gs ON g.statusId = gs.id
         LEFT JOIN company cp ON g.companyId = cp.id
         LEFT JOIN Teacher t ON c.teacherId = t.id
+        LEFT JOIN Attendance a ON c.id = a.classId
+        LEFT JOIN students s ON a.studentId = s.id
         WHERE ${whereClause}
         ORDER BY c.date ASC, c.startTime ASC
       `;
@@ -549,11 +559,107 @@ class ScheduleModel {
         return [];
       }
       
-      // Obtener estudiantes para cada clase
-      const classesWithDetails = [];
+      // Agrupar las clases por ID para manejar múltiples registros de asistencia
+      const classMap = new Map();
       
-      for (const classItem of classes) {
-        // Obtener estudiantes del grupo
+      for (const row of classes) {
+        if (!classMap.has(row.id)) {
+          // Crear una nueva entrada para la clase
+          const classItem = {
+            id: row.id,
+            date: row.date,
+            startTime: row.startTime,
+            endTime: row.endTime,
+            teacherAttendance: row.teacherAttendance,
+            activities: row.activities,
+            observations: row.observations,
+            content: row.content,
+            group: {
+              id: row.groupId,
+              name: row.groupName,
+              language: {
+                id: row.languageId,
+                name: row.languageName
+              },
+              module: {
+                id: row.moduleId,
+                name: row.moduleName
+              },
+              modality: {
+                id: row.modalityId,
+                name: row.modalityName
+              },
+              status: {
+                id: row.statusId,
+                name: row.statusName
+              },
+              company: {
+                id: row.companyId,
+                name: row.companyName
+              },
+              students: []
+            },
+            teacher: {
+              id: row.teacherId,
+              firstName: row.teacherFirstName,
+              lastName: row.teacherLastName
+            },
+            attendances: []
+          };
+          
+          // Calcular la duración en horas
+          let durationHours = null;
+          try {
+            if (row.startTime && row.endTime) {
+              const startParts = row.startTime.toString().split(':');
+              const endParts = row.endTime.toString().split(':');
+              
+              if (startParts.length >= 2 && endParts.length >= 2) {
+                const startHours = parseInt(startParts[0], 10);
+                const startMinutes = parseInt(startParts[1], 10);
+                const endHours = parseInt(endParts[0], 10);
+                const endMinutes = parseInt(endParts[1], 10);
+                
+                const startTotalMinutes = startHours * 60 + startMinutes;
+                const endTotalMinutes = endHours * 60 + endMinutes;
+                
+                let diffMinutes = endTotalMinutes - startTotalMinutes;
+                if (diffMinutes < 0) {
+                  diffMinutes += 24 * 60;
+                }
+                
+                durationHours = diffMinutes / 60;
+              }
+            }
+          } catch (error) {
+            console.error('Error al calcular la duración:', error);
+          }
+          
+          classItem.duration = durationHours;
+          classMap.set(row.id, classItem);
+        }
+        
+        // Agregar la asistencia si existe
+        if (row.attendanceId) {
+          const attendance = {
+            id: row.attendanceId,
+            studentId: row.attendanceStudentId,
+            status: row.attendanceStatus,
+            timeAttendance: row.attendanceTime,
+            date: row.attendanceDate,
+            student: {
+              id: row.attendanceStudentId,
+              first_name: row.studentFirstName,
+              last_name: row.studentLastName
+            }
+          };
+          
+          classMap.get(row.id).attendances.push(attendance);
+        }
+      }
+      
+      // Obtener estudiantes para cada clase
+      for (const [classId, classItem] of classMap) {
         const [students] = await connection.query(
           `SELECT 
             s.id, s.first_name, s.last_name,
@@ -564,96 +670,26 @@ class ScheduleModel {
           JOIN students s ON gs.studentId = s.id
           JOIN StudentStatus ss ON gs.statusId = ss.id
           WHERE gs.groupId = ?`,
-          [classItem.groupId]
+          [classItem.group.id]
         );
         
-        // Calcular la duración en horas basada en startTime y endTime
-        let durationHours = null;
-        
-        try {
-          if (classItem.startTime && classItem.endTime) {
-            // Convertir ambos timestamps a objetos Date para la comparación
-            const startParts = classItem.startTime.toString().split(':');
-            const endParts = classItem.endTime.toString().split(':');
-            
-            if (startParts.length >= 2 && endParts.length >= 2) {
-              const startHours = parseInt(startParts[0], 10);
-              const startMinutes = parseInt(startParts[1], 10);
-              
-              const endHours = parseInt(endParts[0], 10);
-              const endMinutes = parseInt(endParts[1], 10);
-              
-              // Calcular la diferencia en minutos
-              const startTotalMinutes = startHours * 60 + startMinutes;
-              const endTotalMinutes = endHours * 60 + endMinutes;
-              
-              let diffMinutes = endTotalMinutes - startTotalMinutes;
-              // Manejar casos donde endTime es al día siguiente
-              if (diffMinutes < 0) {
-                diffMinutes += 24 * 60;
-              }
-              
-              // Convertir minutos a horas para la visualización
-              durationHours = diffMinutes / 60;
-            }
-          }
-        } catch (error) {
-          console.error('Error al calcular la duración:', error);
-        }
-        
-        classesWithDetails.push({
-          id: classItem.id,
-          date: classItem.date,
-          startTime: classItem.startTime,
-          endTime: classItem.endTime,
-          duration: durationHours,
-          studentsCount: students.length,
-          level: classItem.moduleName,
-          group: {
-            id: classItem.groupId,
-            name: classItem.groupName,
-            language: {
-              id: classItem.languageId,
-              name: classItem.languageName
-            },
-            module: {
-              id: classItem.moduleId,
-              name: classItem.moduleName
-            },
-            modality: {
-              id: classItem.modalityId,
-              name: classItem.modalityName
-            },
-            status: {
-              id: classItem.statusId,
-              name: classItem.statusName
-            },
-            company: {
-              id: classItem.companyId,
-              name: classItem.companyName
-            },
-            students: students.map(student => ({
-              student: {
-                id: student.id,
-                first_name: student.first_name,
-                last_name: student.last_name
-              },
-              status: {
-                id: student.statusId,
-                name: student.statusName,
-                description: student.statusDescription
-              }
-            }))
+        classItem.group.students = students.map(student => ({
+          student: {
+            id: student.id,
+            first_name: student.first_name,
+            last_name: student.last_name
           },
-          teacher: {
-            id: classItem.teacherId,
-            firstName: classItem.teacherFirstName,
-            lastName: classItem.teacherLastName
+          status: {
+            id: student.statusId,
+            name: student.statusName,
+            description: student.statusDescription
           }
-        });
+        }));
+        
+        classItem.studentsCount = students.length;
       }
       
-      return classesWithDetails;
+      return Array.from(classMap.values());
     } catch (error) {
       console.error('Error en ScheduleModel._getClasses:', error);
       throw error;
@@ -706,7 +742,18 @@ class ScheduleModel {
       connection.release()
     }
   }
-
+  static async getClassesById(classId) {
+    const connection = await pool.getConnection()
+    try {
+      const classes = await this._getClasses(connection, { id: classId })
+      return classes
+    } catch (error) {
+      console.error('Error en ScheduleModel.getClassesById:', error)
+      throw error
+    } finally {
+      connection.release()
+    }
+  }
   static async updateClass(classId, updateData) {
     const connection = await pool.getConnection();
     try {

@@ -28,6 +28,13 @@ scheduleRouter.get(
   scheduleController.getClassesByGroup
 )
 
+// Obtener una clase específica por ID
+scheduleRouter.get(
+  '/classes/info/:classId',
+  authenticateToken,
+  scheduleController.getClassById
+)
+
 // Actualizar una clase existente
 scheduleRouter.put(
   '/classes/:classId',

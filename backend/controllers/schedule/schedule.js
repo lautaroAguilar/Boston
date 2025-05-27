@@ -173,7 +173,7 @@ class ScheduleController {
         parseInt(companyId)
       )
 
-      res.json({
+      res.status(201).json({
         message: 'Clases obtenidas exitosamente',
         data: classes
       })
@@ -195,7 +195,7 @@ class ScheduleController {
       const classes = await this.scheduleModel.getClassesByGroup(
         parseInt(groupId)
       )
-      res.json({
+      res.status(201).json({
         message: 'Clases obtenidas exitosamente',
         data: classes
       })
@@ -203,6 +203,31 @@ class ScheduleController {
       console.error('Error en ScheduleController.getClassesByGroup:', error)
       res.status(500).json({
         message: 'Error al obtener las clases',
+        details:
+          process.env.NODE_ENV === 'development' ? error.message : undefined
+      })
+    }
+  }
+
+  getClassById = async (req, res) => {
+    try {
+      const { classId } = req.params
+      const classes = await this.scheduleModel.getClassesById(parseInt(classId))
+      
+      if (!classes || classes.length === 0) {
+        return res.status(404).json({
+          message: 'Clase no encontrada'
+        })
+      }
+
+      res.status(201).json({
+        message: 'Clase obtenida exitosamente',
+        data: classes[0]
+      })
+    } catch (error) {
+      console.error('Error en ScheduleController.getClassById:', error)
+      res.status(500).json({
+        message: 'Error al obtener la clase',
         details:
           process.env.NODE_ENV === 'development' ? error.message : undefined
       })
@@ -221,8 +246,11 @@ class ScheduleController {
       if (!classId || Object.keys(validatedData.data).length === 0) {
         return res.status(400).json({ message: 'Datos insuficientes para actualizar la clase' })
       }
-      await this.scheduleModel.updateClass(parseInt(classId), validatedData.data)
-      res.json({ message: 'Clase actualizada exitosamente' })
+      const result = await this.scheduleModel.updateClass(parseInt(classId), validatedData.data)
+      if (!result) {
+        return res.status(400).json({ message: 'Error al actualizar la clase' })
+      }
+      res.status(200).json({ message: 'Clase actualizada exitosamente', data: result })
     } catch (error) {
       console.error('Error en ScheduleController.updateClass:', error)
       res.status(500).json({
