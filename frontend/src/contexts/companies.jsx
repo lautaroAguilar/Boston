@@ -263,7 +263,14 @@ export const CompanyProvider = ({ children }) => {
   /* FUNCION PARA OBTENER TODAS LAS EMPRESAS COMPLETAS CON SUS CC, SECTORES Y CONTACTOS */
   const fetchCompaniesInfo = async () => {
     try {
-      const response = await fetchWithAuth(
+      const response = await fetch(`${CONFIG.API_URL}/companies`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      /* const response = await fetchWithAuth(
         `${CONFIG.API_URL}/companies`,
         {
           method: "GET",
@@ -274,7 +281,7 @@ export const CompanyProvider = ({ children }) => {
         },
         refreshToken,
         logout
-      );
+      ); */
 
       const companiesData = await response.json();
       // Verificamos si companiesData es un array

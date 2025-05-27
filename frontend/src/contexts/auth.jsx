@@ -114,7 +114,14 @@ export const AuthProvider = ({ children }) => {
   const checkUserSession = async () => {
     try {
       setLoading(true);
-      const res = await fetchWithAuth(
+      const res = await fetch(`${CONFIG.API_URL}/auth/me`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      /* const res = await fetchWithAuth(
         `${CONFIG.API_URL}/auth/me`,
         {
           method: "GET",
@@ -125,7 +132,7 @@ export const AuthProvider = ({ children }) => {
         },
         refreshToken,
         logout
-      );
+      ); */
 
       if (res.status === 401) {
         // Si recibimos 401, intentamos refrescar el token
