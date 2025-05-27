@@ -118,6 +118,10 @@ export const AuthProvider = ({ children }) => {
         `${CONFIG.API_URL}/auth/me`,
         {
           method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
         refreshToken,
         logout

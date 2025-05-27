@@ -267,6 +267,10 @@ export const CompanyProvider = ({ children }) => {
         `${CONFIG.API_URL}/companies`,
         {
           method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
         refreshToken,
         logout
