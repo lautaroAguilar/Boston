@@ -3,6 +3,7 @@ import CONFIG from "../../config/api";
 import { useDashboard } from "./dashboard";
 import { useAuth } from "./auth";
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
+import { formatDateForAPI, formatTimeForAPI } from "@/utils/dateUtils";
 const ScheduleContext = createContext();
 
 export const ScheduleProvider = ({ children }) => {
@@ -128,11 +129,11 @@ export const ScheduleProvider = ({ children }) => {
     setErrorMessage("");
     try {
       const transformedData = {
-        startDate: scheduleData.startDate.format("YYYY-MM-DD"),
-        endDate: scheduleData.endDate.format("YYYY-MM-DD"),
+        startDate: formatDateForAPI(scheduleData.startDate),
+        endDate: formatDateForAPI(scheduleData.endDate),
         days: scheduleData.weekDays.map((dayId) => ({
           dayOfWeek: dayId,
-          startTime: scheduleData.startTime,
+          startTime: formatTimeForAPI(scheduleData.startTime),
           duration: scheduleData.duration,
         })),
       };
@@ -207,11 +208,11 @@ export const ScheduleProvider = ({ children }) => {
     setErrorMessage("");
     try {
       const transformedData = {
-        startDate: scheduleData.startDate,
-        endDate: scheduleData.endDate,
+        startDate: formatDateForAPI(scheduleData.startDate),
+        endDate: formatDateForAPI(scheduleData.endDate),
         days: scheduleData.weekDays.map((dayId) => ({
           dayOfWeek: dayId,
-          startTime: scheduleData.startTime,
+          startTime: formatTimeForAPI(scheduleData.startTime),
           duration: scheduleData.duration,
         })),
       };
@@ -282,12 +283,38 @@ export const ScheduleProvider = ({ children }) => {
       return null;
     }
   }
+  async function addSingleClass(groupId, classData) {
+    try {
+      const res = await fetchWithAuth(
+        `${CONFIG.API_URL}/schedules/${groupId}/add-class`,
+        { 
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(classData),
+        },
+        refreshToken,
+        logout
+      );
 
+      if (!res.ok) {
+        const errorData = await res.json();
+        setSnackbarErrorMessage(errorData.message);
+        return null;
+      }
+
+      const data = await res.json();
+      setSnackbarMessage("Clase agregada exitosamente");
+      return data;
+    } catch (error) {
+      setSnackbarErrorMessage("Error al agregar la clase");
+      console.error("Error al agregar la clase:", error);
+      return null;
+    }
+  }
   const value = {
     schedules,
     formErrors,
     setFormErrors,
-    scheduleCreated,
     createSchedule,
     getScheduleByGroupId,
     updateSchedule,
@@ -303,6 +330,7 @@ export const ScheduleProvider = ({ children }) => {
     updateClass,
     classInfo,
     setClassInfo,
+    addSingleClass,
   };
 
   return (

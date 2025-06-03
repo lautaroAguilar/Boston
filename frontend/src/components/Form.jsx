@@ -18,6 +18,7 @@ import {
 import { DatePicker } from "@mui/x-date-pickers";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import LocalizationWrapper from "./LocalizationWrapper";
+import { TimePicker } from '@mui/x-date-pickers';
 
 export default function MyForm({
   fields,
@@ -90,6 +91,23 @@ export default function MyForm({
                         value={values[field.name] ?? null}
                         onChange={(newValue) => onChange(field.name, newValue)}
                         format="DD/MM/YYYY"
+                        slotProps={{
+                          textField: {
+                            error: Boolean(errors[field.name]),
+                            helperText: errors[field.name] ?? "",
+                          },
+                        }}
+                      />
+                    </LocalizationWrapper>
+                  );
+                case "time":
+                  return (
+                    <LocalizationWrapper>
+                      <TimePicker
+                        label={field.label}
+                        value={values[field.name] ?? null}
+                        onChange={(newValue) => onChange(field.name, newValue)}
+                        format="HH:mm"
                         slotProps={{
                           textField: {
                             error: Boolean(errors[field.name]),

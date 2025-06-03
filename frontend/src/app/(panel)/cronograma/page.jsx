@@ -36,7 +36,8 @@ import {
 } from "@/utils/dateUtils";
 import moment from "moment";
 import "moment/locale/es";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DatePicker,TimePicker } from "@mui/x-date-pickers";
+
 import LocalizationWrapper from "@/components/LocalizationWrapper";
 import OptionsButton from "@/components/OptionsButton";
 import { useRouter } from "next/navigation";
@@ -100,9 +101,9 @@ export default function Page() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedDate, setSelectedDate] = useState(moment());
   const [formValues, setFormValues] = useState({
-    startDate: moment(),
-    endDate: moment(),
-    startTime: "",
+    startDate: null,
+    endDate: null,
+    startTime: null,
     duration: null,
     weekDays: [],
   });
@@ -115,9 +116,9 @@ export default function Page() {
     setShowForm(true);
     setFormErrors({});
     setFormValues({
-      startDate: moment(),
-      endDate: moment(),
-      startTime: "",
+      startDate: null,
+      endDate: null,
+      startTime: null,
       duration: null,
       weekDays: [],
     });
@@ -127,9 +128,9 @@ export default function Page() {
     setShowForm(false);
     setFormErrors({});
     setFormValues({
-      startDate: moment(),
-      endDate: moment(),
-      startTime: "",
+      startDate: null,
+      endDate: null,
+      startTime: null,
       duration: null,
       weekDays: [],
     });
@@ -138,8 +139,8 @@ export default function Page() {
 
   const handleFormChange = (field, value) => {
     if (field === "duration") {
-      // Si el valor está vacío, establecer como null
-      const newValue = value === "" ? null : parseInt(value);
+      // Si el valor está vacío, establecer como undefined
+      const newValue = value === "" ? undefined : parseInt(value);
       setFormValues((prev) => ({
         ...prev,
         [field]: newValue,
@@ -151,7 +152,7 @@ export default function Page() {
       }));
     }
   };
-
+console.log(selectedDate)
   const handleWeekDayToggle = (dayId) => {
     setFormValues((prev) => ({
       ...prev,
@@ -558,19 +559,16 @@ export default function Page() {
                 sx={{ marginTop: 2 }}
               />
             </LocalizationWrapper>
-            <TextField
-              fullWidth
-              label="Horario de clases"
-              value={formValues.startTime}
-              onChange={(e) => handleFormChange("startTime", e.target.value)}
-              error={!!formErrors.startTime}
-              helperText={
-                formErrors.startTime || "Formato: HH:MM (ejemplo: 09:00)"
-              }
-              placeholder="09:00"
-              margin="normal"
-            />
-
+            <LocalizationWrapper>
+              <TimePicker
+                label="Horario de clases"
+                value={formValues.startTime}
+                onChange={(newValue) => handleFormChange("startTime", newValue || null)}
+                format="HH:mm"
+                sx={{ marginTop: 2 }}
+              />
+            </LocalizationWrapper>
+              
             <TextField
               fullWidth
               type="number"

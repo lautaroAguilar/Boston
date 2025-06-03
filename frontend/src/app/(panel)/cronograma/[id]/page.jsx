@@ -25,10 +25,15 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
 import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles";
-import { FileDownloadOutlined, Add, Edit as EditIcon } from "@mui/icons-material";
-import { formatDate, formatTime } from "@/utils/dateUtils";
+import {
+  FileDownloadOutlined,
+  Add,
+  Edit as EditIcon,
+} from "@mui/icons-material";
+import { formatDate, formatTime, formatDateForAPI, formatTimeForAPI} from "@/utils/dateUtils";
 import OptionsButton from "@/components/OptionsButton";
 import EditModal from "@/components/EditModal";
+import MyForm from "@/components/Form";
 
 const daysOfWeek = [
   { id: 0, label: "Domingo" },
@@ -73,6 +78,7 @@ export default function ScheduleDetail() {
     updateClass,
     getClassById,
     classInfo,
+    addSingleClass,
   } = useSchedule();
   const { fetchGroupById } = useGroup();
   const {
@@ -95,10 +101,15 @@ export default function ScheduleDetail() {
     content: "",
     attendances: [],
   });
+  const [openAddClassModal, setOpenAddClassModal] = useState(false);
+  const [addClassForm, setAddClassForm] = useState({
+    date: null,
+    startTime: null,
+    endTime: null,
+  });
 
   const handleAddClass = () => {
-    console.log("Agregando nueva clase...");
-    // Implementar lógica para agregar una nueva clase
+    setOpenAddClassModal(true);
   };
 
   const handleObservationChange = (field, value) => {
@@ -234,37 +245,37 @@ export default function ScheduleDetail() {
         type: "radio",
         options: [
           { value: true, label: "Asistió" },
-          { value: false, label: "No asistió" }
-        ]
+          { value: false, label: "No asistió" },
+        ],
       },
       {
         name: "activities",
         label: "Actividades",
         type: "textarea",
         multiline: true,
-        rows: 4
+        rows: 4,
       },
       {
         name: "observations",
         label: "Observaciones",
-        type: "textarea"
+        type: "textarea",
       },
       {
         name: "content",
         label: "Contenido",
-        type: "textarea"
-      }
+        type: "textarea",
+      },
     ],
     onSubmit: async (data) => {
       const dataToSend = {
         ...data,
-        attendances: classInfo?.attendances || [] // Usar las asistencias actuales de classInfo
+        attendances: classInfo?.attendances || [], // Usar las asistencias actuales de classInfo
       };
       await updateClass(selectedClass.id, dataToSend);
       setOpenEditDialog(false);
       // Recargar la información de la clase
       await getClassById(selectedClass.id);
-    }
+    },
   };
 
   // Valores actuales para el modal de edición
@@ -274,7 +285,7 @@ export default function ScheduleDetail() {
       teacherAttendance: classInfo.teacherAttendance,
       activities: classInfo.activities || "",
       observations: classInfo.observations || "",
-      content: classInfo.content || ""
+      content: classInfo.content || "",
     };
   };
 
@@ -323,7 +334,7 @@ export default function ScheduleDetail() {
             label: "Ver información",
             onClick: async () => {
               await handleOpenViewModal(params.row);
-            }
+            },
           });
         }
 
@@ -337,7 +348,7 @@ export default function ScheduleDetail() {
             } else {
               handleOpenObservationModal(params.row);
             }
-          }
+          },
         });
 
         return <OptionsButton options={options} row={params.row} />;
@@ -406,6 +417,48 @@ export default function ScheduleDetail() {
     );
     return studentAttendance ? studentAttendance.status : "WN";
   };
+
+  const handleSaveNewClass = async () => {
+    // Formatear los datos antes de enviar
+    const formattedClassData = {
+      date: formatDateForAPI(addClassForm.date),
+      startTime: formatTimeForAPI(addClassForm.startTime),
+      endTime: formatTimeForAPI(addClassForm.endTime),
+    };
+
+    await addSingleClass(groupId, formattedClassData);
+    setAddClassForm({
+      date: null,
+      startTime: null,
+      endTime: null,
+    });
+    setOpenAddClassModal(false);
+  };
+
+  // Definir los campos para el formulario de agregar clase
+  const addClassFields = [
+    {
+      name: "date",
+      label: "Fecha",
+      type: "date",
+      component: "date",
+      required: true,
+    },
+    {
+      name: "startTime",
+      label: "Hora de inicio",
+      type: "time",
+      component: "time",
+      required: true,
+    },
+    {
+      name: "endTime",
+      label: "Hora de fin",
+      type: "time",
+      component: "time",
+      required: true,
+    },
+  ];
 
   return (
     <Box sx={{ p: 1 }}>
@@ -737,7 +790,14 @@ export default function ScheduleDetail() {
         >
           {classInfo ? (
             <>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
                 <Typography variant="h6" component="h2">
                   Información de la clase
                 </Typography>
@@ -918,6 +978,43 @@ export default function ScheduleDetail() {
               </Typography>
             </Box>
           )}
+        </Box>
+      </Modal>
+
+      {/* Modal para agregar nueva clase */}
+      <Modal
+        open={openAddClassModal}
+        onClose={() => setOpenAddClassModal(false)}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography variant="h6" component="h2" gutterBottom>
+            Agregar nueva clase
+          </Typography>
+
+          <MyForm
+            fields={addClassFields}
+            values={addClassForm}
+            onChange={(name, value) =>
+              setAddClassForm({ ...addClassForm, [name]: value })
+            }
+          />
+
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+            <Button variant="contained" onClick={handleSaveNewClass}>
+              GUARDAR CLASE
+            </Button>
+          </Box>
         </Box>
       </Modal>
     </Box>

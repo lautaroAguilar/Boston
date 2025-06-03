@@ -4,23 +4,24 @@ import 'moment/locale/es';
 // Configurar momento para usar español
 moment.locale('es');
 
-// Offset horario para Argentina (GMT-3)
-const ARGENTINA_OFFSET = -3;
+/**
+ * Formatea una fecha para enviar a la API (YYYY-MM-DD)
+ * @param {moment.Moment|Date} date - Objeto Date o Moment
+ * @returns {string} Fecha formateada como YYYY-MM-DD
+ */
+export const formatDateForAPI = (date) => {
+  // Asegurarse de que la fecha esté en formato YYYY-MM-DD
+  return moment(date).format('YYYY-MM-DD');
+};
 
 /**
- * Convierte una fecha UTC a la zona horaria de Argentina
- * @param {string|moment.Moment} date - Fecha en formato UTC
- * @returns {moment.Moment} Fecha ajustada a GMT-3 (Argentina)
+ * Formatea una hora para enviar a la API (HH:mm)
+ * @param {moment.Moment|Date} time - Objeto Date o Moment
+ * @returns {string} Hora formateada como HH:mm
  */
-export const toArgentinaTime = (date) => {
-  if (!date) return null;
-  
-  const momentDate = typeof date === 'string' ? moment(date) : moment(date);
-  
-  if (!momentDate.isValid()) return null;
-  
-  // Ajustar el offset para Argentina (GMT-3)
-  return momentDate.utcOffset(ARGENTINA_OFFSET * 60);
+export const formatTimeForAPI = (time) => {
+  // Asegurarse de que la hora esté en formato HH:mm
+  return moment(time, 'HH:mm').format('HH:mm');
 };
 
 /**
@@ -76,32 +77,14 @@ export const formatTime = (time) => {
     // Intentar convertir con moment
     const momentTime = moment(actualTime);
     if (!momentTime.isValid()) return 'N/A';
-
-    // Convertir a zona horaria de Argentina
-    const argentinaTime = toArgentinaTime(momentTime);
     
-    return argentinaTime.format('HH:mm');
+    return momentTime.format('HH:mm');
   } catch (error) {
     console.error('Error al formatear hora:', error);
     return 'N/A';
   }
 };
 
-/**
- * Formatea una fecha para enviar a la API (YYYY-MM-DD)
- * @param {moment.Moment|Date} date - Objeto Date o Moment
- * @returns {string} Fecha formateada como YYYY-MM-DD
- */
-export const formatDateForAPI = (date) => {
-  if (!date) return '';
-  
-  try {
-    return moment(date).format('YYYY-MM-DD');
-  } catch (error) {
-    console.error('Error al formatear fecha para API:', error);
-    return '';
-  }
-};
 
 /**
  * Convierte duración en horas a formato legible (X hs o X hs Y min)
