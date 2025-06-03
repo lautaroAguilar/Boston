@@ -62,7 +62,7 @@ scheduleRouter.delete('/:groupId', authenticateToken, scheduleController.delete)
 
 // Agregar una clase individual al cronograma
 scheduleRouter.post(
-  '/:groupId/class',
+  '/:groupId/add-class',
   authenticateToken,
   scheduleController.addSingleClass
 )

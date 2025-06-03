@@ -1,41 +1,49 @@
 const { pool } = require('../../config/database.js')
 const { validateClass } = require('../../schemas/class/class');
 const { AttendanceModel } = require('../attendance/attendance');
+const { Temporal } = require('temporal-polyfill');
 
 class ScheduleModel {
   static async generateClasses(groupId, scheduleData, teacherId) {
     const classes = []
-    const startDate = new Date(scheduleData.startDate)
-    const endDate = new Date(scheduleData.endDate)
+    
+    // Usar Temporal.PlainDate para fechas sin zona horaria
+    const startDate = Temporal.PlainDate.from(scheduleData.startDate)
+    const endDate = Temporal.PlainDate.from(scheduleData.endDate)
 
-    // Iteramos por cada día entre startDate y endDate
-    for (
-      let date = new Date(startDate);
-      date <= endDate;
-      date.setDate(date.getDate() + 1)
-    ) {
+    // Iterar por cada día de manera segura
+    let currentDate = startDate
+    while (Temporal.PlainDate.compare(currentDate, endDate) <= 0) {
       // Para cada día en el cronograma
       for (const day of scheduleData.days) {
-        // Si el día de la semana coincide (0 = Domingo, 6 = Sábado)
-        if (date.getDay() === day.dayOfWeek) {
-          // Parseamos la hora de inicio
-          const [hours, minutes] = day.startTime.split(':').map(Number)
-          const startTime = new Date(date)
-          startTime.setHours(hours, minutes, 0)
-
-          // Calculamos la hora de fin basada en la duración
-          const endTime = new Date(startTime)
-          endTime.setMinutes(endTime.getMinutes() + day.duration)
+        // Temporal usa 1-7 (Lunes-Domingo), JavaScript Date usa 0-6 (Domingo-Sábado)
+        // Convertir dayOfWeek del formato JavaScript (0=Domingo) al formato Temporal (7=Domingo)
+        const temporalDayOfWeek = day.dayOfWeek === 0 ? 7 : day.dayOfWeek
+        
+        // Si el día de la semana coincide
+        if (currentDate.dayOfWeek === temporalDayOfWeek) {
+          // Crear PlainTime para la hora de inicio
+          const startTime = Temporal.PlainTime.from(day.startTime)
+          
+          // Combinar fecha y hora
+          const startDateTime = currentDate.toPlainDateTime(startTime)
+          
+          // Calcular hora de fin usando Duration
+          const duration = Temporal.Duration.from({ minutes: day.duration })
+          const endDateTime = startDateTime.add(duration)
 
           classes.push({
             groupId: parseInt(groupId),
             teacherId: teacherId,
-            date: new Date(date),
-            startTime,
-            endTime
+            date: currentDate.toString(), // YYYY-MM-DD formato
+            startTime: startDateTime.toPlainTime().toString(), // HH:MM:SS formato
+            endTime: endDateTime.toPlainTime().toString()
           })
         }
       }
+      
+      // Avanzar un día de manera segura
+      currentDate = currentDate.add({ days: 1 })
     }
 
     return classes
@@ -59,6 +67,10 @@ class ScheduleModel {
       
       const group = groups[0]
 
+      // Convertir fechas para la base de datos usando Temporal
+      const startDateForDB = Temporal.PlainDate.from(scheduleData.startDate).toString()
+      const endDateForDB = Temporal.PlainDate.from(scheduleData.endDate).toString()
+
       // Creamos el cronograma
       const [scheduleResult] = await connection.query(
         `INSERT INTO Schedule (
@@ -68,8 +80,8 @@ class ScheduleModel {
           parseInt(groupId),
           group.companyId,
           JSON.stringify(scheduleData.days),
-          new Date(scheduleData.startDate),
-          new Date(scheduleData.endDate)
+          startDateForDB,
+          endDateForDB
         ]
       )
 
@@ -84,9 +96,9 @@ class ScheduleModel {
       for (const classItem of classes) {
         // Validar la clase con zod antes de insertar
         const validated = validateClass({
-          date: classItem.date instanceof Date ? classItem.date.toISOString().slice(0, 10) : classItem.date,
-          startTime: classItem.startTime instanceof Date ? classItem.startTime.toTimeString().slice(0, 5) : classItem.startTime,
-          endTime: classItem.endTime instanceof Date ? classItem.endTime.toTimeString().slice(0, 5) : classItem.endTime,
+          date: classItem.date, // Ya está en formato YYYY-MM-DD
+          startTime: classItem.startTime.slice(0, 5), // HH:MM (remover segundos)
+          endTime: classItem.endTime.slice(0, 5), // HH:MM (remover segundos)
           // otros campos opcionales si los tienes
         });
         if (!validated.success) {
@@ -119,7 +131,7 @@ class ScheduleModel {
       
       return {
         ...schedule[0],
-        days: JSON.parse(schedule[0].days),
+        days: schedule[0].days,
         group: {
           id: group.id,
           name: schedule[0].groupName
@@ -282,15 +294,18 @@ class ScheduleModel {
       
       const group = groups[0]
 
-      // Eliminamos todas las clases futuras del grupo
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      // Eliminamos todas las clases futuras del grupo usando Temporal
+      const today = Temporal.Now.plainDateISO()
       
       await connection.query(
         `DELETE FROM Class 
          WHERE groupId = ? AND date >= ?`,
-        [parseInt(groupId), today]
+        [parseInt(groupId), today.toString()]
       )
+
+      // Convertir fechas para la base de datos usando Temporal
+      const startDateForDB = Temporal.PlainDate.from(scheduleData.startDate).toString()
+      const endDateForDB = Temporal.PlainDate.from(scheduleData.endDate).toString()
 
       // Actualizamos el cronograma
       await connection.query(
@@ -299,8 +314,8 @@ class ScheduleModel {
          WHERE groupId = ?`,
         [
           JSON.stringify(scheduleData.days),
-          new Date(scheduleData.startDate),
-          new Date(scheduleData.endDate),
+          startDateForDB,
+          endDateForDB,
           parseInt(groupId)
         ]
       )
@@ -316,9 +331,9 @@ class ScheduleModel {
       for (const classItem of classes) {
         // Validar la clase con zod antes de insertar
         const validated = validateClass({
-          date: classItem.date instanceof Date ? classItem.date.toISOString().slice(0, 10) : classItem.date,
-          startTime: classItem.startTime instanceof Date ? classItem.startTime.toTimeString().slice(0, 5) : classItem.startTime,
-          endTime: classItem.endTime instanceof Date ? classItem.endTime.toTimeString().slice(0, 5) : classItem.endTime,
+          date: classItem.date, // Ya está en formato YYYY-MM-DD
+          startTime: classItem.startTime.slice(0, 5), // HH:MM (remover segundos)
+          endTime: classItem.endTime.slice(0, 5), // HH:MM (remover segundos)
           // otros campos opcionales si los tienes
         });
         if (!validated.success) {
@@ -351,7 +366,7 @@ class ScheduleModel {
       
       return {
         ...schedules[0],
-        days: JSON.parse(schedules[0].days),
+        days: schedules[0].days,
         group: {
           id: parseInt(groupId),
           name: schedules[0].groupName
@@ -372,14 +387,13 @@ class ScheduleModel {
     try {
       await connection.beginTransaction()
       
-      // Eliminamos todas las clases futuras
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      // Eliminamos todas las clases futuras usando Temporal
+      const today = Temporal.Now.plainDateISO()
       
       await connection.query(
         `DELETE FROM Class 
          WHERE groupId = ? AND date >= ?`,
-        [parseInt(groupId), today]
+        [parseInt(groupId), today.toString()]
       )
 
       // Eliminamos el cronograma
@@ -417,14 +431,14 @@ class ScheduleModel {
       
       const group = groups[0]
 
-      // Parseamos la fecha y hora
-      const [hours, minutes] = classData.startTime.split(':').map(Number)
-      const startTime = new Date(classData.date)
-      startTime.setHours(hours, minutes, 0)
-
-      // Calculamos la hora de fin
-      const endTime = new Date(startTime)
-      endTime.setMinutes(endTime.getMinutes() + classData.duration)
+      // Usar Temporal para parsear la fecha y hora
+      const classDate = Temporal.PlainDate.from(classData.date)
+      const startTime = Temporal.PlainTime.from(classData.startTime)
+      const endTime = Temporal.PlainTime.from(classData.endTime)
+      
+      // Combinar fecha y hora
+      const startDateTime = classDate.toPlainDateTime(startTime)
+      const endDateTime = classDate.toPlainDateTime(endTime)
 
       // Verificamos si ya existe una clase en ese horario
       const [existingClasses] = await connection.query(
@@ -434,9 +448,11 @@ class ScheduleModel {
           (startTime < ? AND endTime >= ?))`,
         [
           parseInt(groupId), 
-          new Date(classData.date),
-          startTime, startTime,
-          endTime, endTime
+          classDate.toString(),
+          startDateTime.toPlainTime().toString(),
+          startDateTime.toPlainTime().toString(),
+          endDateTime.toPlainTime().toString(),
+          endDateTime.toPlainTime().toString()
         ]
       )
 
@@ -447,14 +463,14 @@ class ScheduleModel {
       // Creamos la nueva clase
       const [classResult] = await connection.query(
         `INSERT INTO Class (
-          groupId, teacherId, date, startTime, endTime
-        ) VALUES (?, ?, ?, ?, ?)`,
+          groupId, teacherId, date, startTime, endTime, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, NOW())`,
         [
           parseInt(groupId),
           group.teacherId,
-          new Date(classData.date),
-          startTime,
-          endTime
+          classDate.toString(),
+          startDateTime.toPlainTime().toString(),
+          endDateTime.toPlainTime().toString()
         ]
       )
       
@@ -481,17 +497,21 @@ class ScheduleModel {
       let whereClause = '1=1'
       const params = []
       
-      // Filtrar por fecha - Versión mejorada inspirada en el comportamiento de Prisma
+      // Filtrar por fecha - Versión mejorada usando Temporal
       if (filters.date) {
         try {
-          // Asegurarse de que tenemos un objeto Date válido
-          let dateObj = filters.date;
+          // Usar Temporal para manejar la fecha de manera segura
+          let formattedDate;
           if (typeof filters.date === 'string') {
-            dateObj = new Date(filters.date);
+            formattedDate = Temporal.PlainDate.from(filters.date).toString();
+          } else if (filters.date instanceof Date) {
+            const year = filters.date.getFullYear();
+            const month = filters.date.getMonth() + 1;
+            const day = filters.date.getDate();
+            formattedDate = Temporal.PlainDate.from({ year, month, day }).toString();
+          } else {
+            formattedDate = filters.date.toString();
           }
-          
-          // Formatear la fecha al formato MySQL (YYYY-MM-DD)
-          const formattedDate = dateObj.toISOString().split('T')[0];
           
           // Usar la función DATE() de MySQL para comparar solo la parte de fecha
           whereClause += ' AND DATE(c.date) = ?';

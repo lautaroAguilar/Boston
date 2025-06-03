@@ -1,4 +1,3 @@
-// backend/schemas/class/class.js
 const { z } = require('zod');
 
 // Schema para crear una clase
