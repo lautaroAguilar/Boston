@@ -107,8 +107,7 @@ class UserAuthModel {
       const [result] = await connection.query(
         `UPDATE users 
          SET password = ?, 
-             is_temp_password = ?,
-             updated_at = CURRENT_TIMESTAMP
+             is_temp_password = ?
          WHERE id = ?`,
         [newPassword, isTempPassword, userId]
       )

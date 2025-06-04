@@ -49,7 +49,7 @@ class PasswordController {
         }
       } catch (error) {
         console.error('Error al comparar contraseñas:', error);
-        return res.status(500).json({ error: 'Error al verificar la contraseña actual' });
+        return res.status(500).json({ error: 'Error al verificar la contraseña actual', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
       }
 
       // Hashear la nueva contraseña
@@ -64,7 +64,7 @@ class PasswordController {
         }
       } catch (error) {
         console.error('Error al hashear la nueva contraseña:', error);
-        return res.status(500).json({ error: 'Error al procesar la nueva contraseña' });
+        return res.status(500).json({ error: 'Error al procesar la nueva contraseña', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
       }
 
       // Actualizar la contraseña
@@ -79,11 +79,11 @@ class PasswordController {
         const userAfterUpdate = await this.userAuthModel.findById(userId);
         if (!userAfterUpdate?.password) {
           console.error('Error: La contraseña no se guardó correctamente');
-          return res.status(500).json({ error: 'Error al guardar la nueva contraseña' });
+          return res.status(500).json({ error: 'Error al guardar la nueva contraseña', details: process.env.NODE_ENV === 'development' ? error.message + "error nada" : undefined });
         }
       } catch (error) {
         console.error('Error al actualizar la contraseña en la base de datos:', error);
-        return res.status(500).json({ error: 'Error al guardar la nueva contraseña' });
+        return res.status(500).json({ error: 'Error al guardar la nueva contraseña', details: process.env.NODE_ENV === 'development' ? error.message : undefined });
       }
 
       // Enviar email de notificación
