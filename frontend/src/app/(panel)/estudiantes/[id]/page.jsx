@@ -17,6 +17,8 @@ import { useStudent } from "@/contexts/students";
 import { useDashboard } from "@/contexts/dashboard";
 import { formatDate } from "@/utils/dateUtils";
 import EditModal from "@/components/EditModal";
+import { useExcelExport } from "@/hooks/useExcelExport";
+import ExportProgressDialog from "@/components/ExportProgressDialog";
 
 export default function StudentDetail() {
   const { id } = useParams();
@@ -27,7 +29,10 @@ export default function StudentDetail() {
     snackbarWarningMessage,
     setOpenSnackbar,
     setToolbarButtonAction,
+    setToolbarExportAction,
   } = useDashboard();
+  const { exportDataGridToExcel, isExporting, exportProgress } =
+    useExcelExport();
   const [enrollments, setEnrollments] = useState([]);
   const [isActive, setIsActive] = useState(true);
 
@@ -44,14 +49,8 @@ export default function StudentDetail() {
     }));
   };
 
-  const handleExportExcel = () => {
-    console.log("Exportando a Excel...");
-    // Implementar lógica de exportación
-  };
-
-  const handleAddRecord = () => {
-    console.log("Agregando nuevo registro...");
-    // Implementar lógica para agregar un nuevo registro
+  const handleExportToExcel = async () => {
+    await exportDataGridToExcel(enrollments, columns, "Estudiantes");
   };
 
   // Configuración del modal de edición
@@ -89,7 +88,6 @@ export default function StudentDetail() {
     },
     { field: "language_name", headerName: "Idioma", flex: 1 },
     { field: "module_name", headerName: "Módulo", flex: 1 },
-    /* { field: "last_achieved", headerName: "Último alcanzado", flex: 1 }, */
     {
       field: "teacher_name",
       headerName: "Docente",
@@ -144,7 +142,8 @@ export default function StudentDetail() {
   }, [snackbarMessage, snackbarErrorMessage, snackbarWarningMessage]);
   useEffect(() => {
     setToolbarButtonAction(null);
-  }, [setToolbarButtonAction]);
+    setToolbarExportAction(null);
+  }, [setToolbarButtonAction, setToolbarExportAction]);
   useEffect(() => {
     fetchStudentById(id);
   }, []);
@@ -153,7 +152,7 @@ export default function StudentDetail() {
       // Actualizar el estado isActive con el valor del estudiante
       setIsActive(student.active !== undefined ? student.active : true);
 
-      // Filtrar solo el enrollment activo
+      // Filtrar solo el enrollment activo. TAL VEZ HAY QUE CAMBIAR ESTO PARA MOSTRAR TODOS LOS ENROLLMENTS
       const activeEnrollment = student.enrollments?.find(
         (e) => e.status === "active"
       );
@@ -197,18 +196,17 @@ export default function StudentDetail() {
               spacing={2}
               justifyContent={{ xs: "flex-start", md: "flex-end" }}
             >
-              <Button
+             {/*  <Button
                 variant="outlined"
                 startIcon={<FileDownloadOutlined />}
-                onClick={handleExportExcel}
+                onClick={handleExportToExcel}
               >
                 EXPORTAR EXCEL
-              </Button>
+              </Button> */}
               <Button
                 variant="contained"
                 startIcon={<EditIcon />}
                 onClick={() => setOpenEditDialog(true)}
-                size="small"
               >
                 EDITAR PERFIL
               </Button>
@@ -238,6 +236,12 @@ export default function StudentDetail() {
         fields={studentModalConfig.fields}
         values={studentModalValues}
         onSubmit={studentModalConfig.onSubmit}
+      />
+      <ExportProgressDialog 
+        open={isExporting}
+        progress={exportProgress}
+        isExporting={isExporting}
+        onClose={() => {}}
       />
     </Box>
   );

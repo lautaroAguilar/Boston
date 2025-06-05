@@ -1,19 +1,22 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Paper, Typography, Button, useMediaQuery, Modal } from "@mui/material";
-import PersonAddRoundedIcon from "@mui/icons-material/PersonAddRounded";
+import { FileDownloadOutlined, PersonAddRounded } from "@mui/icons-material";
 import { DataGrid } from "@mui/x-data-grid";
 import { esES } from "@mui/x-data-grid/locales";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import MyForm from "@/components/Form";
 import { useDashboard } from "@/contexts/dashboard";
 import { useTeacher } from "@/contexts/teachers";
+import { useExcelExport } from "@/hooks/useExcelExport";
+import ExportProgressDialog from "@/components/ExportProgressDialog";
 
 export default function Page() {
   const theme = createTheme(esES);
   const isMobile = useMediaQuery("(max-width:600px)");
   const {
     setToolbarButtonAction,
+    setToolbarExportAction,
     snackbarMessage,
     snackbarErrorMessage,
     setOpenSnackbar,
@@ -30,6 +33,12 @@ export default function Page() {
     handleSubmitTeacher,
     fetchTeachers,
   } = useTeacher();
+
+  const { 
+    exportDataGridToExcel, 
+    isExporting, 
+    exportProgress 
+  } = useExcelExport();
 
   const [showForm, setShowForm] = useState(false);
   const [formRegisterValues, setFormRegisterValues] = useState({
@@ -49,6 +58,31 @@ export default function Page() {
   function handleShowForm() {
     setShowForm(true);
   }
+
+  const handleExportToExcel = async () => {
+    await exportDataGridToExcel(
+      teachers,
+      teacherColumns,
+      'Docentes',
+      {
+        customProcessing: (row, columns) => {
+          // Procesamiento personalizado para campos específicos
+          const processedRow = {};
+          columns.forEach(column => {
+            let value = row[column.field];
+            
+            // Procesar arrays de idiomas
+            if (column.field === 'languages' && Array.isArray(value)) {
+              value = value.map(lang => lang.name || lang).join(', ');
+            }
+            
+            processedRow[column.headerName || column.field] = value || '';
+          });
+          return processedRow;
+        }
+      }
+    );
+  };
 
   const handleChangeRegister = (fieldName, newValue) => {
     setFormRegisterValues((prev) => ({
@@ -140,9 +174,16 @@ export default function Page() {
     setToolbarButtonAction({
       label: "Crear nuevo",
       action: handleShowForm,
-      icon: <PersonAddRoundedIcon />,
+      icon: <PersonAddRounded />,
     });
-  }, [setToolbarButtonAction]);
+
+    setToolbarExportAction({
+      label: "Exportar Excel",
+      action: handleExportToExcel,
+      icon: <FileDownloadOutlined />,
+      disabled: isExporting || teachers.length === 0,
+    });
+  }, [setToolbarButtonAction, setToolbarExportAction, isExporting, teachers]);
 
   useEffect(() => {
     if (snackbarMessage || snackbarErrorMessage) {
@@ -217,6 +258,13 @@ export default function Page() {
           </Button>
         </Paper>
       </Modal>
+
+      <ExportProgressDialog 
+        open={isExporting}
+        progress={exportProgress}
+        isExporting={isExporting}
+        onClose={() => {}}
+      />
     </>
   );
 }

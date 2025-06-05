@@ -86,6 +86,7 @@ export default function ScheduleDetail() {
     snackbarMessage,
     setOpenSnackbar,
     setToolbarButtonAction,
+    setToolbarExportAction,
   } = useDashboard();
 
   const [schedule, setSchedule] = useState(null);
@@ -364,7 +365,8 @@ export default function ScheduleDetail() {
 
   useEffect(() => {
     setToolbarButtonAction(null);
-  }, [setToolbarButtonAction]);
+    setToolbarExportAction(null);
+  }, [setToolbarButtonAction, setToolbarExportAction]);
 
   useEffect(() => {
     const loadScheduleData = async () => {

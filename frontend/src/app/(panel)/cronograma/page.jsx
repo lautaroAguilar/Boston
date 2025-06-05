@@ -78,6 +78,7 @@ export default function Page() {
   const isMobile = useMediaQuery("(max-width:600px)");
   const {
     setToolbarButtonAction,
+    setToolbarExportAction,
     snackbarMessage,
     snackbarErrorMessage,
     setOpenSnackbar,
@@ -329,6 +330,7 @@ console.log(selectedDate)
       action: handleShowForm,
       icon: <CalendarMonthIcon />,
     });
+    setToolbarExportAction(null)
   }, [setToolbarButtonAction]);
 
   useEffect(() => {

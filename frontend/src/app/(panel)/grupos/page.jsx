@@ -22,6 +22,7 @@ export default function Page() {
   const isMobile = useMediaQuery("(max-width:600px)");
   const {
     setToolbarButtonAction,
+    setToolbarExportAction,
     snackbarMessage,
     snackbarErrorMessage,
     snackbarWarningMessage,
@@ -200,6 +201,7 @@ export default function Page() {
       action: handleShowForm,
       icon: <GroupAddRoundedIcon />,
     });
+    setToolbarExportAction(null);
   }, [setToolbarButtonAction]);
 
   useEffect(() => {

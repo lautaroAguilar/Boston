@@ -45,6 +45,7 @@ export default function Page() {
   } = useCompany();
   const {
     setToolbarButtonAction,
+    setToolbarExportAction,
     setOpenSnackbar,
     snackbarMessage,
     snackbarErrorMessage,
@@ -289,7 +290,8 @@ export default function Page() {
   }, [snackbarMessage, snackbarErrorMessage]);
   useEffect(() => {
     setToolbarButtonAction(null);
-  }, [setToolbarButtonAction]);
+    setToolbarExportAction(null);
+  }, [setToolbarButtonAction, setToolbarExportAction]);
 
   return (
     <>
@@ -329,7 +331,6 @@ export default function Page() {
                       variant="outlined"
                       startIcon={<DeleteIcon />}
                       color="error"
-                      size="small"
                       onClick={() => openDeleteModal("company")}
                     >
                       ELIMINAR
@@ -338,7 +339,6 @@ export default function Page() {
                       variant="contained"
                       startIcon={<EditIcon />}
                       onClick={() => openEditModal("company")}
-                      size="small"
                     >
                       EDITAR
                     </Button>

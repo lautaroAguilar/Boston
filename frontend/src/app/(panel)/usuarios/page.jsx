@@ -10,15 +10,18 @@ import { useDashboard } from "@/contexts/dashboard";
 import { useCompany } from "@/contexts/companies";
 import { useAuth } from "@/contexts/auth";
 import OptionsButton from "@/components/OptionsButton";
-import { Edit, Delete, PowerSettingsNew, Check } from "@mui/icons-material";
+import { PowerSettingsNew, Check, FileDownloadOutlined } from "@mui/icons-material";
+import { useExcelExport } from "@/hooks/useExcelExport";
+import ExportProgressDialog from "@/components/ExportProgressDialog";
 
 export default function page() {
-  const { users, getUsers, updateUserStatus, createUser } = useAuth();
   const theme = createTheme(esES);
   const isMobile = useMediaQuery("(max-width:600px)");
+  const { users, getUsers, updateUserStatus, createUser } = useAuth();
   const {
     setSnackbarErrorMessage,
     setToolbarButtonAction,
+    setToolbarExportAction,
     setSnackbarMessage,
     snackbarMessage,
     snackbarErrorMessage,
@@ -27,6 +30,12 @@ export default function page() {
     fetchRoles
   } = useDashboard();
   const { companiesInfo } = useCompany();
+  const { 
+    exportDataGridToExcel, 
+    isExporting, 
+    exportProgress 
+  } = useExcelExport();
+
   const [showForm, setShowForm] = useState(false);
   const [created, setCreated] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -103,6 +112,13 @@ export default function page() {
       setSnackbarErrorMessage(err.message);
       console.error("Error al registrar: ", err);
     }
+  };
+  const handleExportToExcel = async () => {
+    await exportDataGridToExcel(
+      users,
+      userColumns,
+      'Usuarios',
+    );
   };
   const userColumns = [
     { field: "id", headerName: "ID", minWidth: 50 },
@@ -182,7 +198,13 @@ export default function page() {
       action: handleShowForm,
       icon: <PersonAddRoundedIcon />,
     });
-  }, [setToolbarButtonAction]);
+    setToolbarExportAction({
+      label: "Exportar Excel",
+      action: handleExportToExcel,
+      icon: <FileDownloadOutlined />,
+      disabled: isExporting || users.length === 0,
+    });
+  }, [setToolbarButtonAction, setToolbarExportAction, isExporting, users]);
   useEffect(() => {
     if (snackbarMessage || snackbarErrorMessage) {
       setOpenSnackbar(true);
@@ -256,6 +278,12 @@ export default function page() {
           </Button>
         </Paper>
       </Modal>
+      <ExportProgressDialog 
+        open={isExporting}
+        progress={exportProgress}
+        isExporting={isExporting}
+        onClose={() => {}}
+      />
     </>
   );
 }

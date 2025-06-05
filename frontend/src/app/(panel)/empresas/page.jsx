@@ -16,6 +16,7 @@ import {
   ApartmentRounded,
   ArrowDropDown,
   ArrowDropUp,
+  FileDownloadOutlined,
 } from "@mui/icons-material";
 import { useCompany } from "@/contexts/companies";
 import { useDashboard } from "@/contexts/dashboard";
@@ -29,6 +30,8 @@ import {
 } from "../../../../schemas/companies";
 import CONFIG from "../../../../config/api";
 import { useRouter } from "next/navigation";
+import { useExcelExport } from "@/hooks/useExcelExport";
+import ExportProgressDialog from "@/components/ExportProgressDialog";
 /**
  * ExpandableCell componente que permite expandir el campo si el texto es demasiado.
  *
@@ -69,12 +72,19 @@ export default function Page() {
   } = useCompany();
   const {
     setToolbarButtonAction,
+    setToolbarExportAction,
     setOpenSnackbar,
     snackbarMessage,
     snackbarErrorMessage,
     setSnackbarMessage,
     setSnackbarErrorMessage,
   } = useDashboard();
+
+  const { 
+    exportDataGridToExcel, 
+    isExporting, 
+    exportProgress 
+  } = useExcelExport();
   const isMobile = useMediaQuery("(max-width:600px)");
   /* ESTADOS */
   const [showForm, setShowForm] = useState(false);
@@ -175,6 +185,32 @@ export default function Page() {
     setShowForm(true);
     setErrorMessage(false);
   }
+
+  const handleExportToExcel = async () => {
+    await exportDataGridToExcel(
+      companies,
+      columns,
+      'Empresas',
+      {
+        customProcessing: (row, columns) => {
+          const processedRow = {};
+          columns.forEach(column => {
+            let value = row[column.field];
+            
+            // Procesamiento personalizado para campos complejos
+            if (column.field === 'costCenters' && Array.isArray(value)) {
+              value = value.map(cc => cc.cost_center_name || cc.name).join(', ');
+            } else if (column.field === 'sectors' && Array.isArray(value)) {
+              value = value.map(s => s.sector_name || s.name).join(', ');
+            }
+            
+            processedRow[column.headerName || column.field] = value || '';
+          });
+          return processedRow;
+        }
+      }
+    );
+  };
   /* FUNCION QUE SE EJECUTA AL FINAL PARA CREAR LA EMPRESA */
   async function handleFinish() {
     try {
@@ -213,7 +249,13 @@ export default function Page() {
       action: handleShowForm,
       icon: <ApartmentRounded />,
     });
-  }, [setToolbarButtonAction]);
+    setToolbarExportAction({
+      label: "Exportar Excel",
+      action: handleExportToExcel,
+      icon: <FileDownloadOutlined />,
+      disabled: isExporting || companies.length === 0,
+    });
+  }, [setToolbarButtonAction, setToolbarExportAction, isExporting, companies]);
   useEffect(() => {
     if (snackbarMessage || snackbarErrorMessage) {
       setOpenSnackbar(true);
@@ -376,6 +418,12 @@ export default function Page() {
           <FormStepper steps={steps} onFinish={handleFinish} />
         </Paper>
       </Modal>
+      <ExportProgressDialog 
+        open={isExporting}
+        progress={exportProgress}
+        isExporting={isExporting}
+        onClose={() => {}}
+      />
     </Stack>
   );
 }

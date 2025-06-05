@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import FormStepper from "@/components/Stepper";
 import { Modal, Paper, Typography, Stack, useMediaQuery } from "@mui/material";
-import { SchoolRounded, Edit, Delete, Visibility } from "@mui/icons-material";
+import { SchoolRounded, Edit, Delete, Visibility, FileDownloadOutlined } from "@mui/icons-material";
 import { useDashboard } from "@/contexts/dashboard";
 import { useStudent } from "@/contexts/students";
 import { useCompany } from "@/contexts/companies";
@@ -12,6 +12,8 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import moment from "moment";
 import OptionsButton from "@/components/OptionsButton";
 import { useRouter } from "next/navigation";
+import { useExcelExport } from "@/hooks/useExcelExport";
+import ExportProgressDialog from "@/components/ExportProgressDialog";
 
 export default function Page() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function Page() {
   const { fetchCostCenters, fetchSectors, sectors, costCenters } = useCompany();
   const {
     setToolbarButtonAction,
+    setToolbarExportAction,
     setOpenSnackbar,
     snackbarMessage,
     snackbarErrorMessage,
@@ -29,6 +32,11 @@ export default function Page() {
     modules,
   } = useDashboard();
   const { fetchStudents, students, createStudent, updated } = useStudent();
+  const { 
+    exportDataGridToExcel, 
+    isExporting, 
+    exportProgress 
+  } = useExcelExport();
   const isMobile = useMediaQuery("(max-width:600px)");
   /* ESTADOS */
   const [showForm, setShowForm] = useState(false);
@@ -122,6 +130,32 @@ export default function Page() {
   function handleShowForm() {
     setShowForm(true);
   }
+
+  const handleExportToExcel = async () => {
+    await exportDataGridToExcel(
+      students,
+      studentColumns,
+      'Estudiantes',
+      {
+        customProcessing: (row, columns) => {
+          const processedRow = {};
+          columns.forEach(column => {
+            let value = row[column.field];
+            
+            // Procesamiento personalizado para campos específicos
+            if (column.field === 'module' && row.current_module_name) {
+              value = row.current_module_name;
+            } else if (column.field === 'languages' && row.current_language_name) {
+              value = row.current_language_name;
+            }
+            
+            processedRow[column.headerName || column.field] = value || '';
+          });
+          return processedRow;
+        }
+      }
+    );
+  };
 
   const steps = [
     {
@@ -229,7 +263,14 @@ export default function Page() {
       action: handleShowForm,
       icon: <SchoolRounded />,
     });
-  }, [setToolbarButtonAction]);
+
+    setToolbarExportAction({
+      label: "Exportar Excel",
+      action: handleExportToExcel,
+      icon: <FileDownloadOutlined />,
+      disabled: isExporting || students.length === 0,
+    });
+  }, [setToolbarButtonAction, setToolbarExportAction, isExporting, students]);
   useEffect(() => {
     if (snackbarMessage || snackbarErrorMessage) {
       setOpenSnackbar(true);
@@ -301,6 +342,13 @@ export default function Page() {
           <FormStepper steps={steps} onFinish={handleFinish} />
         </Paper>
       </Modal>
+
+      <ExportProgressDialog 
+        open={isExporting}
+        progress={exportProgress}
+        isExporting={isExporting}
+        onClose={() => {}}
+      />
     </Stack>
   );
 }
