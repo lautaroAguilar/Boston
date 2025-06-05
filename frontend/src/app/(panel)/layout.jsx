@@ -94,10 +94,26 @@ function CustomToolbarActions() {
   );
 }
 
-function CustomPageToolbar({ toolbarButtonAction }) {
+function CustomPageToolbar({ toolbarButtonAction, toolbarExportAction }) {
   return (
     <PageHeaderToolbar>
-      <Stack>
+      <Stack direction="row" spacing={2}>
+        {toolbarExportAction ? (
+          <Button
+            variant="outlined"
+            onClick={toolbarExportAction.action}
+            disabled={toolbarExportAction.disabled}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: 1,
+            }}
+          >
+            {toolbarExportAction.label}
+            {toolbarExportAction.icon}
+          </Button>
+        ) : null}
         {toolbarButtonAction ? (
           <Button
             variant="contained"
@@ -119,10 +135,13 @@ function CustomPageToolbar({ toolbarButtonAction }) {
 }
 
 function CustomPageHeader() {
-  const { toolbarButtonAction } = useDashboard();
+  const { toolbarButtonAction, toolbarExportAction } = useDashboard();
   const CustomPageToolbarComponent = useCallback(
-    () => <CustomPageToolbar toolbarButtonAction={toolbarButtonAction} />,
-    [toolbarButtonAction]
+    () => <CustomPageToolbar 
+      toolbarButtonAction={toolbarButtonAction} 
+      toolbarExportAction={toolbarExportAction}
+    />,
+    [toolbarButtonAction, toolbarExportAction]
   );
 
   return <PageHeader slots={{ toolbar: CustomPageToolbarComponent }} />;

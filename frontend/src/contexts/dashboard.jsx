@@ -7,6 +7,7 @@ const DashboardContext = createContext();
 export function DashboardProvider({ children }) {
   const [selectedCompany, setSelectedCompany] = useState("");
   const [toolbarButtonAction, setToolbarButtonAction] = useState(null);
+  const [toolbarExportAction, setToolbarExportAction] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarErrorMessage, setSnackbarErrorMessage] = useState("");
@@ -139,12 +140,14 @@ export function DashboardProvider({ children }) {
       value={{
         selectedCompany,
         toolbarButtonAction,
+        toolbarExportAction,
         openSnackbar,
         snackbarMessage,
         snackbarErrorMessage,
         snackbarWarningMessage,
         setSelectedCompany,
         setToolbarButtonAction,
+        setToolbarExportAction,
         setOpenSnackbar,
         setSnackbarMessage,
         setSnackbarErrorMessage,
