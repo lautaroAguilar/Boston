@@ -161,8 +161,8 @@ model Teacher {
   professionalCategoryId Int
   professionalCategory   ProfessionalCategory @relation(fields: [professionalCategoryId], references: [id])
   languages             TeacherLanguages[]   
-  fictitiousSeniority   Int
-  bostonSeniority       Int
+  fictitiousSeniority   DateTime?
+  bostonSeniority       DateTime?
   observations          String?              @db.Text
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt

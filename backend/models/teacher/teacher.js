@@ -1,4 +1,5 @@
 const { pool } = require('../../config/database.js')
+const { Temporal } = require('temporal-polyfill')
 
 class TeacherModel {
   static async createWithUser(teacherData, hashedPassword) {
@@ -24,7 +25,14 @@ class TeacherModel {
       
       const userId = userResult.insertId
       
-      // 2. Crear el profesor
+      // 2. Crear el profesor - convertir fechas usando Temporal
+      const fictitiousSeniorityForDB = teacherData.fictitiousSeniority 
+        ? Temporal.PlainDate.from(teacherData.fictitiousSeniority).toString()
+        : null
+      const bostonSeniorityForDB = teacherData.bostonSeniority 
+        ? Temporal.PlainDate.from(teacherData.bostonSeniority).toString()
+        : null
+
       const [teacherResult] = await connection.query(
         `INSERT INTO Teacher (firstName, lastName, email, phone, CBU, CUIT,
           professionalCategoryId, fictitiousSeniority, bostonSeniority, 
@@ -38,8 +46,8 @@ class TeacherModel {
           teacherData.CBU, 
           teacherData.CUIT,
           teacherData.professionalCategoryId, 
-          teacherData.fictitiousSeniority,
-          teacherData.bostonSeniority, 
+          fictitiousSeniorityForDB,
+          bostonSeniorityForDB, 
           teacherData.observations, 
           userId
         ]
@@ -222,7 +230,7 @@ class TeacherModel {
       
       const fieldsToUpdate = [
         'firstName', 'lastName', 'email', 'phone', 'CBU', 'CUIT',
-        'professionalCategoryId', 'fictitiousSeniority', 'bostonSeniority', 'observations'
+        'professionalCategoryId', 'observations'
       ]
       
       fieldsToUpdate.forEach(field => {
@@ -231,6 +239,21 @@ class TeacherModel {
           values.push(teacherData[field])
         }
       })
+
+      // Manejar fechas usando Temporal
+      if (teacherData.fictitiousSeniority !== undefined) {
+        setClauses.push('fictitiousSeniority = ?')
+        values.push(teacherData.fictitiousSeniority 
+          ? Temporal.PlainDate.from(teacherData.fictitiousSeniority).toString()
+          : null)
+      }
+
+      if (teacherData.bostonSeniority !== undefined) {
+        setClauses.push('bostonSeniority = ?')
+        values.push(teacherData.bostonSeniority 
+          ? Temporal.PlainDate.from(teacherData.bostonSeniority).toString()
+          : null)
+      }
       
       if (setClauses.length > 0) {
         values.push(parseInt(teacherId))

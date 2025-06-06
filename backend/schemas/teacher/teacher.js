@@ -35,13 +35,11 @@ const teacherSchema = z.object({
     invalid_type_error: 'Elija una categoría profesional'
   }),
   fictitiousSeniority: z
-    .number({ required_error: 'La antigüedad ficticia es requerida' })
-    .int('La antigüedad ficticia debe ser un número entero')
-    .min(0, 'La antigüedad ficticia no puede ser negativa'),
+    .string({ required_error: 'La antigüedad ficticia es requerida' })
+    .min(10, 'La antigüedad ficticia debe ser una fecha válida'),
   bostonSeniority: z
-    .number({ required_error: 'La antigüedad en Boston es requerida' })
-    .int('La antigüedad en Boston debe ser un número entero')
-    .min(0, 'La antigüedad en Boston no puede ser negativa'),
+    .string({ required_error: 'La antigüedad en Boston es requerida' })
+    .min(10, 'La antigüedad en Boston debe ser una fecha válida'),
   observations: z.string().trim().optional(),
   languages: z
     .array(z.number().int())
