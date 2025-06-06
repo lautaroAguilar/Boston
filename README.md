@@ -19,7 +19,7 @@ El proyecto está dividido en dos directorios principales:
 
 #### Backend
 -   **Framework**: [Express.js](https://expressjs.com/)
--   **ORM**: [Prisma](https://www.prisma.io/) [La interacción con la base de datos se entabla mediante mysql2, Prisma es exclusivamente para migraciones.]
+-   **ORM**: [Prisma](https://www.prisma.io/) (La interacción con la base de datos se entabla mediante mysql2, Prisma es exclusivamente para migraciones.)
 -   **Base de Datos**: MySQL
 -   **Autenticación**: JSON Web Tokens (JWT)
 -   **Lenguaje**: JavaScript
