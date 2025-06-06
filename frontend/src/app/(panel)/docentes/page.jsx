@@ -10,6 +10,7 @@ import { useDashboard } from "@/contexts/dashboard";
 import { useTeacher } from "@/contexts/teachers";
 import { useExcelExport } from "@/hooks/useExcelExport";
 import ExportProgressDialog from "@/components/ExportProgressDialog";
+import moment from "moment";
 
 export default function Page() {
   const theme = createTheme(esES);
@@ -50,8 +51,8 @@ export default function Page() {
     CUIT: "",
     professionalCategoryId: "",
     languages: [],
-    fictitiousSeniority: "",
-    bostonSeniority: "",
+    fictitiousSeniority: moment(),
+    bostonSeniority: moment(),
     observations: "",
   });
 
@@ -104,8 +105,8 @@ export default function Page() {
         CUIT: "",
         professionalCategoryId: "",
         languages: [],
-        fictitiousSeniority: "",
-        bostonSeniority: "",
+        fictitiousSeniority: moment(),
+        bostonSeniority: moment(),
         observations: "",
       });
     }
@@ -164,9 +165,15 @@ export default function Page() {
     {
       name: "fictitiousSeniority",
       label: "Antigüedad Ficticia",
+      component: "date",
       required: true,
     },
-    { name: "bostonSeniority", label: "Antigüedad en Boston", required: true },
+    { 
+      name: "bostonSeniority", 
+      label: "Antigüedad en Boston", 
+      component: "date",
+      required: true,
+    },
     { name: "observations", label: "Observaciones", required: true },
   ];
 

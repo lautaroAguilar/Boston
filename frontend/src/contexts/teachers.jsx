@@ -4,6 +4,7 @@ import CONFIG from "../../config/api";
 import { useDashboard } from "./dashboard";
 import { useAuth } from "./auth";
 import { fetchWithAuth } from "@/utils/fetchWithAuth";
+import { formatDateForAPI } from "@/utils/dateUtils";
 const TeacherContext = createContext();
 
 export const TeacherProvider = ({ children }) => {
@@ -29,8 +30,8 @@ export const TeacherProvider = ({ children }) => {
           body: JSON.stringify({
             ...dataToSend,
             is_temp_password: true,
-            fictitiousSeniority: Number(dataToSend.fictitiousSeniority),
-            bostonSeniority: Number(dataToSend.bostonSeniority),
+            fictitiousSeniority: formatDateForAPI(dataToSend.fictitiousSeniority),
+            bostonSeniority: formatDateForAPI(dataToSend.bostonSeniority),
           }),
         },
         refreshToken,

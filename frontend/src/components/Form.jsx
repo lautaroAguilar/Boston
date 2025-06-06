@@ -88,6 +88,7 @@ export default function MyForm({
                   return (
                     <LocalizationWrapper>
                       <DatePicker
+                        label={field.label}
                         value={values[field.name] ?? null}
                         onChange={(newValue) => onChange(field.name, newValue)}
                         format="DD/MM/YYYY"
